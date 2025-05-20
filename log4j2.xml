@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <!-- Filter out Hypixel scoreboard and sound errors -->
+    <RegexFilter regex="Error executing task.*|Unable to play unknown soundEvent.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%level]: %msg%n"/>
+        </Console>
+
+        <File name="InfoFile" fileName="logs/kic_info.log">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [INFO]: %msg%n"/>
+        </File>
+
+        <File name="WarnFile" fileName="logs/kic_warn.log">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [WARN]: %msg%n"/>
+        </File>
+
+        <File name="ErrorFile" fileName="logs/kic_error.log">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [ERROR]: %msg%n"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <!-- Logger specifically for INFO logs -->
+        <Logger name="KIC.INFO" level="INFO" additivity="false">
+            <AppenderRef ref="InfoFile"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <!-- Logger specifically for WARN logs -->
+        <Logger name="KIC.WARN" level="WARN" additivity="false">
+            <AppenderRef ref="WarnFile"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <!-- Logger specifically for ERROR logs -->
+        <Logger name="KIC.ERROR" level="ERROR" additivity="false">
+            <AppenderRef ref="ErrorFile"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <!-- Main Logger for Console output -->
+        <Logger name="KIC" level="ALL" additivity="true">
+            <AppenderRef ref="Console"/>
+        </Logger>
+    </Loggers>
+</Configuration>

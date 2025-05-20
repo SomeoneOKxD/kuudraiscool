@@ -1,0 +1,18 @@
+[
+  {
+    "modid": "${modid}",
+    "name": "Kuudraiscool",
+    "description": "Kuudraiscool (KIC) mod for hypixel skyblock.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://github.com/SomeoneOKxD/KIC",
+    "updateUrl": "",
+    "authorList": [
+      "Anthony"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
