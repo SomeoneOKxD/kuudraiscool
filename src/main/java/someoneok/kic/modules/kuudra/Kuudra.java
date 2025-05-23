@@ -270,7 +270,7 @@ public class Kuudra {
                 Multithreading.schedule(() -> sendMessageToPlayer(String.format("%s §cServer lagged for §f%.2fs §7(§f%d ticks§7)", KIC.KICPrefix, getTotalLagTimeS(), getTotalLagTimeTicks())), 500, TimeUnit.MILLISECONDS);
             }
 
-            if (KuudraSplitsOptions.showDetailedOverview) KuudraSplits.sendDetailedSplits(now, freshTimes);
+            if (KuudraSplitsOptions.showDetailedOverview) Multithreading.schedule(() -> KuudraSplits.sendDetailedSplits(now, freshTimes), 500, TimeUnit.MILLISECONDS);
         }
     }
 

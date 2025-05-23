@@ -27,12 +27,14 @@ import static someoneok.kic.utils.StringUtils.formatElapsedTimeMs;
 import static someoneok.kic.utils.StringUtils.isValidUUIDv4RegexBased;
 
 public class KICCommand extends CommandBase {
-    private static final List<String> commands = new ArrayList<>(Arrays.asList(
-            "settings", "kuudra", "apikey", "key", "verifykey", "verifyapikey",
+    private static final List<String> commands = Arrays.asList(
+            "help", "settings", "apikey", "key",
+            "verifykey", "verifyapikey",
             "resetprofittracker", "rpt", "resetpt",
-            "t1", "t2", "t3", "t4", "t5", "help",
-            "skpt", "sharekpt", "sharetracker", "edithuds", "kuudrapb", "resetkuudrapb"
-    ));
+            "kuudra", "t1", "t2", "t3", "t4", "t5",
+            "skpt", "sharekpt", "sharetracker", "edithuds",
+            "kuudrapb", "resetkuudrapb", "chat"
+    );
 
     @Override
     public String getCommandName() {
@@ -175,6 +177,33 @@ public class KICCommand extends CommandBase {
                 OverlayDataHandler.saveOverlaysData();
                 break;
 
+            case "chat":
+                if (args.length == 2) {
+                    String chat = args[1].trim();
+
+                    if (!chat.equalsIgnoreCase("kc") && !chat.equalsIgnoreCase("kcp") && !chat.equalsIgnoreCase("hypixel")) {
+                        sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §cUsage: /kic chat kc/kcp/hypixel"));
+                        return;
+                    }
+
+                    if (chat.equalsIgnoreCase("kc")) {
+                        // Switch to Plus chat
+                    } else if (chat.equalsIgnoreCase("kcp")) {
+                        if (ApiUtils.hasPremium()) {
+                            // Switch to Plus chat
+                        } else {
+                            sender.addChatMessage(new ChatComponentText(
+                                    KIC.KICPrefix + " §cThis is a premium-only feature. §7Use §b/kic premium §7to learn more."
+                            ));
+                        }
+                    } else {
+                        // Switch to hypixel chat
+                    }
+                } else {
+                    sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §cUsage: /kic chat kc/kcp/hypixel"));
+                }
+                break;
+
             case "help":
             default:
                 sendKICHelpMsg(sender);
@@ -314,9 +343,9 @@ public class KICCommand extends CommandBase {
     }
 
     private void sendKuudraPb(ICommandSender sender) {
-        long pb = KIC.userData.getKuudraPersonalBest();
+        Long pb = KIC.userData.getKuudraPersonalBest();
 
-        String msg = pb == 0
+        String msg = pb == null || pb == 0
                 ? KICPrefix + " §cNo Kuudra Personal Best yet!"
                 : String.format("%s §aKuudra Personal Best: §f%s", KICPrefix, formatElapsedTimeMs(pb));
 

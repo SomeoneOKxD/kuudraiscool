@@ -13,24 +13,31 @@ import java.util.List;
 
 import static someoneok.kic.utils.EmojiUtils.replaceEmojis;
 
-public class ChatCommand extends CommandBase {
+public class ChatPlusCommand extends CommandBase {
     @Override
     public String getCommandName() {
-        return "kc";
+        return "kcp";
     }
 
     @Override
     public List<String> getCommandAliases() {
-        return Arrays.asList("kchat", "kicchat");
+        return Arrays.asList("kchatplus", "kicchatplus");
     }
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/kc <message>";
+        return "/kcp <message>";
     }
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
+        if (!ApiUtils.hasPremium()) {
+            sender.addChatMessage(new ChatComponentText(
+                    KIC.KICPrefix + " §cThis is a premium-only feature. §7Use §b/kic premium §7to learn more."
+            ));
+            return;
+        }
+
         if (args.length == 0) return;
 
         String message = replaceEmojis(String.join(" ", args).trim());
@@ -38,16 +45,16 @@ public class ChatCommand extends CommandBase {
         boolean isToggle = message.equals("toggle");
 
         if (isToggle) {
-            KICConfig.kicChat = !KICConfig.kicChat;
+            KICConfig.kicPlusChat = !KICConfig.kicPlusChat;
             sendToggleMessage(sender);
-        } else if (KICConfig.kicChat) {
-            KICWS.sendChatMessage(message, false);
+        } else if (KICConfig.kicPlusChat) {
+            KICWS.sendChatMessage(message, true);
         }
     }
 
     private void sendToggleMessage(ICommandSender sender) {
-        String state = KICConfig.kicChat ? "§a§lON" : "§c§lOFF";
-        sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §aToggled KIC Chat " + state));
+        String state = KICConfig.kicPlusChat ? "§a§lON" : "§c§lOFF";
+        sender.addChatMessage(new ChatComponentText(KIC.KICPlusPrefix + " §aToggled KIC+ Chat " + state));
     }
 
     @Override

@@ -75,7 +75,7 @@ public class KIC {
                 new CrimsonContainerHelper(),
                 new ChatCommands(),
                 new KICAuction(),
-                new Emojis(),
+                new ChatHandler(),
                 new Waypoints(),
                 new Kuudra(),
                 new GodRoll(),

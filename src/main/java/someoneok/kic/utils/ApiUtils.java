@@ -3,7 +3,6 @@ package someoneok.kic.utils;
 import cc.polyfrost.oneconfig.utils.JsonUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import someoneok.kic.commands.ChatCommand;
 import someoneok.kic.commands.KICCommand;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.APIException;
@@ -93,7 +92,6 @@ public class ApiUtils {
         if (!hasPremium()) {
             KICConfig.partyFinderGuiStats = false;
             KICConfig.kicPlusChat = false;
-            ChatCommand.plusChat = false;
         }
 
         if (!isAdmin()) {

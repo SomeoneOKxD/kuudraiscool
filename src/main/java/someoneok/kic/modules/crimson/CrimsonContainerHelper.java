@@ -213,9 +213,7 @@ public class CrimsonContainerHelper {
     @SubscribeEvent
     public void onSlotClick(GuiContainerEvent.SlotClickEvent event) {
         if (!KICConfig.crimsonContainerBlockClicks ||
-                !KICConfig.crimsonContainerHelper ||
-                !ButtonManager.isChecked("containerValue") ||
-                !onSkyblock || !shouldRender ||
+                shouldNotRender() ||
                 event.getSlot() == null ||
                 slotHighlightColors.isEmpty()) {
             return;
@@ -593,13 +591,13 @@ public class CrimsonContainerHelper {
         updateOverlay();
     }
 
-    private boolean shouldNotRenderSlotHighlight() {
+    private boolean shouldNotRender() {
         return !KICConfig.crimsonContainerHelper || !ButtonManager.isChecked("containerValue") || !onSkyblock || !shouldRender || NEUCompatibility.isStorageMenuActive();
     }
 
     @SubscribeEvent
     public void onBackgroundDrawn(GuiScreenEvent.BackgroundDrawnEvent e) {
-        if (shouldNotRenderSlotHighlight() || !(e.gui instanceof GuiChest)) return;
+        if (shouldNotRender() || !(e.gui instanceof GuiChest)) return;
 
         GuiChest gui = (GuiChest) e.gui;
 
@@ -620,7 +618,7 @@ public class CrimsonContainerHelper {
 
     @SubscribeEvent
     public void onDrawGui(GuiScreenEvent.DrawScreenEvent.Post e) {
-        if (shouldNotRenderSlotHighlight() || !(e.gui instanceof GuiChest)) return;
+        if (shouldNotRender() || !(e.gui instanceof GuiChest)) return;
 
         GuiChest gui = (GuiChest) e.gui;
 

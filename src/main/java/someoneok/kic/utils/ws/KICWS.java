@@ -4,6 +4,7 @@ import cc.polyfrost.oneconfig.utils.Multithreading;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import okhttp3.*;
+import org.apache.commons.lang3.StringEscapeUtils;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.events.HypixelJoinEvent;
@@ -154,7 +155,7 @@ public class KICWS {
 
         if (canSend) {
             String type = premium ? "PREMIUM_CHAT" : "CHAT";
-            sendMessage("{\"type\":\"" + type + "\",\"data\":{\"message\":\"" + message + "\"}}");
+            sendMessage("{\"type\":\"" + type + "\",\"data\":{\"message\":\"" + StringEscapeUtils.escapeJson(message) + "\"}}");
         }
     }
 

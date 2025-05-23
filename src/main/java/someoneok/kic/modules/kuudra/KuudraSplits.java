@@ -304,7 +304,7 @@ public class KuudraSplits {
                 .append(formatElapsedTimeMs(KuudraPhase.OVERALL.getTime(now)));
 
         if (KuudraSplitsOptions.showMiscInDetailed) {
-            message.append("\n").append(KIC.KICPrefix)
+            message.append("\n\n").append(KIC.KICPrefix)
                     .append(getColorCode(KuudraSplitsOptions.miscColor))
                     .append(" Misc.\n");
 

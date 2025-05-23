@@ -53,7 +53,8 @@ public class KuudraProfitTracker {
     }
 
     private static void maybeUpdatePersonalBest(long runTimeMs) {
-        long oldPb = KIC.userData.getKuudraPersonalBest();
+        Long oldPb = KIC.userData.getKuudraPersonalBest();
+        if (oldPb == null) oldPb = 0L;
 
         if (oldPb == 0 || runTimeMs < oldPb) {
             KIC.userData.setKuudraPersonalBest(runTimeMs);
@@ -273,7 +274,7 @@ public class KuudraProfitTracker {
         if (KuudraProfitTrackerOptions.showGodRolls) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.godRollColor);
             text.append("\n").append(color).append("§lGod Rolls: §r")
-                    .append(color).append(parseToShorthandNumber(session.getTotalGodRolls()));
+                    .append(color).append(session.getTotalGodRolls());
             if (KuudraProfitTrackerOptions.showGodRollValue) {
                 text.append(String.format(" §7(§a+%s§7)", parseToShorthandNumber(session.getGodRollValue())));
             }
