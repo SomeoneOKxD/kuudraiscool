@@ -880,12 +880,6 @@ public class KICConfig extends Config {
             size = 2
     )
     public static boolean kuudraProfitTrackerAddRunTimeDelay = true;
-    @Switch(
-            name = "Profit Tracker (Infernal Only)",
-            description = "Only shows the profit tracker in T5 Infernal Kuudra",
-            category = "Kuudra"
-    )
-    public static boolean kuudraProfitTrackerInfernal = false;
 
     @Number(
             name = "Delay To Add (s)",

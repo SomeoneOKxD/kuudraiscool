@@ -161,21 +161,11 @@ public class KIC {
         OverlayManager.addOverlay(new DualOverlay(
                 () -> KICConfig.kuudraProfitTracker,
                 "ProfitTracker",
-                "Profit Tracker (All Tiers)",
+                "Profit Tracker",
                 profitTrackerIslands,
                 forgottenSkullCondition,
                 ""));
 
-        Supplier<Boolean> infernalOnlyCondition = () ->
-                LocationUtils.currentIsland == Island.KUUDRA && LocationUtils.kuudraTier == 3;
-
-        OverlayManager.addOverlay(new DualOverlay(
-                () -> KICConfig.kuudraProfitTrackerInfernal,
-                "ProfitTrackerInfernal",
-                "Profit Tracker (Infernal Only)",
-                Collections.singleton(Island.KUUDRA),
-                infernalOnlyCondition,
-                ""));
 
         OverlayManager.addOverlay(new InteractiveOverlay(
                 () -> KICConfig.crimsonContainerHelper,
