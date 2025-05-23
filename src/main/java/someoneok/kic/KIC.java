@@ -143,7 +143,7 @@ public class KIC {
     private void initOverlays() {
         Set<Island> allIslands = Collections.singleton(Island.ALL);
         Set<Island> KuudraIsland = Collections.singleton(Island.KUUDRA);
-        Set<Island> profitTrackerIslands = new HashSet<>(Arrays.asList(Island.KUUDRA, Island.CRIMSON_ISLE));
+        Set<Island> profitTrackerIslands = new HashSet<>(Arrays.asList(Island.KUUDRA, Island.CRIMSON_ISLE, Island.ALL));
         Set<Island> pfStatsIslands = new HashSet<>(Collections.singletonList(Island.CRIMSON_ISLE));
 
         Supplier<Boolean> forgottenSkullCondition = () ->
@@ -161,9 +161,20 @@ public class KIC {
         OverlayManager.addOverlay(new DualOverlay(
                 () -> KICConfig.kuudraProfitTracker,
                 "ProfitTracker",
-                "Profit Tracker",
+                "Profit Tracker (All Tiers)",
                 profitTrackerIslands,
                 forgottenSkullCondition,
+                ""));
+
+        Supplier<Boolean> infernalOnlyCondition = () ->
+                LocationUtils.currentIsland == Island.KUUDRA && LocationUtils.kuudraTier == 3;
+
+        OverlayManager.addOverlay(new DualOverlay(
+                () -> KICConfig.kuudraProfitTrackerInfernal,
+                "ProfitTrackerInfernal",
+                "Profit Tracker (Infernal Only)",
+                Collections.singleton(Island.KUUDRA),
+                infernalOnlyCondition,
                 ""));
 
         OverlayManager.addOverlay(new InteractiveOverlay(

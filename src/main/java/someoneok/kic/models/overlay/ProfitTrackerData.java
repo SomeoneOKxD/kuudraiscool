@@ -7,9 +7,14 @@ import someoneok.kic.config.pages.KuudraProfitCalculatorOptions;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ProfitTrackerData {
     private final ProfitTrackerSession lifetime;
     private final ProfitTrackerSession current;
+    private final Map<String, ProfitTrackerSession> tierSessions;
+    private final Map<String, ProfitTrackerSession> lifetimeTierSessions;
     @SerializedName("kismet_price")
     private long kismetPrice;
     @SerializedName("basic_key_price")
@@ -30,6 +35,21 @@ public class ProfitTrackerData {
     public ProfitTrackerData() {
         this.lifetime = new ProfitTrackerSession();
         this.current = new ProfitTrackerSession();
+
+        this.tierSessions = new HashMap<>();
+        this.tierSessions.put("T1", new ProfitTrackerSession());
+        this.tierSessions.put("T2", new ProfitTrackerSession());
+        this.tierSessions.put("T3", new ProfitTrackerSession());
+        this.tierSessions.put("T4", new ProfitTrackerSession());
+        this.tierSessions.put("T5", new ProfitTrackerSession());
+
+        this.lifetimeTierSessions = new HashMap<>();
+        this.lifetimeTierSessions.put("T1", new ProfitTrackerSession());
+        this.lifetimeTierSessions.put("T2", new ProfitTrackerSession());
+        this.lifetimeTierSessions.put("T3", new ProfitTrackerSession());
+        this.lifetimeTierSessions.put("T4", new ProfitTrackerSession());
+        this.lifetimeTierSessions.put("T5", new ProfitTrackerSession());
+
         this.kismetPrice = 0;
         this.basicKeyPrice = 0;
         this.hotKeyPrice = 0;
@@ -43,6 +63,15 @@ public class ProfitTrackerData {
     public ProfitTrackerSession getLifetime() { return lifetime; }
 
     public ProfitTrackerSession getCurrent() { return current; }
+
+    public Map<String, ProfitTrackerSession> getTierSessions() {
+        return tierSessions;
+    }
+
+
+    public Map<String, ProfitTrackerSession> getLifetimeTierSessions() {
+        return lifetimeTierSessions;
+    }
 
     public void setKismetPrice(long kismetPrice) { this.kismetPrice = kismetPrice; }
     public void setBasicKeyPrice(long basicKeyPrice) { this.basicKeyPrice = basicKeyPrice; }
@@ -61,83 +90,181 @@ public class ProfitTrackerData {
     public long getEssencePrice() { return essencePrice; }
     public long getTeethPrice() { return teethPrice; }
 
-    public void addProfit(long amount) {
+
+    private void updateTierSession(String tier, java.util.function.Consumer<ProfitTrackerSession> updater) {
+        ProfitTrackerSession session = tierSessions.get(tier);
+        if (session != null) {
+            updater.accept(session);
+        }
+    }
+
+    private void updateLifetimeTierSession(String tier, java.util.function.Consumer<ProfitTrackerSession> updater) {
+        ProfitTrackerSession session = lifetimeTierSessions.get(tier);
+        if (session != null) {
+            updater.accept(session);
+        }
+    }
+
+    public void addProfit(long amount, String tier) {
         current.profit += amount;
         lifetime.profit += amount;
+        updateTierSession(tier, session -> session.profit += amount);
+        updateLifetimeTierSession(tier, session -> session.profit += amount);
+    }
+    public void addProfit(long amount) {
+        addProfit(amount, "T1");
+    }
+
+    public void addRun(String tier) {
+        current.runs++;
+        lifetime.runs++;
+        updateTierSession(tier, session -> session.runs++);
+        updateLifetimeTierSession(tier, session -> session.runs++);
     }
 
     public void addRun() {
-        current.runs++;
-        lifetime.runs++;
+        addRun("T1");
     }
 
-    public void addFailedRun() {
+    public void addFailedRun(String tier) {
         current.failedRuns++;
         lifetime.failedRuns++;
+        updateTierSession(tier, session -> session.failedRuns++);
+        updateLifetimeTierSession(tier, session -> session.failedRuns++);
+    }
+    public void addFailedRun() {
+        addFailedRun("T1");
     }
 
-    public void addFreeChest() {
+    public void addFreeChest(String tier) {
         current.freeChests++;
         lifetime.freeChests++;
+        updateTierSession(tier, session -> session.freeChests++);
+        updateLifetimeTierSession(tier, session -> session.freeChests++);
+    }
+    public void addFreeChest() {
+        addFreeChest("T1");
     }
 
-    public void addBasicChest() {
+    public void addBasicChest(String tier) {
         current.basicChests++;
         lifetime.basicChests++;
+        updateTierSession(tier, session -> session.basicChests++);
+        updateLifetimeTierSession(tier, session -> session.basicChests++);
+    }
+    public void addBasicChest() {
+        addBasicChest("T1");
     }
 
-    public void addHotChest() {
+    public void addHotChest(String tier) {
         current.hotChests++;
         lifetime.hotChests++;
+        updateTierSession(tier, session -> session.hotChests++);
+        updateLifetimeTierSession(tier, session -> session.hotChests++);
+    }
+    public void addHotChest() {
+        addHotChest("T1");
     }
 
-    public void addBurningChest() {
+    public void addBurningChest(String tier) {
         current.burningChests++;
         lifetime.burningChests++;
+        updateTierSession(tier, session -> session.burningChests++);
+        updateLifetimeTierSession(tier, session -> session.burningChests++);
+    }
+    public void addBurningChest() {
+        addBurningChest("T1");
     }
 
-    public void addFieryChest() {
+    public void addFieryChest(String tier) {
         current.fieryChests++;
         lifetime.fieryChests++;
+        updateTierSession(tier, session -> session.fieryChests++);
+        updateLifetimeTierSession(tier, session -> session.fieryChests++);
+    }
+    public void addFieryChest() {
+        addFieryChest("T1");
     }
 
-    public void addInfernalChest() {
+    public void addInfernalChest(String tier) {
         current.infernalChests++;
         lifetime.infernalChests++;
+        updateTierSession(tier, session -> session.infernalChests++);
+        updateLifetimeTierSession(tier, session -> session.infernalChests++);
+    }
+    public void addInfernalChest() {
+        addInfernalChest("T1");
     }
 
-    public void addReroll() {
+    public void addReroll(String tier) {
         current.rerolls++;
         lifetime.rerolls++;
+        updateTierSession(tier, session -> session.rerolls++);
+        updateLifetimeTierSession(tier, session -> session.rerolls++);
+    }
+    public void addReroll() {
+        addReroll("T1");
     }
 
-    public void addTime(long duration) {
+    public void addTime(long duration, String tier) {
         current.time += duration;
         lifetime.time += duration;
+        updateTierSession(tier, session -> session.time += duration);
+        updateLifetimeTierSession(tier, session -> session.time += duration);
+    }
+    public void addTime(long duration) {
+        addTime(duration, "T1");
     }
 
-    public void addEssence(long essence) {
+    public void addEssence(long essence, String tier) {
         current.essence += essence;
         lifetime.essence += essence;
+        updateTierSession(tier, session -> session.essence += essence);
+        updateLifetimeTierSession(tier, session -> session.essence += essence);
+    }
+    public void addEssence(long essence) {
+        addEssence(essence, "T1");
     }
 
-    public void addTeeth(int teeth) {
+    public void addTeeth(int teeth, String tier) {
         current.teeth += teeth;
         lifetime.teeth += teeth;
+        updateTierSession(tier, session -> session.teeth += teeth);
+        updateLifetimeTierSession(tier, session -> session.teeth += teeth);
+    }
+    public void addTeeth(int teeth) {
+        addTeeth(teeth, "T1");
     }
 
-    public void addGodRoll(String gr) {
+    public void addGodRoll(String gr, String tier) {
         current.godRolls.add(gr);
         lifetime.godRolls.add(gr);
+        updateTierSession(tier, session -> session.godRolls.add(gr));
+        updateLifetimeTierSession(tier, session -> session.godRolls.add(gr));
+    }
+    public void addGodRoll(String gr) {
+        addGodRoll(gr, "T1");
     }
 
     public void newSession() {
         current.reset();
+        for (ProfitTrackerSession session : tierSessions.values()) {
+            session.reset();
+        }
+        for (ProfitTrackerSession session : lifetimeTierSessions.values()) {
+            session.reset();
+        }
     }
 
     public void reset() {
         current.reset();
         lifetime.reset();
+        for (ProfitTrackerSession session : tierSessions.values()) {
+            session.reset();
+        }
+        for (ProfitTrackerSession session : lifetimeTierSessions.values()) {
+            session.reset();
+        }
     }
 
     public static class ProfitTrackerSession {

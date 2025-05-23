@@ -866,7 +866,7 @@ public class KICConfig extends Config {
     public static int ACAutoRerollMinValue = 2_000_000;
 
     @Switch(
-            name = "Profit Tracker",
+            name = "Profit Tracker (All Tiers)",
             category = KUUDRA,
             subcategory = KUUDRA_PROFIT_TRACKER,
             size = 2
@@ -880,6 +880,12 @@ public class KICConfig extends Config {
             size = 2
     )
     public static boolean kuudraProfitTrackerAddRunTimeDelay = true;
+    @Switch(
+            name = "Profit Tracker (Infernal Only)",
+            description = "Only shows the profit tracker in T5 Infernal Kuudra",
+            category = "Kuudra"
+    )
+    public static boolean kuudraProfitTrackerInfernal = false;
 
     @Number(
             name = "Delay To Add (s)",
