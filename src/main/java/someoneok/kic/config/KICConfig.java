@@ -189,8 +189,9 @@ public class KICConfig extends Config {
         addDependency("ACAlwaysAutoBuy", "ACAutoBuy");
         addDependency("ACAutoBuyMinProfit", "kuudraProfitCalculator");
         addDependency("ACAutoBuyMinProfit", "ACAutoBuy");
-        addDependency("ACAutoCloseGui", "kuudraProfitCalculator");
-        addDependency("ACAutoCloseGui", "ACAutoBuy");
+        addDependency("ACAutoCloseGui", "AutoBuyInstaBuyCheck", () -> (ACAutoBuy || ACInstaBuy));
+        addDependency("ACAutoCloseDelay", "AutoCloseCheck", () -> (ACAutoBuy || ACInstaBuy) && ACAutoCloseGui);
+        addDependency("ACInitialInstaBuyDelay", "ACInstaBuy");
         addDependency("ACAutoReroll", "kuudraProfitCalculator");
         addDependency("ACOnlyRerollInT5", "kuudraProfitCalculator");
         addDependency("ACOnlyRerollInT5", "ACAutoReroll");
@@ -359,33 +360,6 @@ public class KICConfig extends Config {
             subcategory = TESTER
     )
     public static boolean testerModeLogInChat = false;
-
-    @Dropdown(
-            name = "KIC Admin GUI Style",
-            options = {
-                    "Default", "Prism", "PackHQ"
-            },
-            subcategory = ADMIN
-    )
-    public static int KICAdminGuiStyle = 1;
-
-    @Dropdown(
-            name = "KIC Admin GUI Color",
-            subcategory = ADMIN,
-            options = {
-                    "Black", "Dark Blue", "Dark Green", "Dark Aqua", "Dark Red", "Dark Purple",
-                    "Gold", "Gray", "Dark Gray", "Blue", "Green", "Aqua", "Red", "Light Purple",
-                    "Yellow"
-            }
-    )
-    public static int KICAdminGuiColor = 12;
-
-    @KeyBind(
-            name = "Dev Key",
-            size = 2,
-            subcategory = ADMIN
-    )
-    public static OneKeyBind devKey = new OneKeyBind(UKeyboard.KEY_EQUALS);
 
     // KUUDRA
 
@@ -767,7 +741,8 @@ public class KICConfig extends Config {
     @Switch(
             name = "Auto Buy",
             category = KUUDRA,
-            subcategory = KUUDRA_AUTO_CHEST
+            subcategory = KUUDRA_AUTO_CHEST,
+            description = "Automatically open the chest after profit has been calculated, waits profit calculator."
     )
     public static boolean ACAutoBuy = false;
 
@@ -779,23 +754,32 @@ public class KICConfig extends Config {
     )
     public static boolean ACAlwaysAutoBuy = true;
 
+    @Number(
+            name = "Minimum Total Profit For Auto Buy",
+            description = "Set the minimum total profit required to auto buy the chest. (Set to 0 to turn off)",
+            min = 0, max = 100_000_000,
+            category = KUUDRA,
+            subcategory = KUUDRA_AUTO_CHEST,
+            size = 2
+    )
+    public static int ACAutoBuyMinProfit = 0;
+
     @Switch(
             name = "Insta Buy",
             category = KUUDRA,
             subcategory = KUUDRA_AUTO_CHEST,
-            description = "Instantly open the chest when the GUI opens, ignoring profit calculator.",
-            size = 2
+            description = "Instantly open the chest when the GUI opens, ignoring profit calculator."
     )
     public static boolean ACInstaBuy = false;
 
     @Number(
-            name = "Minimun Total Profit For Auto Buy",
-            description = "Set the minimum total profit required to auto buy the chest. (Set to 0 to turn off)",
-            min = 0, max = 100_000_000,
+            name = "Delay Before Insta Buy After Opening GUI",
+            min = 100, max = 1000,
+            step = 50,
             category = KUUDRA,
             subcategory = KUUDRA_AUTO_CHEST
     )
-    public static int ACAutoBuyMinProfit = 0;
+    public static int  ACInitialInstaBuyDelay = 300;
 
     @Switch(
             name = "Auto Close Chest After Buy",
@@ -809,20 +793,9 @@ public class KICConfig extends Config {
             min = 100, max = 1000,
             step = 50,
             category = KUUDRA,
-            subcategory = KUUDRA_AUTO_CHEST,
-            size = 2
+            subcategory = KUUDRA_AUTO_CHEST
     )
     public static int ACAutoCloseDelay = 250;
-
-    @Number(
-            name = "Delay Before Insta Buy After Opening GUI",
-            min = 100, max = 1000,
-            step = 50,
-            category = KUUDRA,
-            subcategory = KUUDRA_AUTO_CHEST,
-            size = 2
-    )
-    public static int  ACInitialInstaBuyDelay = 300;
 
     @Info(
             text = "Auto Reroll Options",

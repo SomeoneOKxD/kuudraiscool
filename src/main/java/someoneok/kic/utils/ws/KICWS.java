@@ -13,6 +13,7 @@ import someoneok.kic.utils.dev.KICLogger;
 
 import java.util.concurrent.TimeUnit;
 
+import static someoneok.kic.KIC.KICPrefix;
 import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
 import static someoneok.kic.utils.LocationUtils.onHypixel;
 import static someoneok.kic.utils.PlayerUtils.getPlayerName;
@@ -133,7 +134,7 @@ public class KICWS {
                 KICWS.webSocket = null;
 
                 if (code == 1008) {
-                    ApiUtils.setVerified(false);
+                    ApiUtils.reset();
                     sendMessageToPlayer(KIC.KICPrefix + " §cAPI key sharing detected. Your key has been revoked.");
                 } else if (shouldReconnect(code)) {
                     scheduleReconnect();
@@ -142,11 +143,16 @@ public class KICWS {
         });
     }
 
-    public static void sendMessage(String message) {
+    private static void sendMessage(String message) {
         if (isWebSocketOpen()) webSocket.send(message);
     }
 
     public static void sendChatMessage(String message, boolean premium) {
+        if (!ApiUtils.isVerified()) {
+            sendMessageToPlayer(KICPrefix + " §cMod disabled: not verified.");
+            return;
+        }
+
         if (isNullOrEmpty(message)) return;
 
         boolean canSend = premium

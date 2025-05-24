@@ -4,6 +4,7 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import someoneok.kic.config.KICConfig;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.LocationUtils;
 import someoneok.kic.utils.TitleUtils;
 import someoneok.kic.utils.overlay.OverlayManager;
@@ -39,7 +40,10 @@ public class Notifications {
 
     @SubscribeEvent(receiveCanceled = true)
     public void onChat(ClientChatReceivedEvent event) {
-        if (!KICConfig.kuudraNotifications || !LocationUtils.inKuudra) return;
+        if (!KICConfig.kuudraNotifications
+                || !LocationUtils.inKuudra
+                || !ApiUtils.isVerified()) return;
+
         String msg = removeFormatting(event.message.getUnformattedText());
 
         for (NotificationRule rule : rules) {

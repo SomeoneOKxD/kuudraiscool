@@ -5,6 +5,8 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
+import someoneok.kic.models.misc.ChatMode;
+import someoneok.kic.modules.misc.ChatHandler;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.ws.KICWS;
 
@@ -55,6 +57,12 @@ public class ChatPlusCommand extends CommandBase {
     private void sendToggleMessage(ICommandSender sender) {
         String state = KICConfig.kicPlusChat ? "§a§lON" : "§c§lOFF";
         sender.addChatMessage(new ChatComponentText(KIC.KICPlusPrefix + " §aToggled KIC+ Chat " + state));
+        if (!KICConfig.kicPlusChat && ChatHandler.currentChatMode == ChatMode.KICPLUSCHAT) {
+            ChatHandler.currentChatMode = ChatMode.MC;
+            sender.addChatMessage(new ChatComponentText(
+                    KIC.KICPrefix + " §aSwitched to §eMinecraft Chat§a mode."
+            ));
+        }
     }
 
     @Override

@@ -7,6 +7,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Mouse;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.modules.kuudra.KuudraPfGuiInfo;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.LocationUtils;
 
 import java.util.ArrayList;
@@ -35,7 +36,9 @@ public class ButtonManager {
 
     @SubscribeEvent
     public void guiDraw(GuiScreenEvent.BackgroundDrawnEvent event) {
-        if (!(event.gui instanceof GuiChest) || !LocationUtils.onSkyblock) return;
+        if (!(event.gui instanceof GuiChest)
+                || !LocationUtils.onSkyblock
+                || !ApiUtils.isVerified()) return;
 
         activeBoxes.clear();
         if (KICConfig.crimsonContainerHelper) activeBoxes.add("containerValue");
@@ -62,7 +65,9 @@ public class ButtonManager {
 
     @SubscribeEvent
     public void onGuiClick(GuiScreenEvent.MouseInputEvent.Pre event) {
-        if (!Mouse.getEventButtonState() || !LocationUtils.onSkyblock) return;
+        if (!Mouse.getEventButtonState()
+                || !LocationUtils.onSkyblock
+                || !ApiUtils.isVerified()) return;
 
         int mouseX = Mouse.getEventX() * event.gui.width / mc.displayWidth;
         int mouseY = event.gui.height - Mouse.getEventY() * event.gui.height / mc.displayHeight - 1;

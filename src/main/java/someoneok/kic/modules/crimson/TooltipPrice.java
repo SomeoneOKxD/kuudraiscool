@@ -7,6 +7,7 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.crimson.AttributeItem;
 import someoneok.kic.models.crimson.AttributeItemValue;
 import someoneok.kic.models.crimson.Attributes;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.CacheManager;
 import someoneok.kic.utils.LocationUtils;
 
@@ -22,7 +23,7 @@ public class TooltipPrice {
 
     @SubscribeEvent
     public void onRenderToolTip(ItemTooltipEvent event) {
-        if (!KICConfig.crimsonTooltipPrices || !LocationUtils.onSkyblock) return;
+        if (!ApiUtils.isVerified() || !KICConfig.crimsonTooltipPrices || !LocationUtils.onSkyblock) return;
         ItemStack stack = event.itemStack;
         List<String> tooltip = event.toolTip;
 

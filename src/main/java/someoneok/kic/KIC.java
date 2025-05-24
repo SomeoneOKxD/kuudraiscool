@@ -14,7 +14,6 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.Island;
 import someoneok.kic.models.UserData;
 import someoneok.kic.models.overlay.OverlayExamples;
-import someoneok.kic.modules.admin.Dev;
 import someoneok.kic.modules.crimson.AuctionHelper;
 import someoneok.kic.modules.crimson.CrimsonContainerHelper;
 import someoneok.kic.modules.crimson.TooltipPrice;
@@ -84,8 +83,7 @@ public class KIC {
                 new CacheManager(),
                 new TooltipPrice(),
                 new AuctionHelper(),
-                new ArmorHud(),
-                new Dev()
+                new ArmorHud()
         );
     }
 

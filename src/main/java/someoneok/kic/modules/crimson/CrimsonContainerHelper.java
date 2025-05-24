@@ -20,10 +20,7 @@ import someoneok.kic.models.crimson.AttributeItem;
 import someoneok.kic.models.crimson.AttributeItemValue;
 import someoneok.kic.models.crimson.Attributes;
 import someoneok.kic.modules.misc.ButtonManager;
-import someoneok.kic.utils.CacheManager;
-import someoneok.kic.utils.ItemUtils;
-import someoneok.kic.utils.ReflectionUtil;
-import someoneok.kic.utils.RenderUtils;
+import someoneok.kic.utils.*;
 import someoneok.kic.utils.dev.KICLogger;
 import someoneok.kic.utils.overlay.InteractiveOverlay;
 import someoneok.kic.utils.overlay.OverlayManager;
@@ -70,6 +67,7 @@ public class CrimsonContainerHelper {
     private boolean includeInvItems = false;
     private int attributeTier = 0; // 0 = ALL, 1 = T4, 2 = T5, 3 = T5+
     private int scrollIndex = 0;
+    private boolean helperOverlayModified = false;
 
     static {
         generateColors();
@@ -124,7 +122,8 @@ public class CrimsonContainerHelper {
     }
 
     private boolean shouldProcess(TickEvent.ClientTickEvent event) {
-        return KICConfig.crimsonContainerHelper
+        return ApiUtils.isVerified()
+                && KICConfig.crimsonContainerHelper
                 && ButtonManager.isChecked("containerValue")
                 && onSkyblock
                 && mc.theWorld != null
@@ -207,12 +206,16 @@ public class CrimsonContainerHelper {
         slotHighlightColors.clear();
         if (!saveSelectedItems) selectedAttributes.clear();
         resetState();
-        OverlayManager.getOverlay("ContainerHelper").updateText("");
+        if (helperOverlayModified) {
+            OverlayManager.getOverlay("ContainerHelper").updateText("");
+            helperOverlayModified = false;
+        }
     }
 
     @SubscribeEvent
     public void onSlotClick(GuiContainerEvent.SlotClickEvent event) {
-        if (!KICConfig.crimsonContainerBlockClicks ||
+        if (!ApiUtils.isVerified() ||
+                !KICConfig.crimsonContainerBlockClicks ||
                 shouldNotRender() ||
                 event.getSlot() == null ||
                 slotHighlightColors.isEmpty()) {
@@ -324,6 +327,7 @@ public class CrimsonContainerHelper {
         ));
 
         overlay.setSegments(segments);
+        helperOverlayModified = true;
     }
 
     private List<Map.Entry<AttributeItem, Slot>> getSortedEntries() {
@@ -481,6 +485,7 @@ public class CrimsonContainerHelper {
         }
 
         overlay.setSegments(segments);
+        helperOverlayModified = true;
     }
 
     private void changeAttributeTier() {
@@ -592,7 +597,12 @@ public class CrimsonContainerHelper {
     }
 
     private boolean shouldNotRender() {
-        return !KICConfig.crimsonContainerHelper || !ButtonManager.isChecked("containerValue") || !onSkyblock || !shouldRender || NEUCompatibility.isStorageMenuActive();
+        return !ApiUtils.isVerified()
+                || !KICConfig.crimsonContainerHelper
+                || !ButtonManager.isChecked("containerValue")
+                || !onSkyblock
+                || !shouldRender
+                || NEUCompatibility.isStorageMenuActive();
     }
 
     @SubscribeEvent

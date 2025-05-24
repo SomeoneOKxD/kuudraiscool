@@ -12,6 +12,7 @@ import someoneok.kic.commands.InternalCommand;
 import someoneok.kic.models.APIException;
 import someoneok.kic.models.kicauction.*;
 import someoneok.kic.models.request.AuctionDataRequest;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.dev.KICLogger;
 
@@ -37,6 +38,11 @@ public class AttributePrice {
     private static final GuiNewChat chatGui = KIC.mc.ingameGUI.getChatGUI();
 
     public static void show(AuctionDataRequest auctionDataRequest) {
+        if (!ApiUtils.isVerified()) {
+            sendMessageToPlayer(KICPrefix + " §cMod disabled: not verified.");
+            return;
+        }
+
         auctionData = null;
         currentCategory = 0;
         timestamp = 0;

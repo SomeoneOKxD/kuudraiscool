@@ -5,6 +5,7 @@ import net.minecraft.client.gui.Gui;
 import org.lwjgl.opengl.GL11;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.Island;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.LocationUtils;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public class InteractiveOverlay extends MovableOverlay {
 
     @Override
     public void render() {
-        if (!shouldRender()) return;
+        if (!ApiUtils.isVerified() || !shouldRender()) return;
 
         if (editing) {
             FontRenderer fontRenderer = mc.fontRendererObj;

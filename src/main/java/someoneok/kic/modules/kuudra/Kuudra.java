@@ -26,6 +26,7 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.config.pages.KuudraSplitsOptions;
 import someoneok.kic.events.PacketEvent;
 import someoneok.kic.models.kuudra.*;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.LocationUtils;
 import someoneok.kic.utils.PlayerUtils;
 import someoneok.kic.utils.RenderUtils;
@@ -137,7 +138,7 @@ public class Kuudra {
 
     @SubscribeEvent(receiveCanceled = true)
     public void onChatMessage(ClientChatReceivedEvent event) {
-        if (!LocationUtils.inKuudra) return;
+        if (!LocationUtils.inKuudra || !ApiUtils.isVerified()) return;
 
         String raw = removeFormatting(event.message.getUnformattedText());
         long now = System.currentTimeMillis();
@@ -322,7 +323,13 @@ public class Kuudra {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || mc.thePlayer == null || mc.theWorld == null || !LocationUtils.inKuudra || currentPhase < 1 || currentPhase == 8) return;
+        if (event.phase != TickEvent.Phase.END
+                || mc.thePlayer == null
+                || mc.theWorld == null
+                || !LocationUtils.inKuudra
+                || currentPhase < 1
+                || currentPhase == 8
+                || !ApiUtils.isVerified()) return;
 
         tickCount++;
         eyePos = getPlayerEyePos();
@@ -477,7 +484,11 @@ public class Kuudra {
 
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event) {
-        if (mc.thePlayer == null || mc.theWorld == null || !LocationUtils.inKuudra || currentPhase == 8) return;
+        if (mc.thePlayer == null
+                || mc.theWorld == null
+                || !LocationUtils.inKuudra
+                || currentPhase == 8
+                || !ApiUtils.isVerified()) return;
 
         if (boss != null) {
             if (KICConfig.showKuudraBossBar) {
@@ -584,8 +595,13 @@ public class Kuudra {
 
     @SubscribeEvent
     public void onRenderOverlay(RenderGameOverlayEvent event) {
-        if (!KICConfig.showKuudraBossBar || !LocationUtils.inKuudra ||
-                event.type != RenderGameOverlayEvent.ElementType.TEXT || currentPhase <= 0 || currentPhase == 8 || isNullOrEmpty(bossHPMessage)) return;
+        if (!KICConfig.showKuudraBossBar
+                || !LocationUtils.inKuudra
+                || event.type != RenderGameOverlayEvent.ElementType.TEXT
+                || currentPhase <= 0
+                || currentPhase == 8
+                || isNullOrEmpty(bossHPMessage)
+                || !ApiUtils.isVerified()) return;
 
         ScaledResolution res = new ScaledResolution(mc);
         int screenWidth = res.getScaledWidth();
@@ -709,11 +725,15 @@ public class Kuudra {
 
     @SubscribeEvent
     public void onPacketReceived(PacketEvent.Received event) {
-        if (mc.thePlayer == null || mc.theWorld == null || !LocationUtils.inKuudra || currentPhase < 1 || currentPhase == 8) return;
+        if (mc.thePlayer == null
+                || mc.theWorld == null
+                || !LocationUtils.inKuudra
+                || currentPhase < 1
+                || currentPhase == 8
+                || !ApiUtils.isVerified()
+                || !(event.getPacket() instanceof S32PacketConfirmTransaction)) return;
 
-        if (event.getPacket() instanceof S32PacketConfirmTransaction) {
-            packetCount++;
-            logicalTimeMs += 50;
-        }
+        packetCount++;
+        logicalTimeMs += 50;
     }
 }

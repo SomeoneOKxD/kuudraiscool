@@ -9,12 +9,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import someoneok.kic.config.KICConfig;
+import someoneok.kic.utils.ApiUtils;
 
 @Mixin(RenderPlayer.class)
 public abstract class MixinRenderPlayer {
     @Inject(method = "preRenderCallback(Lnet/minecraft/client/entity/AbstractClientPlayer;F)V", at = @At("HEAD"))
     public void onPreRenderCallback(AbstractClientPlayer entity, float partialTickTime, CallbackInfo ci) {
-        if (!KICConfig.playerSizeToggle || KICConfig.playerSizingMethod != 1) return;
+        if (!KICConfig.playerSizeToggle || KICConfig.playerSizingMethod != 1 || !ApiUtils.isVerified()) return;
 
         Team team = entity.getTeam();
         if (team != null) {

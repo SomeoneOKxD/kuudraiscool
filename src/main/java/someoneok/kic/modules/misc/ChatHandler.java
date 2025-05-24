@@ -16,11 +16,11 @@ import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
 
 @ChannelHandler.Sharable
 public class ChatHandler extends ChannelOutboundHandlerAdapter {
-    public static ChatMode currentChatMode = ChatMode.HYPIXEL;
+    public static ChatMode currentChatMode = ChatMode.MC;
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
-        if (msg instanceof C01PacketChatMessage) {
+        if (msg instanceof C01PacketChatMessage && ApiUtils.isVerified()) {
             String message = ((C01PacketChatMessage) msg).getMessage();
 
             switch (currentChatMode) {
@@ -33,12 +33,12 @@ public class ChatHandler extends ChannelOutboundHandlerAdapter {
                         KICWS.sendChatMessage(message, true);
                         return;
                     } else {
-                        currentChatMode = ChatMode.HYPIXEL;
-                        sendMessageToPlayer(KIC.KICPrefix + " §cKIC+ chat requires premium. Switching to Hypixel chat.");
+                        currentChatMode = ChatMode.MC;
+                        sendMessageToPlayer(KIC.KICPrefix + " §cKIC+ chat requires premium. Switching to Minecraft chat.");
                         break;
                     }
 
-                case HYPIXEL:
+                case MC:
                 default:
                     if (KICConfig.emojis) {
                         String replaced = replaceEmojis(message);

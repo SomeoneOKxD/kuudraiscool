@@ -6,6 +6,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.config.pages.KuudraAutoKickOptions;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.dev.KICLogger;
 
 import java.util.ArrayList;
@@ -120,7 +121,10 @@ public class KuudraAutoKick {
 
     @SubscribeEvent(receiveCanceled = true)
     public void onChat(ClientChatReceivedEvent event) {
-        if (!KICConfig.kuudraAutoKick || !KuudraAutoKickOptions.autoKickTrimonu || !amILeader()) return;
+        if (!KICConfig.kuudraAutoKick
+                || !KuudraAutoKickOptions.autoKickTrimonu
+                || !amILeader()
+                || !ApiUtils.isVerified()) return;
         String message = event.message.getUnformattedText();
         Matcher matcher = trimonuPattern.matcher(message);
 
@@ -132,6 +136,14 @@ public class KuudraAutoKick {
         }
     }
 
+    private static Set<String> parsePlayerList(String input) {
+        return Arrays.stream(input.split(";"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+    }
+
     private static class KickCriteria {
         boolean condition;
         String reason;
@@ -140,13 +152,5 @@ public class KuudraAutoKick {
             this.condition = condition;
             this.reason = reason;
         }
-    }
-
-    private static Set<String> parsePlayerList(String input) {
-        return Arrays.stream(input.split(";"))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
     }
 }

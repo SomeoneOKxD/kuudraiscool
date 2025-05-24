@@ -19,10 +19,7 @@ import someoneok.kic.models.kuudra.PearlRenderData;
 import someoneok.kic.models.kuudra.PearlSolution;
 import someoneok.kic.models.kuudra.SupplyPickUpSpot;
 import someoneok.kic.models.misc.TitleType;
-import someoneok.kic.utils.LocationUtils;
-import someoneok.kic.utils.PlayerUtils;
-import someoneok.kic.utils.RenderUtils;
-import someoneok.kic.utils.RotationUtils;
+import someoneok.kic.utils.*;
 import someoneok.kic.utils.dev.KICLogger;
 
 import java.awt.*;
@@ -76,7 +73,11 @@ public class Waypoints {
 
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event) {
-        if (mc.thePlayer == null || mc.theWorld == null || !LocationUtils.inKuudra || Kuudra.currentPhase != 1) return;
+        if (mc.thePlayer == null
+                || mc.theWorld == null
+                || !LocationUtils.inKuudra
+                || Kuudra.currentPhase != 1
+                || !ApiUtils.isVerified()) return;
 
         if (KICConfig.showNothingSupplyWaypointsBeacon) {
             for (Vec3 targetSupply : currentSupplies) {
@@ -176,7 +177,12 @@ public class Waypoints {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || mc.thePlayer == null || mc.theWorld == null || !LocationUtils.inKuudra || Kuudra.currentPhase != 1) return;
+        if (event.phase != TickEvent.Phase.END
+                || mc.thePlayer == null
+                || mc.theWorld == null
+                || !LocationUtils.inKuudra
+                || Kuudra.currentPhase != 1
+                || !ApiUtils.isVerified()) return;
 
         currentSupplies.clear();
         currentSupplies.addAll(Kuudra.getAllUncompletedSpots());
@@ -239,7 +245,11 @@ public class Waypoints {
 
     @SubscribeEvent
     public void onTitle(TitleEvent.Incoming event) {
-        if (!KICConfig.pearlCalculator || !LocationUtils.inKuudra || Kuudra.currentPhase != 1 || event.getType() != TitleType.TITLE) return;
+        if (!KICConfig.pearlCalculator
+                || !LocationUtils.inKuudra
+                || Kuudra.currentPhase != 1
+                || event.getType() != TitleType.TITLE
+                || !ApiUtils.isVerified()) return;
 
         String raw = removeFormatting(event.getComponent().getUnformattedText());
         if (!raw.contains("[||||||||||||||||||||]")) return;
@@ -260,7 +270,11 @@ public class Waypoints {
 
     @SubscribeEvent(receiveCanceled = true)
     public void onChatMessage(ClientChatReceivedEvent event) {
-        if (!KICConfig.pearlCalculator || !LocationUtils.inKuudra || Kuudra.currentPhase != 1) return;
+        if (!KICConfig.pearlCalculator
+                || !LocationUtils.inKuudra
+                || Kuudra.currentPhase != 1
+                || !ApiUtils.isVerified()) return;
+
         String message = removeFormatting(event.message.getUnformattedText());
         if ("You moved and the Chest slipped out of your hands!".equals(message)) {
             resetTracking();
@@ -278,6 +292,7 @@ public class Waypoints {
         return (heldItem != null && heldItem.getDisplayName().contains("Elle's Supplies"));
     }
 
+    // Auto Pearl very shit, needs to be modified before releasing
     private void triggerAutoPearl() {
         if (!KICConfig.autoPearls || mySupplyData == null || !isAdmin()) return;
         long start = Kuudra.logicalTimeMs;

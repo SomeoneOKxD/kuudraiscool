@@ -4,13 +4,15 @@ import cc.polyfrost.oneconfig.utils.Multithreading;
 import cc.polyfrost.oneconfig.utils.gui.GuiUtils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.event.ClickEvent;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
-import someoneok.kic.modules.admin.websocket.KICAdminUI;
+import someoneok.kic.models.misc.ChatMode;
 import someoneok.kic.modules.kuudra.KuudraProfitTracker;
 import someoneok.kic.modules.kuudra.KuudraUserInfo;
+import someoneok.kic.modules.misc.ChatHandler;
 import someoneok.kic.modules.misc.EasyUpdater;
 import someoneok.kic.modules.premium.Misc;
 import someoneok.kic.utils.ApiUtils;
@@ -21,20 +23,20 @@ import java.util.*;
 
 import static someoneok.kic.KIC.KICPrefix;
 import static someoneok.kic.utils.ApiUtils.hasPremium;
-import static someoneok.kic.utils.GeneralUtils.createHoverAndClickComponentSuggest;
-import static someoneok.kic.utils.GeneralUtils.sendCommand;
+import static someoneok.kic.utils.GeneralUtils.*;
 import static someoneok.kic.utils.StringUtils.formatElapsedTimeMs;
 import static someoneok.kic.utils.StringUtils.isValidUUIDv4RegexBased;
 
 public class KICCommand extends CommandBase {
-    private static final List<String> commands = Arrays.asList(
+    private static final List<String> commands = new ArrayList<>(Arrays.asList(
             "help", "settings", "apikey", "key",
             "verifykey", "verifyapikey",
             "resetprofittracker", "rpt", "resetpt",
             "kuudra", "t1", "t2", "t3", "t4", "t5",
             "skpt", "sharekpt", "sharetracker", "edithuds",
-            "kuudrapb", "resetkuudrapb", "chat"
-    );
+            "pb", "resetpb", "resetkpb", "chat", "premium"
+    ));
+    private static final List<String> chatModes = Arrays.asList("kc", "kcp", "mc");
 
     @Override
     public String getCommandName() {
@@ -110,10 +112,6 @@ public class KICCommand extends CommandBase {
                 KuudraProfitTracker.shareTracker();
                 break;
 
-            case "admin":
-                KICAdminUI.open();
-                break;
-
             case "t1":
                 sendCommand("/joininstance KUUDRA_NORMAL");
                 break;
@@ -168,40 +166,69 @@ public class KICCommand extends CommandBase {
                 GuiUtils.displayScreen(new EditHudScreen());
                 break;
 
-            case "kuudrapb":
+            case "pb":
                 sendKuudraPb(sender);
                 break;
 
-            case "resetkuudrapb":
+            case "resetpb":
+            case "resetkpb":
                 KIC.userData.setKuudraPersonalBest(0L);
                 OverlayDataHandler.saveOverlaysData();
                 break;
 
             case "chat":
-                if (args.length == 2) {
-                    String chat = args[1].trim();
+                if (args.length != 2) {
+                    sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §cUsage: /kic chat kc/kcp/mc"));
+                    break;
+                }
 
-                    if (!chat.equalsIgnoreCase("kc") && !chat.equalsIgnoreCase("kcp") && !chat.equalsIgnoreCase("hypixel")) {
-                        sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §cUsage: /kic chat kc/kcp/hypixel"));
-                        return;
-                    }
+                String chatArg = args[1].trim().toLowerCase();
 
-                    if (chat.equalsIgnoreCase("kc")) {
-                        // Switch to Plus chat
-                    } else if (chat.equalsIgnoreCase("kcp")) {
+                switch (chatArg) {
+                    case "kc":
+                        ChatHandler.currentChatMode = ChatMode.KICCHAT;
+                        sender.addChatMessage(new ChatComponentText(
+                                KIC.KICPrefix + " §aSwitched to §bKIC Chat§a mode."
+                        ));
+                        break;
+
+                    case "kcp":
                         if (ApiUtils.hasPremium()) {
-                            // Switch to Plus chat
+                            ChatHandler.currentChatMode = ChatMode.KICPLUSCHAT;
+                            sender.addChatMessage(new ChatComponentText(
+                                    KIC.KICPlusPrefix + " §aSwitched to §dKIC+ Chat§a mode."
+                            ));
                         } else {
                             sender.addChatMessage(new ChatComponentText(
                                     KIC.KICPrefix + " §cThis is a premium-only feature. §7Use §b/kic premium §7to learn more."
                             ));
                         }
-                    } else {
-                        // Switch to hypixel chat
-                    }
-                } else {
-                    sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §cUsage: /kic chat kc/kcp/hypixel"));
+                        break;
+
+                    case "mc":
+                        ChatHandler.currentChatMode = ChatMode.MC;
+                        sender.addChatMessage(new ChatComponentText(
+                                KIC.KICPrefix + " §aSwitched to §eMinecraft Chat§a mode."
+                        ));
+                        break;
+
+                    default:
+                        sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §cUsage: /kic chat kc/kcp/mc"));
+                        break;
                 }
+                break;
+
+            case "premium":
+                ChatComponentText base = new ChatComponentText(KIC.KICPrefix + " §aPremium/KIC+ features are exclusive to Patreon supporters.\n");
+                ChatComponentText link = new ChatComponentText("§9https://www.patreon.com/kuudraiscool");
+                link.getChatStyle()
+                        .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.patreon.com/kuudraiscool"))
+                        .setUnderlined(true);
+
+                base.appendText("§7Join via §b/premium §7in the Discord or visit: ");
+                base.appendSibling(link);
+
+                sender.addChatMessage(base);
                 break;
 
             case "help":
@@ -237,6 +264,13 @@ public class KICCommand extends CommandBase {
 
         sender.addChatMessage(createHoverAndClickComponentSuggest(
                 true,
+                "§8* §a/kic verifykey",
+                "§7Verifies the status of your current api key\n\n§7Alias: /kic verifyapikey",
+                "/kic verifykey"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponentSuggest(
+                true,
                 "§8* §a/kic edithuds",
                 "§7Edit all enabled huds.",
                 "/kic edithuds"
@@ -244,9 +278,44 @@ public class KICCommand extends CommandBase {
 
         sender.addChatMessage(createHoverAndClickComponentSuggest(
                 true,
+                "§8* §a/kic chat kc/kcp/mc",
+                "§7Switches the chat mode to KIC Chat/KIC+ Chat/Minecraft (Same as /chat party)",
+                "/kic chat "
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponentSuggest(
+                true,
                 "§8* §a/kic kuudra [player]",
                 "§7Check Kuudra info for a player\n\n§7Example: /kuudra xaned\n§7Alias: /kuudra",
                 "/kuudra "
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponentSuggest(
+                true,
+                "§8* §a/kic resetprofittracker",
+                "§7Reset Kuudra profit tracker data\n\n§7Aliases: /kic rpt, /kic resetpt",
+                "/kic resetprofittracker"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponentSuggest(
+                true,
+                "§8* §a/kic sharetracker",
+                "§7Share your profit tracker in the KIC discord\n\n§7Aliases: /kic skpt, /kic sharekpt",
+                "/kic sharetracker"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponentSuggest(
+                true,
+                "§8* §a/kic pb",
+                "§7Show your current kuudra T5 personal best",
+                "/kic pb"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponentSuggest(
+                true,
+                "§8* §a/kic resetpb",
+                "§7Resets your kuudra T5 personal best\n\n§7Alias: /kic resetkpb",
+                "/kic resetpb"
         ));
 
         sender.addChatMessage(createHoverAndClickComponentSuggest(
@@ -272,27 +341,6 @@ public class KICCommand extends CommandBase {
 
         sender.addChatMessage(createHoverAndClickComponentSuggest(
                 true,
-                "§8* §a/kic verifykey",
-                "§7Verifies the status of your current api key\n\n§7Alias: /kic verifyapikey",
-                "/kic verifykey"
-        ));
-
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
-                true,
-                "§8* §a/kic resetprofittracker",
-                "§7Reset Kuudra profit tracker data\n\n§7Aliases: /kic rpt, /kic resetpt",
-                "/kic resetprofittracker"
-        ));
-
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
-                true,
-                "§8* §a/kic sharetracker",
-                "§7Share your profit tracker in the KIC discord\n\n§7Aliases: /kic skpt, /kic sharekpt",
-                "/kic sharetracker"
-        ));
-
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
-                true,
                 "§8* §a/lf <player> <item>",
                 "§7Searches a player for a specific item\n\n§7Example 1: /lf " + sender.getName() + " Hyperion\n§7Example 2: /lf " + sender.getName() + " lore: Ability: Wither Impact\n§7Aliases: /lookingfor, /lookingforitem, /lfi",
                 "/lf "
@@ -301,32 +349,12 @@ public class KICCommand extends CommandBase {
         sender.addChatMessage(createHoverAndClickComponentSuggest(
                 true,
                 "§8* §a/kc <message>",
-                "§7Sends a message in the KIC Chat/IRC/bridge\n\n§7Aliases: /kchat, /kicchat",
+                "§7Sends a message in the KIC Chat/IRC/bridge\n\n" +
+                        "§7Aliases: /kchat, /kicchat\n\n" +
+                        "§6Subcommands:\n" +
+                        "§e  - /kc toggle §7→ Toggles KIC Chat ON/OFF",
                 "/kc "
         ));
-
-        if (hasPremium()) {
-            sender.addChatMessage(createHoverAndClickComponentSuggest(
-                    true,
-                    "§8* §a/kic checkparty §7(KIC+)",
-                    "§7Checks all members in your party for KIC users",
-                    "/kic checkparty"
-            ));
-
-            sender.addChatMessage(createHoverAndClickComponentSuggest(
-                    true,
-                    "§8* §a/kic lastparty <player> §7(KIC+)",
-                    "§7Tells you the last dungeon party the player was in",
-                    "/kic lastparty "
-            ));
-
-            sender.addChatMessage(createHoverAndClickComponentSuggest(
-                    true,
-                    "§8* §a/kic status <player> §7(KIC+)",
-                    "§7Tells you if the player is currently online or not",
-                    "/kic status "
-            ));
-        }
 
         for (int i = 1; i <= 5; i++) {
             String tier = "/t" + i;
@@ -339,15 +367,55 @@ public class KICCommand extends CommandBase {
             ));
         }
 
-        sender.addChatMessage(new ChatComponentText("\n§2[Hover] §7shows info, §2[Click] §7suggests command"));
+        String lastMsg = "\n§2[Hover] §7shows info, §2[Click] §7suggests command";
+        if (hasPremium()) {
+            lastMsg += ", §6* §7KIC+ command";
+            sender.addChatMessage(createHoverAndClickComponentSuggest(
+                    true,
+                    "§6* §a/kcp <message>",
+                    "§7Sends a message in the KIC+ Chat/IRC/bridge\n\n" +
+                            "§7Aliases: /kchatplus, /kicchatplus\n\n" +
+                            "§6Subcommands:\n" +
+                            "§e  - /kcp toggle §7→ Toggles KIC+ Chat ON/OFF",
+                    "/kcp "
+            ));
+
+            sender.addChatMessage(createHoverAndClickComponentSuggest(
+                    true,
+                    "§6* §a/kic checkparty",
+                    "§7Checks all members in your party for KIC users",
+                    "/kic checkparty"
+            ));
+
+            sender.addChatMessage(createHoverAndClickComponentSuggest(
+                    true,
+                    "§6* §a/kic lastparty <player>",
+                    "§7Tells you the last dungeon party the player was in",
+                    "/kic lastparty "
+            ));
+
+            sender.addChatMessage(createHoverAndClickComponentSuggest(
+                    true,
+                    "§6* §a/kic status <player>",
+                    "§7Tells you if the player is currently online or not",
+                    "/kic status "
+            ));
+        }
+
+        sender.addChatMessage(new ChatComponentText(lastMsg));
     }
 
     private void sendKuudraPb(ICommandSender sender) {
+        if (!ApiUtils.isVerified()) {
+            sendMessageToPlayer(KICPrefix + " §cMod disabled: not verified.");
+            return;
+        }
+
         Long pb = KIC.userData.getKuudraPersonalBest();
 
         String msg = pb == null || pb == 0
-                ? KICPrefix + " §cNo Kuudra Personal Best yet!"
-                : String.format("%s §aKuudra Personal Best: §f%s", KICPrefix, formatElapsedTimeMs(pb));
+                ? KICPrefix + " §cNo Kuudra T5 Personal Best yet!"
+                : String.format("%s §aKuudra T5 Personal Best: §f%s", KICPrefix, formatElapsedTimeMs(pb));
 
         sender.addChatMessage(new ChatComponentText(msg));
     }
@@ -362,6 +430,11 @@ public class KICCommand extends CommandBase {
         if (args.length == 1) {
             return getListOfStringsMatchingLastWord(args, commands);
         }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("chat")) {
+            return getListOfStringsMatchingLastWord(args, chatModes);
+        }
+
         return Collections.emptyList();
     }
 

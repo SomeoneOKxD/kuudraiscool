@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.APIException;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.PartyUtils;
 import someoneok.kic.utils.dev.KICLogger;
@@ -32,6 +33,11 @@ public class KuudraUserInfo {
     private static final Pattern partyJoinPattern = Pattern.compile("^Party Finder > (.+) joined the group! (.+)$");
 
     public static void showKuudraInfo(String player, boolean manual) {
+        if (!ApiUtils.isVerified()) {
+            sendMessageToPlayer(KICPrefix + " §cMod disabled: not verified.");
+            return;
+        }
+
         if (isNullOrEmpty(player) && KIC.mc.thePlayer != null) {
             player = getPlayerName();
         }
@@ -66,6 +72,7 @@ public class KuudraUserInfo {
     }
 
     public static ChatComponentText makeMessage(JsonObject infoObject, boolean manual) {
+        if (!ApiUtils.isVerified()) return null;
         try {
             JsonObject playerInfo = infoObject.get("playerInfo").getAsJsonObject();
             String kic = infoObject.has("kic") && !infoObject.get("kic").isJsonNull() ? infoObject.get("kic").getAsString() : "";
@@ -553,7 +560,7 @@ public class KuudraUserInfo {
 
     @SubscribeEvent(receiveCanceled = true)
     public void onChat(ClientChatReceivedEvent event) {
-        if (!KICConfig.partyFinder) return;
+        if (!KICConfig.partyFinder || !ApiUtils.isVerified()) return;
         String message = event.message.getUnformattedText();
         Matcher matcher = partyJoinPattern.matcher(message);
 

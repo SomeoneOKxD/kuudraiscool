@@ -11,7 +11,6 @@ import someoneok.kic.utils.dev.KICLogger;
 import someoneok.kic.utils.ws.KICWS;
 
 import java.util.EnumSet;
-import java.util.Set;
 
 import static someoneok.kic.KIC.KICPrefix;
 import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
@@ -20,7 +19,7 @@ import static someoneok.kic.utils.StringUtils.isNullOrEmpty;
 import static someoneok.kic.utils.StringUtils.isValidUUIDv4;
 
 public class ApiUtils {
-    private static final Set<ApiRole> roles = EnumSet.noneOf(ApiRole.class);
+    private static final EnumSet<ApiRole> roles = EnumSet.noneOf(ApiRole.class);
     private static boolean verified = false;
     private static boolean apiKeyError = false;
     private static String apiKeyMessage = "";
@@ -61,12 +60,12 @@ public class ApiUtils {
         apiKeyMessage = message;
     }
 
-    public static void setVerified(boolean verified) {
-        ApiUtils.verified = verified;
-    }
-
-    public static void clearRoles() {
+    public static void reset() {
+        verified = false;
+        apiKeyError = false;
+        apiKeyMessage = "";
         roles.clear();
+        setRoleVariables();
     }
 
     public static void addRole(String roleName) {
@@ -105,8 +104,8 @@ public class ApiUtils {
     }
 
     public static void verifyApiKey(boolean manual) {
-        apiKeyMessage = "";
         KICLogger.info("Verifying API key");
+        reset();
 
         if (isNullOrEmpty(KICConfig.apiKey.trim())) {
             markVerificationFailed("No API key set.", manual);
@@ -133,7 +132,6 @@ public class ApiUtils {
             }
 
             JsonArray jsonRoles = jsonResponse.getAsJsonArray("roles");
-            clearRoles();
             jsonRoles.forEach(role -> addRole(role.getAsString()));
             setRoleVariables();
 

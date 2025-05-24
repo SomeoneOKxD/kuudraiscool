@@ -10,6 +10,8 @@ import someoneok.kic.models.kuudra.KuudraChest;
 import someoneok.kic.models.kuudra.KuudraKey;
 import someoneok.kic.models.overlay.ProfitTrackerData;
 import someoneok.kic.models.request.ShareTrackerRequest;
+import someoneok.kic.utils.ApiUtils;
+import someoneok.kic.utils.LocationUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.overlay.*;
 
@@ -53,6 +55,7 @@ public class KuudraProfitTracker {
     }
 
     private static void maybeUpdatePersonalBest(long runTimeMs) {
+        if (LocationUtils.kuudraTier != 5) return;
         Long oldPb = KIC.userData.getKuudraPersonalBest();
         if (oldPb == null) oldPb = 0L;
 
@@ -349,6 +352,11 @@ public class KuudraProfitTracker {
     }
 
     public static void shareTracker() {
+        if (!ApiUtils.isVerified()) {
+            sendMessageToPlayer(KICPrefix + " §cMod disabled: not verified.");
+            return;
+        }
+
         Multithreading.runAsync(() -> {
             ShareTrackerRequest shareTrackerRequest = new ShareTrackerRequest(lifetimeView);
             String requestBody = KIC.GSON.toJson(shareTrackerRequest);
