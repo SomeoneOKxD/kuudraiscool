@@ -467,14 +467,18 @@ public class KuudraProfitCalculator {
     }
 
     private boolean validRerollItem(ItemStack itemStack) {
+        if (itemStack == null) return false;
         return itemStack.getDisplayName().equals("§aReroll Kuudra Chest");
     }
 
     private boolean validBuyItem(ItemStack itemStack) {
+        if (itemStack == null) return false;
         return itemStack.getDisplayName().equals("§aOpen Reward Chest");
     }
 
     private boolean canBuy(KuudraChest chest) {
+        if (chest == null) return false;
+
         KuudraKey key = chest.getKeyNeeded();
         if (chest == KuudraChest.FREE || key == null) return true;
 
