@@ -6,15 +6,14 @@ import someoneok.kic.config.pages.KuudraProfitCalculatorOptions;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.HashMap;
 import java.util.Map;
 
 public class ProfitTrackerData {
     private final ProfitTrackerSession lifetime;
     private final ProfitTrackerSession current;
-    private final Map<String, ProfitTrackerSession> tierSessions;
-    private final Map<String, ProfitTrackerSession> lifetimeTierSessions;
+    private final Map<Integer, ProfitTrackerSession> tierSessions;
+    private final Map<Integer, ProfitTrackerSession> lifetimeTierSessions;
     @SerializedName("kismet_price")
     private long kismetPrice;
     @SerializedName("basic_key_price")
@@ -35,20 +34,13 @@ public class ProfitTrackerData {
     public ProfitTrackerData() {
         this.lifetime = new ProfitTrackerSession();
         this.current = new ProfitTrackerSession();
-
         this.tierSessions = new HashMap<>();
-        this.tierSessions.put("T1", new ProfitTrackerSession());
-        this.tierSessions.put("T2", new ProfitTrackerSession());
-        this.tierSessions.put("T3", new ProfitTrackerSession());
-        this.tierSessions.put("T4", new ProfitTrackerSession());
-        this.tierSessions.put("T5", new ProfitTrackerSession());
-
         this.lifetimeTierSessions = new HashMap<>();
-        this.lifetimeTierSessions.put("T1", new ProfitTrackerSession());
-        this.lifetimeTierSessions.put("T2", new ProfitTrackerSession());
-        this.lifetimeTierSessions.put("T3", new ProfitTrackerSession());
-        this.lifetimeTierSessions.put("T4", new ProfitTrackerSession());
-        this.lifetimeTierSessions.put("T5", new ProfitTrackerSession());
+
+        for (int i = 0; i <= 5; i++) {
+            this.tierSessions.put(i, new ProfitTrackerSession());
+            this.lifetimeTierSessions.put(i, new ProfitTrackerSession());
+        }
 
         this.kismetPrice = 0;
         this.basicKeyPrice = 0;
@@ -61,17 +53,9 @@ public class ProfitTrackerData {
     }
 
     public ProfitTrackerSession getLifetime() { return lifetime; }
-
     public ProfitTrackerSession getCurrent() { return current; }
-
-    public Map<String, ProfitTrackerSession> getTierSessions() {
-        return tierSessions;
-    }
-
-
-    public Map<String, ProfitTrackerSession> getLifetimeTierSessions() {
-        return lifetimeTierSessions;
-    }
+    public Map<Integer, ProfitTrackerSession> getTierSessions() { return tierSessions; }
+    public Map<Integer, ProfitTrackerSession> getLifetimeTierSessions() { return lifetimeTierSessions; }
 
     public void setKismetPrice(long kismetPrice) { this.kismetPrice = kismetPrice; }
     public void setBasicKeyPrice(long basicKeyPrice) { this.basicKeyPrice = basicKeyPrice; }
@@ -90,181 +74,121 @@ public class ProfitTrackerData {
     public long getEssencePrice() { return essencePrice; }
     public long getTeethPrice() { return teethPrice; }
 
-
-    private void updateTierSession(String tier, java.util.function.Consumer<ProfitTrackerSession> updater) {
-        ProfitTrackerSession session = tierSessions.get(tier);
-        if (session != null) {
-            updater.accept(session);
-        }
-    }
-
-    private void updateLifetimeTierSession(String tier, java.util.function.Consumer<ProfitTrackerSession> updater) {
-        ProfitTrackerSession session = lifetimeTierSessions.get(tier);
-        if (session != null) {
-            updater.accept(session);
-        }
-    }
-
-    public void addProfit(long amount, String tier) {
+    public void addProfit(long amount, int tier) {
         current.profit += amount;
         lifetime.profit += amount;
-        updateTierSession(tier, session -> session.profit += amount);
-        updateLifetimeTierSession(tier, session -> session.profit += amount);
-    }
-    public void addProfit(long amount) {
-        addProfit(amount, "T1");
+        tierSessions.get(tier).profit += amount;
+        lifetimeTierSessions.get(tier).profit += amount;
     }
 
-    public void addRun(String tier) {
+    public void addRun(int tier) {
         current.runs++;
         lifetime.runs++;
-        updateTierSession(tier, session -> session.runs++);
-        updateLifetimeTierSession(tier, session -> session.runs++);
+        tierSessions.get(tier).runs++;
+        lifetimeTierSessions.get(tier).runs++;
     }
 
-    public void addRun() {
-        addRun("T1");
-    }
-
-    public void addFailedRun(String tier) {
+    public void addFailedRun(int tier) {
         current.failedRuns++;
         lifetime.failedRuns++;
-        updateTierSession(tier, session -> session.failedRuns++);
-        updateLifetimeTierSession(tier, session -> session.failedRuns++);
-    }
-    public void addFailedRun() {
-        addFailedRun("T1");
+        tierSessions.get(tier).failedRuns++;
+        lifetimeTierSessions.get(tier).failedRuns++;
     }
 
-    public void addFreeChest(String tier) {
+    public void addFreeChest(int tier) {
         current.freeChests++;
         lifetime.freeChests++;
-        updateTierSession(tier, session -> session.freeChests++);
-        updateLifetimeTierSession(tier, session -> session.freeChests++);
-    }
-    public void addFreeChest() {
-        addFreeChest("T1");
+        tierSessions.get(tier).freeChests++;
+        lifetimeTierSessions.get(tier).freeChests++;
     }
 
-    public void addBasicChest(String tier) {
+    public void addBasicChest(int tier) {
         current.basicChests++;
         lifetime.basicChests++;
-        updateTierSession(tier, session -> session.basicChests++);
-        updateLifetimeTierSession(tier, session -> session.basicChests++);
-    }
-    public void addBasicChest() {
-        addBasicChest("T1");
+        tierSessions.get(tier).basicChests++;
+        lifetimeTierSessions.get(tier).basicChests++;
     }
 
-    public void addHotChest(String tier) {
+    public void addHotChest(int tier) {
         current.hotChests++;
         lifetime.hotChests++;
-        updateTierSession(tier, session -> session.hotChests++);
-        updateLifetimeTierSession(tier, session -> session.hotChests++);
-    }
-    public void addHotChest() {
-        addHotChest("T1");
+        tierSessions.get(tier).hotChests++;
+        lifetimeTierSessions.get(tier).hotChests++;
     }
 
-    public void addBurningChest(String tier) {
+    public void addBurningChest(int tier) {
         current.burningChests++;
         lifetime.burningChests++;
-        updateTierSession(tier, session -> session.burningChests++);
-        updateLifetimeTierSession(tier, session -> session.burningChests++);
-    }
-    public void addBurningChest() {
-        addBurningChest("T1");
+        tierSessions.get(tier).burningChests++;
+        lifetimeTierSessions.get(tier).burningChests++;
     }
 
-    public void addFieryChest(String tier) {
+    public void addFieryChest(int tier) {
         current.fieryChests++;
         lifetime.fieryChests++;
-        updateTierSession(tier, session -> session.fieryChests++);
-        updateLifetimeTierSession(tier, session -> session.fieryChests++);
-    }
-    public void addFieryChest() {
-        addFieryChest("T1");
+        tierSessions.get(tier).fieryChests++;
+        lifetimeTierSessions.get(tier).fieryChests++;
     }
 
-    public void addInfernalChest(String tier) {
+    public void addInfernalChest(int tier) {
         current.infernalChests++;
         lifetime.infernalChests++;
-        updateTierSession(tier, session -> session.infernalChests++);
-        updateLifetimeTierSession(tier, session -> session.infernalChests++);
-    }
-    public void addInfernalChest() {
-        addInfernalChest("T1");
+        tierSessions.get(tier).infernalChests++;
+        lifetimeTierSessions.get(tier).infernalChests++;
     }
 
-    public void addReroll(String tier) {
+    public void addPaidChest(int tier) {
+        current.paidChests++;
+        lifetime.paidChests++;
+        tierSessions.get(tier).paidChests++;
+        lifetimeTierSessions.get(tier).paidChests++;
+    }
+
+    public void addReroll(int tier) {
         current.rerolls++;
         lifetime.rerolls++;
-        updateTierSession(tier, session -> session.rerolls++);
-        updateLifetimeTierSession(tier, session -> session.rerolls++);
-    }
-    public void addReroll() {
-        addReroll("T1");
+        tierSessions.get(tier).rerolls++;
+        lifetimeTierSessions.get(tier).rerolls++;
     }
 
-    public void addTime(long duration, String tier) {
+    public void addTime(long duration, int tier) {
         current.time += duration;
         lifetime.time += duration;
-        updateTierSession(tier, session -> session.time += duration);
-        updateLifetimeTierSession(tier, session -> session.time += duration);
-    }
-    public void addTime(long duration) {
-        addTime(duration, "T1");
+        tierSessions.get(tier).time += duration;
+        lifetimeTierSessions.get(tier).time += duration;
     }
 
-    public void addEssence(long essence, String tier) {
+    public void addEssence(long essence, int tier) {
         current.essence += essence;
         lifetime.essence += essence;
-        updateTierSession(tier, session -> session.essence += essence);
-        updateLifetimeTierSession(tier, session -> session.essence += essence);
-    }
-    public void addEssence(long essence) {
-        addEssence(essence, "T1");
+        tierSessions.get(tier).essence += essence;
+        lifetimeTierSessions.get(tier).essence += essence;
     }
 
-    public void addTeeth(int teeth, String tier) {
+    public void addTeeth(int teeth, int tier) {
         current.teeth += teeth;
         lifetime.teeth += teeth;
-        updateTierSession(tier, session -> session.teeth += teeth);
-        updateLifetimeTierSession(tier, session -> session.teeth += teeth);
-    }
-    public void addTeeth(int teeth) {
-        addTeeth(teeth, "T1");
+        tierSessions.get(tier).teeth += teeth;
+        lifetimeTierSessions.get(tier).teeth += teeth;
     }
 
-    public void addGodRoll(String gr, String tier) {
+    public void addGodRoll(String gr, int tier) {
         current.godRolls.add(gr);
         lifetime.godRolls.add(gr);
-        updateTierSession(tier, session -> session.godRolls.add(gr));
-        updateLifetimeTierSession(tier, session -> session.godRolls.add(gr));
-    }
-    public void addGodRoll(String gr) {
-        addGodRoll(gr, "T1");
+        tierSessions.get(tier).godRolls.add(gr);
+        lifetimeTierSessions.get(tier).godRolls.add(gr);
     }
 
     public void newSession() {
         current.reset();
-        for (ProfitTrackerSession session : tierSessions.values()) {
-            session.reset();
-        }
-        for (ProfitTrackerSession session : lifetimeTierSessions.values()) {
-            session.reset();
-        }
+        for (ProfitTrackerSession session : tierSessions.values()) session.reset();
     }
 
     public void reset() {
         current.reset();
         lifetime.reset();
-        for (ProfitTrackerSession session : tierSessions.values()) {
-            session.reset();
-        }
-        for (ProfitTrackerSession session : lifetimeTierSessions.values()) {
-            session.reset();
-        }
+        for (ProfitTrackerSession session : tierSessions.values()) session.reset();
+        for (ProfitTrackerSession session : lifetimeTierSessions.values()) session.reset();
     }
 
     public static class ProfitTrackerSession {
@@ -324,6 +248,11 @@ public class ProfitTrackerData {
         @Expose
         @SerializedName("god_rolls")
         private List<String> godRolls;
+
+        @Expose
+        @SerializedName("paid_chests")
+        private int paidChests;
+        public int getPaidChests() { return paidChests; }
 
         public ProfitTrackerSession() {
             this.profit = 0;

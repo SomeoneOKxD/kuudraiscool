@@ -166,7 +166,6 @@ public class KIC {
                 forgottenSkullCondition,
                 ""));
 
-
         OverlayManager.addOverlay(new InteractiveOverlay(
                 () -> KICConfig.crimsonContainerHelper,
                 "ContainerHelper",

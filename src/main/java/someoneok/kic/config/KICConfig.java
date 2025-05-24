@@ -866,7 +866,7 @@ public class KICConfig extends Config {
     public static int ACAutoRerollMinValue = 2_000_000;
 
     @Switch(
-            name = "Profit Tracker (All Tiers)",
+            name = "Profit Tracker",
             category = KUUDRA,
             subcategory = KUUDRA_PROFIT_TRACKER,
             size = 2
