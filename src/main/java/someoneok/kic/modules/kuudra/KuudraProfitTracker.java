@@ -337,8 +337,12 @@ public class KuudraProfitTracker {
         if (showConfirm) {
             showConfirm = false;
             if (confirmed) {
-                OverlayDataManager.getProfitTrackerData().newSession();
-
+                if (lifetimeView) {
+                    OverlayDataManager.getProfitTrackerData().getLifetime().reset();
+                    OverlayDataManager.getProfitTrackerData().getLifetimeTierSessions().values().forEach(ProfitTrackerData.ProfitTrackerSession::reset);
+                } else {
+                    OverlayDataManager.getProfitTrackerData().newSession();
+                }
                 OverlayDataHandler.saveOverlaysData();
                 updateTracker();
             }

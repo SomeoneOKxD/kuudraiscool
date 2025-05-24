@@ -329,7 +329,7 @@ public class ProfitTrackerData {
         public long getAverageRunTime() { return time == 0 || runs == 0 ? 0 : time / runs; }
         public long getHourlyRate() { return time == 0 ? 0 : (profit * 3600) / time; }
 
-        private void reset() {
+        public void reset() {
             this.profit = 0;
             this.runs = 0;
             this.failedRuns = 0;
