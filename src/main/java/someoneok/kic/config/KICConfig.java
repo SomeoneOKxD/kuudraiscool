@@ -19,6 +19,7 @@ import someoneok.kic.config.pages.KuudraSplitsOptions;
 import someoneok.kic.modules.kuudra.TrajectorySolver;
 import someoneok.kic.modules.kuudra.Waypoints;
 import someoneok.kic.modules.misc.ButtonManager;
+import someoneok.kic.modules.misc.TrackEmptySlots;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.dev.KICLogger;
 import someoneok.kic.utils.overlay.EditHudScreen;
@@ -30,15 +31,15 @@ import static someoneok.kic.utils.GeneralUtils.round2;
 import static someoneok.kic.utils.StringUtils.isValidUUIDv4RegexBased;
 
 public class KICConfig extends Config {
-    private static String oldKey = "";
-    private static int oldAPInitialDelay = 0;
-    private static int oldAPDoubleDelay = 0;
-    private static int oldAPSkyDistance = 0;
-    private static int oldAPFlatDistance = 0;
-    private static float oldAPTextSizeScaleSky = 0;
-    private static float oldAPWaypointSizeScaleSky = 0;
-    private static float oldAPTextSizeScaleFlat = 0;
-    private static float oldAPWaypointSizeScaleFlat = 0;
+    private transient static String oldKey = "";
+    private transient static int oldAPInitialDelay = 0;
+    private transient static int oldAPDoubleDelay = 0;
+    private transient static int oldAPSkyDistance = 0;
+    private transient static int oldAPFlatDistance = 0;
+    private transient static float oldAPTextSizeScaleSky = 0;
+    private transient static float oldAPWaypointSizeScaleSky = 0;
+    private transient static float oldAPTextSizeScaleFlat = 0;
+    private transient static float oldAPWaypointSizeScaleFlat = 0;
 
     public KICConfig() {
         super(new Mod("Kuudraiscool", ModType.SKYBLOCK), "kic.json");
@@ -189,14 +190,13 @@ public class KICConfig extends Config {
         hideIf("supplyColor", () -> !supplyWaypoints && !supplyBox);
         hideIf("autoRefillPearlsTicks", () -> !autoRefillPearls);
 
-        hideIf("ACAutoBuy", () -> !kuudraProfitCalculator);
+        addDependency("ACAutoBuy", "kuudraProfitCalculator");
         hideIf("ACAlwaysAutoBuy", () -> !kuudraProfitCalculator || !ACAutoBuy);
         hideIf("ACAutoBuyMinProfit", () -> !kuudraProfitCalculator || !ACAutoBuy);
         hideIf("ACAutoCloseGui", () -> !(ACAutoBuy || ACInstaBuy));
         hideIf("ACAutoCloseDelay", () -> !(ACAutoBuy || ACInstaBuy) || !ACAutoCloseGui);
         hideIf("ACInitialInstaBuyDelay", () -> !ACInstaBuy);
-        hideIf("isIgnored2", () -> !kuudraProfitCalculator);
-        hideIf("ACAutoReroll", () -> !kuudraProfitCalculator);
+        addDependency("ACAutoReroll", "kuudraProfitCalculator");
         hideIf("ACOnlyRerollInT5", () -> !kuudraProfitCalculator || !ACAutoReroll);
         hideIf("ACShouldRerollType", () -> !kuudraProfitCalculator || !ACAutoReroll);
         hideIf("ACAutoRerollMinValue", () -> !kuudraProfitCalculator || !ACAutoReroll);
@@ -243,8 +243,19 @@ public class KICConfig extends Config {
         hideIf("dmCommandCata", () -> !dmCommands);
         hideIf("dmCommandRtca", () -> !dmCommands);
 
-        // World
-        addDependency("serverAlertTime", "serverAlert");
+        // Misc
+        registerKeyBind(openEmptyECBP, TrackEmptySlots::openEmptyEcOrBp);
+        hideIf("trackEnderChestPages", () -> !trackEmptyECBP);
+        hideIf("trackBackpacks", () -> !trackEmptyECBP);
+        hideIf("openEmptyECBP", () -> !trackEmptyECBP);
+
+        for (int i = 1; i <= 9; i++) {
+            hideIf("ec" + i, () -> !trackEmptyECBP || !trackEnderChestPages);
+        }
+
+        for (int i = 1; i <= 18; i++) {
+            hideIf("bp" + i, () -> !trackEmptyECBP || !trackBackpacks);
+        }
     }
 
     // Categories
@@ -1456,6 +1467,197 @@ public class KICConfig extends Config {
             size = 2
     )
     public static int invButtonLoc = 0;
+
+    @Switch(
+            name = "Track Empty Slots In Ender Chest Pages And Backpacks",
+            category = MISC,
+            size = 2
+    )
+    public static boolean trackEmptyECBP = false;
+
+    @Switch(
+            name = "Track Ender Chest Pages",
+            category = MISC,
+            size = 2
+    )
+    public static boolean trackEnderChestPages = false;
+
+    @Switch(
+            name = "Track Backpacks",
+            category = MISC,
+            size = 2
+    )
+    public static boolean trackBackpacks = true;
+
+    @KeyBind(
+            name = "Open EC or BP With Empty Slots Keybind",
+            description = "Key to press when you want to open an ender chest page or backpack with empty slots.",
+            size = 2,
+            category = MISC
+    )
+    public static OneKeyBind openEmptyECBP = new OneKeyBind(UKeyboard.KEY_NONE);
+
+    @Switch(
+            name = "Ender Chest Page 1",
+            category = MISC
+    )
+    public static boolean ec1 = false;
+
+    @Switch(
+            name = "Ender Chest Page 2",
+            category = MISC
+    )
+    public static boolean ec2 = false;
+
+    @Switch(
+            name = "Ender Chest Page 3",
+            category = MISC
+    )
+    public static boolean ec3 = false;
+
+    @Switch(
+            name = "Ender Chest Page 4",
+            category = MISC
+    )
+    public static boolean ec4 = false;
+
+    @Switch(
+            name = "Ender Chest Page 5",
+            category = MISC
+    )
+    public static boolean ec5 = false;
+
+    @Switch(
+            name = "Ender Chest Page 6",
+            category = MISC
+    )
+    public static boolean ec6 = false;
+
+    @Switch(
+            name = "Ender Chest Page 7",
+            category = MISC
+    )
+    public static boolean ec7 = false;
+
+    @Switch(
+            name = "Ender Chest Page 8",
+            category = MISC
+    )
+    public static boolean ec8 = false;
+
+    @Switch(
+            name = "Ender Chest Page 9",
+            category = MISC
+    )
+    public static boolean ec9 = false;
+
+    @Switch(
+            name = "Backpack 1",
+            category = MISC
+    )
+    public static boolean bp1 = false;
+
+    @Switch(
+            name = "Backpack 2",
+            category = MISC
+    )
+    public static boolean bp2 = false;
+
+    @Switch(
+            name = "Backpack 3",
+            category = MISC
+    )
+    public static boolean bp3 = false;
+
+    @Switch(
+            name = "Backpack 4",
+            category = MISC
+    )
+    public static boolean bp4 = false;
+
+    @Switch(
+            name = "Backpack 5",
+            category = MISC
+    )
+    public static boolean bp5 = false;
+
+    @Switch(
+            name = "Backpack 6",
+            category = MISC
+    )
+    public static boolean bp6 = false;
+
+    @Switch(
+            name = "Backpack 7",
+            category = MISC
+    )
+    public static boolean bp7 = false;
+
+    @Switch(
+            name = "Backpack 8",
+            category = MISC
+    )
+    public static boolean bp8 = false;
+
+    @Switch(
+            name = "Backpack 9",
+            category = MISC
+    )
+    public static boolean bp9 = false;
+
+    @Switch(
+            name = "Backpack 10",
+            category = MISC
+    )
+    public static boolean bp10 = false;
+
+    @Switch(
+            name = "Backpack 11",
+            category = MISC
+    )
+    public static boolean bp11 = false;
+
+    @Switch(
+            name = "Backpack 12",
+            category = MISC
+    )
+    public static boolean bp12 = false;
+
+    @Switch(
+            name = "Backpack 13",
+            category = MISC
+    )
+    public static boolean bp13 = false;
+
+    @Switch(
+            name = "Backpack 14",
+            category = MISC
+    )
+    public static boolean bp14 = false;
+
+    @Switch(
+            name = "Backpack 15",
+            category = MISC
+    )
+    public static boolean bp15 = false;
+
+    @Switch(
+            name = "Backpack 16",
+            category = MISC
+    )
+    public static boolean bp16 = false;
+
+    @Switch(
+            name = "Backpack 17",
+            category = MISC
+    )
+    public static boolean bp17 = false;
+
+    @Switch(
+            name = "Backpack 18",
+            category = MISC
+    )
+    public static boolean bp18 = false;
 
     // HUDS
 

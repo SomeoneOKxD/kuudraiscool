@@ -83,7 +83,8 @@ public class KIC {
                 new CacheManager(),
                 new TooltipPrice(),
                 new AuctionHelper(),
-                new ArmorHud()
+                new ArmorHud(),
+                new TrackEmptySlots()
         );
     }
 
