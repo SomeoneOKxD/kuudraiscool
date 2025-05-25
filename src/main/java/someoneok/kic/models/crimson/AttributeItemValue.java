@@ -101,7 +101,7 @@ public class AttributeItemValue implements Value {
         if ("ATTRIBUTE_SHARD".equals(item.getItemId())) {
             long price = KuudraProfitCalculatorOptions.attributePriceType == 0 ? attributes.getLbPrice1() : attributes.getAvgPrice1();
 
-            if (KuudraProfitCalculatorOptions.ignoreShardAttributes) {
+            if (KuudraIgnoredShardAttributeOptions.ignoreShardAttributes) {
                 Set<String> ignoreAttributes = KuudraIgnoredShardAttributeOptions.getEnabled();
                 if (attributes.hasAttribute1() && ignoreAttributes.contains(attributes.getName1())) price = 0;
             }
@@ -114,13 +114,13 @@ public class AttributeItemValue implements Value {
             long price1 = KuudraProfitCalculatorOptions.attributePriceType == 0 ? attributes.getLbPrice1() : attributes.getAvgPrice1();
             long price2 = KuudraProfitCalculatorOptions.attributePriceType == 0 ? attributes.getLbPrice2() : attributes.getAvgPrice2();
 
-            if (KuudraProfitCalculatorOptions.ignoreEquipmentAttributes && isEquipment()) {
+            if (KuudraIgnoredEquipmentAttributeOptions.ignoreEquipmentAttributes && isEquipment()) {
                 Set<String> ignoreAttributes = KuudraIgnoredEquipmentAttributeOptions.getEnabled();
                 if (attributes.hasAttribute1() && ignoreAttributes.contains(attributes.getName1())) price1 = 0;
                 if (attributes.hasAttribute2() && ignoreAttributes.contains(attributes.getName2())) price2 = 0;
             }
 
-            if (KuudraProfitCalculatorOptions.useSalvageValue && isArmor()) {
+            if (KuudraSalvageAttributeOptions.useSalvageValue && isArmor()) {
                 Set<String> salvageAttributes = KuudraSalvageAttributeOptions.getEnabled();
                 if (attributes.hasAttribute1() && salvageAttributes.contains(attributes.getName1())) price1 = salvageValue;
                 if (attributes.hasAttribute2() && salvageAttributes.contains(attributes.getName2())) price2 = salvageValue;
@@ -142,18 +142,18 @@ public class AttributeItemValue implements Value {
         Attributes attributes = item.getAttributes();
 
         if ("ATTRIBUTE_SHARD".equals(item.getItemId())) {
-            if (!KuudraProfitCalculatorOptions.ignoreShardAttributes) return false;
+            if (!KuudraIgnoredShardAttributeOptions.ignoreShardAttributes) return false;
             Set<String> ignoreAttributes = KuudraIgnoredShardAttributeOptions.getEnabled();
             return attributes.hasAttribute1() && ignoreAttributes.contains(attributes.getName1());
         }
 
-        if (KuudraProfitCalculatorOptions.ignoreEquipmentAttributes && isEquipment()) {
+        if (KuudraIgnoredEquipmentAttributeOptions.ignoreEquipmentAttributes && isEquipment()) {
             Set<String> ignoreAttributes = KuudraIgnoredEquipmentAttributeOptions.getEnabled();
             return (attributes.hasAttribute1() && ignoreAttributes.contains(attributes.getName1())) ||
                     (attributes.hasAttribute2() && ignoreAttributes.contains(attributes.getName2()));
         }
 
-        if (KuudraProfitCalculatorOptions.useSalvageValue && isArmor()) {
+        if (KuudraSalvageAttributeOptions.useSalvageValue && isArmor()) {
             long salvageValue = getSalvageValue(essencePrice.getPrice(KuudraProfitCalculatorOptions.bazaarPriceType == 1));
             long itemValue = getValue(essencePrice);
             return salvageValue == itemValue;

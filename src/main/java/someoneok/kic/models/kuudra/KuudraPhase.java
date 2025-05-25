@@ -116,4 +116,12 @@ public enum KuudraPhase {
     public static long getP4(long now) {
         return SKIP.getTime(now) + KILL.getTime(now);
     }
+
+    public static long getP3Lag(long ticks) {
+        return EATEN.getLag(ticks) + STUN.getLag(ticks) + DPS.getLag(ticks);
+    }
+
+    public static long getP4Lag(long ticks) {
+        return SKIP.getLag(ticks) + KILL.getLag(ticks);
+    }
 }

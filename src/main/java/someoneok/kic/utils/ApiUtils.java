@@ -65,7 +65,6 @@ public class ApiUtils {
         apiKeyError = false;
         apiKeyMessage = "";
         roles.clear();
-        setRoleVariables();
     }
 
     public static void addRole(String roleName) {
@@ -161,5 +160,6 @@ public class ApiUtils {
             sendMessageToPlayer(apiKeyMessage);
             apiKeyMessage = "";
         }
+        setRoleVariables();
     }
 }

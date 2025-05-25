@@ -257,21 +257,18 @@ public class Kuudra {
             KuudraPhase.OVERALL.end(now, ticks);
             KuudraPhase.endMissedPhases();
             boolean failed = trimmedUpper.contains("DEFEAT");
-            long runTime = KuudraPhase.OVERALL.getTime(System.currentTimeMillis());
 
+            KICLogger.info("Phase 8 (End), failed? " + failed);
+
+            long runTime = KuudraPhase.OVERALL.getTime(System.currentTimeMillis());
             if (runTime == 0) {
                 KuudraProfitTracker.onRunEnded(failed);
             } else {
                 KuudraProfitTracker.onRunEnded(runTime, failed);
             }
 
-            KICLogger.info("Phase 8 (End), failed? " + failed);
-
-            if (KICConfig.showTotalServerLag) {
-                Multithreading.schedule(() -> sendMessageToPlayer(String.format("%s §cServer lagged for §f%.2fs §7(§f%d ticks§7)", KIC.KICPrefix, getTotalLagTimeS(), getTotalLagTimeTicks())), 500, TimeUnit.MILLISECONDS);
-            }
-
-            if (KuudraSplitsOptions.showDetailedOverview) Multithreading.schedule(() -> KuudraSplits.sendDetailedSplits(now, freshTimes), 500, TimeUnit.MILLISECONDS);
+            if (KuudraSplitsOptions.showTotalServerLag) Multithreading.schedule(() -> sendMessageToPlayer(String.format("%s §cServer lagged for §f%.2fs §7(§f%d ticks§7)", KIC.KICPrefix, getTotalLagTimeS(), getTotalLagTimeTicks())), 500, TimeUnit.MILLISECONDS);
+            if (KuudraSplitsOptions.showDetailedOverview) Multithreading.schedule(() -> KuudraSplits.sendDetailedSplits(now, ticks, freshTimes), 525, TimeUnit.MILLISECONDS);
         }
     }
 

@@ -277,7 +277,7 @@ public class KuudraSplits {
         }
     }
 
-    public static void sendDetailedSplits(long now, List<TimedEvent> freshTimes) {
+    public static void sendDetailedSplits(long now, long ticks, List<TimedEvent> freshTimes) {
         StringBuilder message = new StringBuilder(KIC.KICPrefix)
                 .append(getColorCode(KuudraSplitsOptions.splitsColor))
                 .append(" Splits\n");
@@ -287,21 +287,28 @@ public class KuudraSplits {
                     .append(phase.getName())
                     .append(": §f")
                     .append(formatElapsedTimeMs(phase.getTime(now)))
+                    .append(getLagMessage(phase.getLag(ticks)))
                     .append("\n");
         }
 
         message.append(getColorCode(KuudraSplitsOptions.splitsColor))
                 .append("P3: §f")
                 .append(formatElapsedTimeMs(KuudraPhase.getP3(now)))
-                .append("\n")
-                .append(getColorCode(KuudraSplitsOptions.splitsColor))
+                .append(getLagMessage(KuudraPhase.getP3Lag(ticks)))
+                .append("\n");
+
+        message.append(getColorCode(KuudraSplitsOptions.splitsColor))
                 .append("P4: §f")
                 .append(formatElapsedTimeMs(KuudraPhase.getP4(now)))
-                .append("\n")
-                .append(getColorCode(KuudraSplitsOptions.overallColor))
+                .append(getLagMessage(KuudraPhase.getP4Lag(ticks)))
+                .append("\n");
+
+
+        message.append(getColorCode(KuudraSplitsOptions.overallColor))
                 .append(KuudraPhase.OVERALL.getName())
                 .append(": §f")
-                .append(formatElapsedTimeMs(KuudraPhase.OVERALL.getTime(now)));
+                .append(formatElapsedTimeMs(KuudraPhase.OVERALL.getTime(now)))
+                .append(getLagMessage(KuudraPhase.OVERALL.getLag(ticks)));
 
         if (KuudraSplitsOptions.showMiscInDetailed) {
             message.append("\n\n").append(KIC.KICPrefix)
@@ -325,6 +332,16 @@ public class KuudraSplits {
         }
 
         sendMessageToPlayer(message.toString().trim());
+    }
+
+    private static String getLagMessage(long ticks) {
+        if (ticks == 0) return "";
+
+        String timePart = KuudraSplitsOptions.showLagInSeconds
+                ? formatElapsedTimeMs(ticks * 50)
+                : ticks + " ticks";
+
+        return " §r§7[§e" + timePart + "§7]";
     }
 
     public static void reset() {

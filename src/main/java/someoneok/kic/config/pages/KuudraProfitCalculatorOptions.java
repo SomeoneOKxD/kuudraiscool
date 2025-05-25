@@ -79,12 +79,12 @@ public class KuudraProfitCalculatorOptions {
     public static int godRollPriceType = 1;
 
     @Dropdown(
-            name = "Auction Items Price Type",
+            name = "Miscellaneous Items Price Type",
             description = "Calculate auction items based on the Lowest Bin price or the Average Price.",
             options = {"Lowest Bin", "Average Price"},
             subcategory = PRICE
     )
-    public static int auctionPriceType = 1;
+    public static int miscellaneousPriceType = 1;
 
     @Dropdown(
             name = "Key Price Type",
@@ -114,27 +114,6 @@ public class KuudraProfitCalculatorOptions {
             subcategory = MISC
     )
     public static boolean forceT5AttributeOnlyLB = true;
-
-    @Switch(
-            name = "Use Salvage Value for Matching Attributes (Armor)",
-            size = 2,
-            subcategory = MISC
-    )
-    public static boolean useSalvageValue = true;
-
-    @Switch(
-            name = "Set Attribute Value to 0 for Matching Attributes (Equipment)",
-            size = 2,
-            subcategory = MISC
-    )
-    public static boolean ignoreEquipmentAttributes = true;
-
-    @Switch(
-            name = "Set Attribute Value to 0 for Matching Attributes (Shard)",
-            size = 2,
-            subcategory = MISC
-    )
-    public static boolean ignoreShardAttributes = true;
 
     @Switch(
             name = "Ignore Hollow Wands (Value = 0)",

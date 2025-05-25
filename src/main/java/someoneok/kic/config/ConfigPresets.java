@@ -10,14 +10,13 @@ public class ConfigPresets {
         KICConfig.partyFinder = true;
         KICConfig.partyFinderGuiStats = false;
         KICConfig.kuudraStatsStyle = 0;
-        KICConfig.showTotalServerLag = true;
         KICConfig.pearlCalculator = true;
         KICConfig.showSkyPearls = true;
         KICConfig.showFlatPearls = true;
         KICConfig.showDoublePearls = true;
         KICConfig.showNothingSupplyWaypoints = false;
         KICConfig.showNothingSupplyWaypointsBeacon = false;
-        KICConfig.supplySpotColor = new OneColor(0,0,100);
+        KICConfig.supplySpotColor = new OneColor(255,255,255);
         KICConfig.showAll = false;
         KICConfig.autoPearls = false;
         KICConfig.advancedPearlSettings = false;
@@ -26,9 +25,9 @@ public class ConfigPresets {
         KICConfig.APSkyDistance = 20;
         KICConfig.APFlatDistance = 15;
         KICConfig.APTextSizeScaleSky = 0.75f;
-        KICConfig.APWaypointSizeScaleSky = 0.50f;
-        KICConfig.APTextSizeScaleFlat = 0.50f;
-        KICConfig.APWaypointSizeScaleFlat = 0.50f;
+        KICConfig.APWaypointSizeScaleSky = 0.75f;
+        KICConfig.APTextSizeScaleFlat = 0.75f;
+        KICConfig.APWaypointSizeScaleFlat = 0.75f;
         KICConfig.APTimerPos = 1;
         KICConfig.APUseCustomShape = false;
         KICConfig.APCustom = 0;
@@ -45,7 +44,7 @@ public class ConfigPresets {
         KICConfig.supplyColor = new OneColor(0, 255, 180);
         KICConfig.supplyWaypointsProgress = true;
         KICConfig.autoRefillPearls = false;
-        KICConfig.autoRefillPearlsTicks = 200;
+        KICConfig.autoRefillPearlsTicks = 100;
         KICConfig.kuudraProfitCalculator = true;
         KICConfig.showGodRollHolo = true;
         KICConfig.showGodRollHoloBothSides = true;
@@ -142,14 +141,11 @@ public class ConfigPresets {
         KuudraProfitCalculatorOptions.bazaarPriceType = 0;
         KuudraProfitCalculatorOptions.attributePriceType = 1;
         KuudraProfitCalculatorOptions.godRollPriceType = 1;
-        KuudraProfitCalculatorOptions.auctionPriceType = 1;
+        KuudraProfitCalculatorOptions.miscellaneousPriceType = 1;
         KuudraProfitCalculatorOptions.keyPriceType = 1;
         KuudraProfitCalculatorOptions.kismetPriceType = 0;
         KuudraProfitCalculatorOptions.forceT5Attribute = true;
         KuudraProfitCalculatorOptions.forceT5AttributeOnlyLB = true;
-        KuudraProfitCalculatorOptions.useSalvageValue = true;
-        KuudraProfitCalculatorOptions.ignoreEquipmentAttributes = true;
-        KuudraProfitCalculatorOptions.ignoreShardAttributes = true;
         KuudraRerollFailsafeOptions.arachno = false;
         KuudraRerollFailsafeOptions.attackSpeed = false;
         KuudraRerollFailsafeOptions.blazing = false;
@@ -187,6 +183,7 @@ public class ConfigPresets {
         KuudraRerollFailsafeOptions.fishingSpeed = true;
         KuudraRerollFailsafeOptions.hunter = false;
         KuudraRerollFailsafeOptions.trophyHunter = true;
+        KuudraSalvageAttributeOptions.useSalvageValue = true;
         KuudraSalvageAttributeOptions.lifeRecovery = true;
         KuudraSalvageAttributeOptions.arachnoResistance = true;
         KuudraSalvageAttributeOptions.blazingResistance = true;
@@ -204,6 +201,7 @@ public class ConfigPresets {
         KuudraSalvageAttributeOptions.speed = true;
         KuudraSalvageAttributeOptions.undeadResistance = false;
         KuudraSalvageAttributeOptions.veteran = false;
+        KuudraIgnoredEquipmentAttributeOptions.ignoreEquipmentAttributes = true;
         KuudraIgnoredEquipmentAttributeOptions.lifeRecovery = true;
         KuudraIgnoredEquipmentAttributeOptions.arachnoResistance = true;
         KuudraIgnoredEquipmentAttributeOptions.blazingResistance = true;
@@ -221,6 +219,7 @@ public class ConfigPresets {
         KuudraIgnoredEquipmentAttributeOptions.speed = true;
         KuudraIgnoredEquipmentAttributeOptions.undeadResistance = false;
         KuudraIgnoredEquipmentAttributeOptions.veteran = false;
+        KuudraIgnoredShardAttributeOptions.ignoreShardAttributes = true;
         KuudraIgnoredShardAttributeOptions.arachno = true;
         KuudraIgnoredShardAttributeOptions.attackSpeed = true;
         KuudraIgnoredShardAttributeOptions.blazing = true;
@@ -311,6 +310,7 @@ public class ConfigPresets {
         KuudraAutoKickOptions.whitelisted = "";
         KuudraAutoKickOptions.useBlacklist = false;
         KuudraAutoKickOptions.blacklisted = "";
+        KuudraSplitsOptions.showTotalServerLag = true;
         KuudraSplitsOptions.showPace = true;
         KuudraSplitsOptions.showEstimatedPace = true;
         KuudraSplitsOptions.showLag = true;

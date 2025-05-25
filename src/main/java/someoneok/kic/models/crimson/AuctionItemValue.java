@@ -63,7 +63,7 @@ public class AuctionItemValue implements Value {
 
     public long getValue() {
         if ("RUNIC_STAFF".equals(item.getItemId()) && KuudraProfitCalculatorOptions.ignoreAuroraStaff) return 0;
-        return getPrice(KuudraProfitCalculatorOptions.auctionPriceType == 0);
+        return getPrice(KuudraProfitCalculatorOptions.miscellaneousPriceType == 0);
     }
 
     public AuctionPriceRequest mapToRequest() {

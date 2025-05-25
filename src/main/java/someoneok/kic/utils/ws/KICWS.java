@@ -135,6 +135,7 @@ public class KICWS {
 
                 if (code == 1008) {
                     ApiUtils.reset();
+                    ApiUtils.setRoleVariables();
                     sendMessageToPlayer(KIC.KICPrefix + " §cAPI key sharing detected. Your key has been revoked.");
                 } else if (shouldReconnect(code)) {
                     scheduleReconnect();
