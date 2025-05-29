@@ -21,6 +21,7 @@ import someoneok.kic.models.Color;
 import someoneok.kic.models.KICCustomGUI;
 import someoneok.kic.models.kicauction.*;
 import someoneok.kic.models.request.AuctionDataRequest;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.dev.KICLogger;
 
@@ -195,6 +196,11 @@ public class KICAuction {
     }
 
     public static void open() {
+        if (!ApiUtils.isVerified()) {
+            sendMessageToPlayer(KICPrefix + " §cMod disabled: not verified.");
+            return;
+        }
+
         if (auctionData == null) return;
         currentItemData = null;
         inventory = new InventoryBasic(Color.getColorCode(KICConfig.KICAuctionColor) + "§lKIC Auction", true, INVENTORY_SIZE);
@@ -213,6 +219,11 @@ public class KICAuction {
     }
 
     public static void open(AuctionDataRequest auctionDataRequest) {
+        if (!ApiUtils.isVerified()) {
+            sendMessageToPlayer(KICPrefix + " §cMod disabled: not verified.");
+            return;
+        }
+
         auctionData = null;
         currentItemData = null;
         updatePaneColor(PANE, KICConfig.KICAuctionColor);

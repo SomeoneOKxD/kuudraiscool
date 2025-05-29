@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class KuudraIgnoredShardAttributeOptions {
+    private transient static final String ATTRIBUTE = "Attributes";
+
     @Info(
             text = "Ignored Attribute on Shards",
             type = InfoType.INFO,
@@ -23,187 +25,230 @@ public class KuudraIgnoredShardAttributeOptions {
     public static boolean ignored2;
 
     @Switch(
-            name = "Arachno"
+            name = "Set Attribute Value to 0 for Matching Attributes",
+            size = 2
+    )
+    public static boolean ignoreShardAttributes = true;
+
+    @Switch(
+            name = "Arachno",
+            subcategory = ATTRIBUTE
     )
     public static boolean arachno = true;
 
     @Switch(
-            name = "Attack Speed"
+            name = "Attack Speed",
+            subcategory = ATTRIBUTE
     )
     public static boolean attackSpeed = true;
 
     @Switch(
-            name = "Blazing"
+            name = "Blazing",
+            subcategory = ATTRIBUTE
     )
     public static boolean blazing = true;
 
     @Switch(
-            name = "Combo"
+            name = "Combo",
+            subcategory = ATTRIBUTE
     )
     public static boolean combo = true;
 
     @Switch(
-            name = "Elite"
+            name = "Elite",
+            subcategory = ATTRIBUTE
     )
     public static boolean elite = true;
 
     @Switch(
-            name = "Ender"
+            name = "Ender",
+            subcategory = ATTRIBUTE
     )
     public static boolean ender = true;
 
     @Switch(
-            name = "Ignition"
+            name = "Ignition",
+            subcategory = ATTRIBUTE
     )
     public static boolean ignition = true;
 
     @Switch(
-            name = "Life Recovery"
+            name = "Life Recovery",
+            subcategory = ATTRIBUTE
     )
     public static boolean lifeRecovery = true;
 
     @Switch(
-            name = "Mana Steal"
+            name = "Mana Steal",
+            subcategory = ATTRIBUTE
     )
     public static boolean manaSteal = true;
 
     @Switch(
-            name = "Midas Touch"
+            name = "Midas Touch",
+            subcategory = ATTRIBUTE
     )
     public static boolean midasTouch = true;
 
     @Switch(
-            name = "Undead"
+            name = "Undead",
+            subcategory = ATTRIBUTE
     )
     public static boolean undead = true;
 
     @Switch(
-            name = "Warrior"
+            name = "Warrior",
+            subcategory = ATTRIBUTE
     )
     public static boolean warrior = true;
 
     @Switch(
-            name = "Deadeye"
+            name = "Deadeye",
+            subcategory = ATTRIBUTE
     )
     public static boolean deadeye = true;
 
     @Switch(
-            name = "Arachno Resistance"
+            name = "Arachno Resistance",
+            subcategory = ATTRIBUTE
     )
     public static boolean arachnoResistance = true;
 
     @Switch(
-            name = "Blazing Resistance"
+            name = "Blazing Resistance",
+            subcategory = ATTRIBUTE
     )
     public static boolean blazingResistance = true;
 
     @Switch(
-            name = "Breeze"
+            name = "Breeze",
+            subcategory = ATTRIBUTE
     )
     public static boolean breeze = false;
 
     @Switch(
-            name = "Dominance"
+            name = "Dominance",
+            subcategory = ATTRIBUTE
     )
     public static boolean dominance = false;
 
     @Switch(
-            name = "Ender Resistance"
+            name = "Ender Resistance",
+            subcategory = ATTRIBUTE
     )
     public static boolean enderResistance = true;
 
     @Switch(
-            name = "Experience"
+            name = "Experience",
+            subcategory = ATTRIBUTE
     )
     public static boolean experience = true;
 
     @Switch(
-            name = "Fortitude"
+            name = "Fortitude",
+            subcategory = ATTRIBUTE
     )
     public static boolean fortitude = true;
 
     @Switch(
-            name = "Life Regeneration"
+            name = "Life Regeneration",
+            subcategory = ATTRIBUTE
     )
     public static boolean lifeRegeneration = true;
 
     @Switch(
-            name = "Lifeline"
+            name = "Lifeline",
+            subcategory = ATTRIBUTE
     )
     public static boolean lifeline = false;
 
     @Switch(
-            name = "Magic Find"
+            name = "Magic Find",
+            subcategory = ATTRIBUTE
     )
     public static boolean magicFind = false;
 
     @Switch(
-            name = "Mana Pool"
+            name = "Mana Pool",
+            subcategory = ATTRIBUTE
     )
     public static boolean manaPool = false;
 
     @Switch(
-            name = "Mana Regeneration"
+            name = "Mana Regeneration",
+            subcategory = ATTRIBUTE
     )
     public static boolean manaRegeneration = false;
 
     @Switch(
-            name = "Vitality"
+            name = "Vitality",
+            subcategory = ATTRIBUTE
     )
     public static boolean vitality = false;
 
     @Switch(
-            name = "Speed"
+            name = "Speed",
+            subcategory = ATTRIBUTE
     )
     public static boolean speed = false;
 
     @Switch(
-            name = "Undead Resistance"
+            name = "Undead Resistance",
+            subcategory = ATTRIBUTE
     )
     public static boolean undeadResistance = false;
 
     @Switch(
-            name = "Veteran"
+            name = "Veteran",
+            subcategory = ATTRIBUTE
     )
     public static boolean veteran = false;
 
     @Switch(
-            name = "Blazing Fortune"
+            name = "Blazing Fortune",
+            subcategory = ATTRIBUTE
     )
     public static boolean blazingFortune = false;
 
     @Switch(
-            name = "Fishing Experience"
+            name = "Fishing Experience",
+            subcategory = ATTRIBUTE
     )
     public static boolean fishingExperience = false;
 
     @Switch(
-            name = "Infection"
+            name = "Infection",
+            subcategory = ATTRIBUTE
     )
     public static boolean infection = true;
 
     @Switch(
-            name = "Double Hook"
+            name = "Double Hook",
+            subcategory = ATTRIBUTE
     )
     public static boolean doubleHook = false;
 
     @Switch(
-            name = "Fisherman"
+            name = "Fisherman",
+            subcategory = ATTRIBUTE
     )
     public static boolean fisherman = true;
 
     @Switch(
-            name = "Fishing Speed"
+            name = "Fishing Speed",
+            subcategory = ATTRIBUTE
     )
     public static boolean fishingSpeed = false;
 
     @Switch(
-            name = "Hunter"
+            name = "Hunter",
+            subcategory = ATTRIBUTE
     )
     public static boolean hunter = true;
 
     @Switch(
-            name = "Trophy Hunter"
+            name = "Trophy Hunter",
+            subcategory = ATTRIBUTE
     )
     public static boolean trophyHunter = false;
 

@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.APIException;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.PartyUtils;
 import someoneok.kic.utils.dev.KICLogger;
@@ -32,6 +33,11 @@ public class KuudraUserInfo {
     private static final Pattern partyJoinPattern = Pattern.compile("^Party Finder > (.+) joined the group! (.+)$");
 
     public static void showKuudraInfo(String player, boolean manual) {
+        if (!ApiUtils.isVerified()) {
+            sendMessageToPlayer(KICPrefix + " §cMod disabled: not verified.");
+            return;
+        }
+
         if (isNullOrEmpty(player) && KIC.mc.thePlayer != null) {
             player = getPlayerName();
         }
@@ -66,6 +72,7 @@ public class KuudraUserInfo {
     }
 
     public static ChatComponentText makeMessage(JsonObject infoObject, boolean manual) {
+        if (!ApiUtils.isVerified()) return null;
         try {
             JsonObject playerInfo = infoObject.get("playerInfo").getAsJsonObject();
             String kic = infoObject.has("kic") && !infoObject.get("kic").isJsonNull() ? infoObject.get("kic").getAsString() : "";
@@ -79,6 +86,7 @@ public class KuudraUserInfo {
             JsonObject pets = infoObject.get("pets").getAsJsonObject();
 
             String username = playerInfo.get("username").getAsString();
+            String uuid = playerInfo.get("uuid").getAsString();
             String api_off = "§cAPI OFF";
 
             // Api status
@@ -451,10 +459,10 @@ public class KuudraUserInfo {
 
                     mainMessage.appendSibling(new ChatComponentText(endString));
 
-                    if (!manual && PartyUtils.amILeader()) {
+                    if (!manual && (!PartyUtils.inParty() || PartyUtils.amILeader())) {
                         mainMessage.appendSibling(createClickComponent(true, String.format("\n§cRemove §4%s §cfrom the party", username), ClickEvent.Action.RUN_COMMAND, "/party kick " + username));
                         autoKick(
-                                username, (useLL ? totalLL : totalDom), totalMp, (int) cata_level, infernalComps, magicalPower,
+                                username, uuid, (useLL ? totalLL : totalDom), totalMp, (int) cata_level, infernalComps, magicalPower,
                                 rag_chim, duplex_lvl, rag_gem, chestplate_name, leggings_name, boots_name, duplex_power7,
                                 duplex_cubism6, hyperion, totalLegion, (totalStrongMana + totalFeroMana), bankBal, goldCol,
                                 firstPetLevel, inventory, banking, collections
@@ -553,7 +561,7 @@ public class KuudraUserInfo {
 
     @SubscribeEvent(receiveCanceled = true)
     public void onChat(ClientChatReceivedEvent event) {
-        if (!KICConfig.partyFinder) return;
+        if (!KICConfig.partyFinder || !ApiUtils.isVerified()) return;
         String message = event.message.getUnformattedText();
         Matcher matcher = partyJoinPattern.matcher(message);
 

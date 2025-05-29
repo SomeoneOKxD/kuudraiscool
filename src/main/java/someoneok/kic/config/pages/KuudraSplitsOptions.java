@@ -16,6 +16,13 @@ public class KuudraSplitsOptions {
     private transient static final String UPDATE = "Update";
 
     @Switch(
+            name = "Total Time Server Lagged For",
+            subcategory = TOGGLE,
+            description = "At the end of the run show how long the server lagged for."
+    )
+    public static boolean showTotalServerLag = true;
+
+    @Switch(
             name = "Show Pace",
             subcategory = TOGGLE
     )

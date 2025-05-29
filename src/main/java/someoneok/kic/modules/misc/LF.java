@@ -13,6 +13,7 @@ import someoneok.kic.models.PlayerInfo;
 import someoneok.kic.models.misc.LFData;
 import someoneok.kic.models.misc.LFItemData;
 import someoneok.kic.models.request.LFRequest;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.dev.KICLogger;
 
@@ -29,6 +30,11 @@ public class LF {
     private static IChatComponent message;
 
     public static void show(LFRequest lfRequest) {
+        if (!ApiUtils.isVerified()) {
+            sendMessageToPlayer(KICPrefix + " §cMod disabled: not verified.");
+            return;
+        }
+
         lfData = null;
         message = null;
         Multithreading.runAsync(() -> {

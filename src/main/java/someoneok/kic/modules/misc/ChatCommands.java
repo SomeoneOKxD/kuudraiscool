@@ -10,6 +10,7 @@ import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.kicauction.*;
 import someoneok.kic.models.request.AuctionDataRequest;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.PartyUtils;
 import someoneok.kic.utils.dev.KICLogger;
@@ -57,7 +58,7 @@ public class ChatCommands {
 
     @SubscribeEvent(receiveCanceled = true)
     public void onChatMessage(ClientChatReceivedEvent event) {
-        if (!KICConfig.partyCommands && !KICConfig.dmCommands) return;
+        if (!ApiUtils.isVerified() || (!KICConfig.partyCommands && !KICConfig.dmCommands)) return;
         String message = removeUnicode(removeFormatting(event.message.getUnformattedText()));
 
         if (!message.startsWith("Party") && !message.startsWith("From")) return;
@@ -144,6 +145,7 @@ public class ChatCommands {
     }
 
     private void getData(String cmd, String player, String command) {
+        if (!ApiUtils.isVerified()) return;
         String formattedPlayer = formatPlayerName(player);
         if (formattedPlayer == null) return;
 
@@ -181,6 +183,7 @@ public class ChatCommands {
     }
 
     private void getApData(String cmd, String message) {
+        if (!ApiUtils.isVerified()) return;
         Matcher apMatcher = AP_COMMAND_REGEX.matcher(message);
         if (!apMatcher.matches()) return;
 

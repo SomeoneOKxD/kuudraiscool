@@ -6,6 +6,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.config.pages.KuudraAutoKickOptions;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.dev.KICLogger;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class KuudraAutoKick {
     private static final List<String> gemTiers = Arrays.asList("PERFECT", "FLAWLESS", "FINE", "FLAWED", "ROUGH", "NONE");
 
     public static void autoKick(
-            String user, int lifeline, int mana_pool, int cata_level, int t5_comps, int magical_power, int rag_chim_level,
+            String user, String uuid, int lifeline, int mana_pool, int cata_level, int t5_comps, int magical_power, int rag_chim_level,
             int term_duplex_level, String rag_gemstone, String chestplate, String leggings, String boots,
             boolean term_p7, boolean term_c6, boolean wither_impact, int legion_level, int strong_fero_mana,
             long bank_balance, long gold_collection, int golden_dragon_level,
@@ -41,11 +42,14 @@ public class KuudraAutoKick {
 
         String lowerUser = user.toLowerCase();
 
-        if (useWhitelist && parsePlayerList(whitelisted).contains(lowerUser)) {
+        Set<String> whitelist = parsePlayerList(whitelisted);
+        if (useWhitelist && (whitelist.contains(lowerUser) || whitelist.contains(uuid))) {
+            KICLogger.info("[AutoKick] User is whitelisted.");
             return;
         }
 
-        if (useBlacklist && parsePlayerList(blacklisted).contains(lowerUser)) {
+        Set<String> blacklist = parsePlayerList(blacklisted);
+        if (useBlacklist && (blacklist.contains(lowerUser) || blacklist.contains(uuid))) {
             sendCommand(String.format("/pc [KIC] %s was kicked for: blacklisted", user));
             Multithreading.schedule(() -> sendCommand("/p kick " + user), 500, TimeUnit.MILLISECONDS);
             return;
@@ -120,7 +124,10 @@ public class KuudraAutoKick {
 
     @SubscribeEvent(receiveCanceled = true)
     public void onChat(ClientChatReceivedEvent event) {
-        if (!KICConfig.kuudraAutoKick || !KuudraAutoKickOptions.autoKickTrimonu || !amILeader()) return;
+        if (!KICConfig.kuudraAutoKick
+                || !KuudraAutoKickOptions.autoKickTrimonu
+                || !amILeader()
+                || !ApiUtils.isVerified()) return;
         String message = event.message.getUnformattedText();
         Matcher matcher = trimonuPattern.matcher(message);
 
@@ -132,6 +139,15 @@ public class KuudraAutoKick {
         }
     }
 
+    private static Set<String> parsePlayerList(String input) {
+        String cleanedInput = input.replaceAll("-", "");
+        return Arrays.stream(cleanedInput.split(";"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+    }
+
     private static class KickCriteria {
         boolean condition;
         String reason;
@@ -140,13 +156,5 @@ public class KuudraAutoKick {
             this.condition = condition;
             this.reason = reason;
         }
-    }
-
-    private static Set<String> parsePlayerList(String input) {
-        return Arrays.stream(input.split(";"))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
     }
 }

@@ -92,7 +92,7 @@ public class LocationUtils {
 
     @SubscribeEvent
     public void onServerDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
-        onHypixel = false;
+        reset();
     }
 
     private int ticks = 0;
@@ -192,5 +192,16 @@ public class LocationUtils {
 
     private String extractFaction(String line) {
         return removeFormatting(line).split(" ")[0];
+    }
+
+    private void reset() {
+        currentIsland = null;
+        serverName = "";
+        onSkyblock = false;
+        onHypixel = false;
+        subArea = "";
+        inDungeons = false;
+        inKuudra = false;
+        kuudraTier = 0;
     }
 }

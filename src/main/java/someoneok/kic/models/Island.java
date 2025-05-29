@@ -20,6 +20,7 @@ public enum Island {
     GARDEN("Garden"),
     THE_RIFT("The Rift"),
     KUUDRA("Kuudra"),
+    BACKWATER_BAYOU("Backwater Bayou"),
     NO_CLUE("Nothing"),
     ALL("All");
 

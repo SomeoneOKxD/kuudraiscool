@@ -16,6 +16,7 @@ public class FuckOtherMods {
             new KICCommand(),
             new TesterCommand(),
             new ChatCommand(),
+            new ChatPlusCommand(),
             new KuudraCommand(),
             new KICAuctionCommand(),
             new AttributePriceCommand(),

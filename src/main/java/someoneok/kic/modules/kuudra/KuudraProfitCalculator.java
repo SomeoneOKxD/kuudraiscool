@@ -19,6 +19,7 @@ import someoneok.kic.models.crimson.AuctionItemValue;
 import someoneok.kic.models.crimson.BazaarItemValue;
 import someoneok.kic.models.kuudra.KuudraChest;
 import someoneok.kic.models.kuudra.KuudraKey;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.GeneralUtils;
 import someoneok.kic.utils.ItemUtils;
 import someoneok.kic.utils.LocationUtils;
@@ -54,7 +55,10 @@ public class KuudraProfitCalculator {
 
     @SubscribeEvent
     public void onGUIDrawnEvent(GuiContainerEvent.ForegroundDrawnEvent event) {
-        if (!KICConfig.kuudraProfitCalculator || LocationUtils.currentIsland != Island.KUUDRA || !(event.getContainer() instanceof ContainerChest)) return;
+        if (!KICConfig.kuudraProfitCalculator
+                || LocationUtils.currentIsland != Island.KUUDRA
+                || !(event.getContainer() instanceof ContainerChest)
+                || !ApiUtils.isVerified()) return;
 
         IInventory inv = ((ContainerChest) event.getContainer()).getLowerChestInventory();
 
@@ -315,7 +319,6 @@ public class KuudraProfitCalculator {
 
     private void instaOpen() {
         if (profitCalculated
-                || !KICConfig.ACAutoBuy
                 || bought
                 || !KICConfig.ACInstaBuy
                 || currentChest == null
@@ -433,7 +436,11 @@ public class KuudraProfitCalculator {
 
     @SubscribeEvent
     public void onSlotClick(GuiContainerEvent.SlotClickEvent event) {
-        if (LocationUtils.currentIsland != Island.KUUDRA || !(event.getContainer() instanceof ContainerChest) || !event.getChestName().endsWith(" Chest")) return;
+        if (LocationUtils.currentIsland != Island.KUUDRA
+                || !(event.getContainer() instanceof ContainerChest)
+                || !event.getChestName().endsWith(" Chest")
+                || !ApiUtils.isVerified()) return;
+
         KICLogger.info(String.format("[OSC] Processing slot clicked event. Clicked Button: %d | Click Type: %d", event.getClickedButton(), event.getClickType()));
         KICLogger.info(String.format("[OSC] Slot %d clicked | Slot null? %s | Stack null? %s", event.getSlotId(), event.getSlot() == null, event.getSlot() != null && event.getSlot().getStack() != null));
 
@@ -460,14 +467,18 @@ public class KuudraProfitCalculator {
     }
 
     private boolean validRerollItem(ItemStack itemStack) {
+        if (itemStack == null) return false;
         return itemStack.getDisplayName().equals("§aReroll Kuudra Chest");
     }
 
     private boolean validBuyItem(ItemStack itemStack) {
+        if (itemStack == null) return false;
         return itemStack.getDisplayName().equals("§aOpen Reward Chest");
     }
 
     private boolean canBuy(KuudraChest chest) {
+        if (chest == null) return false;
+
         KuudraKey key = chest.getKeyNeeded();
         if (chest == KuudraChest.FREE || key == null) return true;
 
@@ -521,7 +532,6 @@ public class KuudraProfitCalculator {
             handleNotification(profit);
         } else {
             KICLogger.info("[IBCT] Profit tracker not updated. Waiting for profit to be calculated...");
-            sendMessageToPlayer(KIC.KICPrefix + " §aInsta-bought the paid chest! (Profit: §cUnknown§a)");
         }
     }
 

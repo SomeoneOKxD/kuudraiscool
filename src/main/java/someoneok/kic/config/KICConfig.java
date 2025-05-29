@@ -19,6 +19,7 @@ import someoneok.kic.config.pages.KuudraSplitsOptions;
 import someoneok.kic.modules.kuudra.TrajectorySolver;
 import someoneok.kic.modules.kuudra.Waypoints;
 import someoneok.kic.modules.misc.ButtonManager;
+import someoneok.kic.modules.misc.TrackEmptySlots;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.dev.KICLogger;
 import someoneok.kic.utils.overlay.EditHudScreen;
@@ -30,15 +31,15 @@ import static someoneok.kic.utils.GeneralUtils.round2;
 import static someoneok.kic.utils.StringUtils.isValidUUIDv4RegexBased;
 
 public class KICConfig extends Config {
-    private static String oldKey = "";
-    private static int oldAPInitialDelay = 0;
-    private static int oldAPDoubleDelay = 0;
-    private static int oldAPSkyDistance = 0;
-    private static int oldAPFlatDistance = 0;
-    private static float oldAPTextSizeScaleSky = 0;
-    private static float oldAPWaypointSizeScaleSky = 0;
-    private static float oldAPTextSizeScaleFlat = 0;
-    private static float oldAPWaypointSizeScaleFlat = 0;
+    private transient static String oldKey = "";
+    private transient static int oldAPInitialDelay = 0;
+    private transient static int oldAPDoubleDelay = 0;
+    private transient static int oldAPSkyDistance = 0;
+    private transient static int oldAPFlatDistance = 0;
+    private transient static float oldAPTextSizeScaleSky = 0;
+    private transient static float oldAPWaypointSizeScaleSky = 0;
+    private transient static float oldAPTextSizeScaleFlat = 0;
+    private transient static float oldAPWaypointSizeScaleFlat = 0;
 
     public KICConfig() {
         super(new Mod("Kuudraiscool", ModType.SKYBLOCK), "kic.json");
@@ -68,10 +69,9 @@ public class KICConfig extends Config {
         // Tester & Admin
         hideIf("testerMode", () -> !isTester() && !isDev() && !isBeta());
         hideIf("testerModeLogInChat", () -> !isTester() && !isDev() && !isBeta());
-        hideIf("KICAdminGuiStyle", () -> !isAdmin());
-        hideIf("KICAdminGuiColor", () -> !isAdmin());
         hideIf("autoPearls", () -> !isAdmin());
-        hideIf("devKey", () -> !isDev());
+        hideIf("autoRefillPearls", () -> !isAdmin());
+        hideIf("autoRefillPearlsTicks", () -> !isAdmin());
 
         // Premium
         hideIf("partyFinderGuiStats", () -> !hasPremium());
@@ -88,29 +88,30 @@ public class KICConfig extends Config {
         oldAPWaypointSizeScaleFlat = APWaypointSizeScaleFlat;
 
         addDependency("kuudraProfitTracker", "kuudraProfitCalculator");
-        addDependency("showGodRollHolo", "kuudraProfitCalculator");
-        addDependency("showGodRollHoloBothSides", "kuudraProfitCalculator");
-        addDependency("showGodRollHoloBothSides", "showGodRollHolo");
+        hideIf("showGodRollHolo", () -> !kuudraProfitCalculator);
+        hideIf("showGodRollHoloBothSides", () -> !kuudraProfitCalculator || !showGodRollHolo);
         addDependency("kuudraAutoKick", "partyFinder");
 
-        addDependency("showDoublePearls", "pearlCalculator");
-        addDependency("showDoublePearls", "pearlCalculator");
+        hideIf("showSkyPearls", () -> !pearlCalculator);
+        hideIf("showFlatPearls", () -> !pearlCalculator);
+        hideIf("showDoublePearls", () -> !pearlCalculator);
+        hideIf("showAll", () -> !pearlCalculator);
 
-        hideIf("advancedPearlSettings", () -> !KICConfig.pearlCalculator);
-        hideIf("advancedPearlSettingsInfo", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings);
-        hideIf("APInitialDelay", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings);
-        hideIf("APDoubleDelay", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings);
-        hideIf("APSkyDistance", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings);
-        hideIf("APFlatDistance", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings);
-        hideIf("APTextSizeScaleSky", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings);
-        hideIf("APWaypointSizeScaleSky", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings);
-        hideIf("APTextSizeScaleFlat", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings);
-        hideIf("APWaypointSizeScaleFlat", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings);
-        hideIf("APTimerPos", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings);
+        hideIf("advancedPearlSettings", () -> !pearlCalculator);
+        hideIf("advancedPearlSettingsInfo", () -> !pearlCalculator || !advancedPearlSettings);
+        hideIf("APInitialDelay", () -> !pearlCalculator || !advancedPearlSettings);
+        hideIf("APDoubleDelay", () -> !pearlCalculator || !advancedPearlSettings);
+        hideIf("APSkyDistance", () -> !pearlCalculator || !advancedPearlSettings);
+        hideIf("APFlatDistance", () -> !pearlCalculator || !advancedPearlSettings);
+        hideIf("APTextSizeScaleSky", () -> !pearlCalculator || !advancedPearlSettings);
+        hideIf("APWaypointSizeScaleSky", () -> !pearlCalculator || !advancedPearlSettings);
+        hideIf("APTextSizeScaleFlat", () -> !pearlCalculator || !advancedPearlSettings);
+        hideIf("APWaypointSizeScaleFlat", () -> !pearlCalculator || !advancedPearlSettings);
+        hideIf("APTimerPos", () -> !pearlCalculator || !advancedPearlSettings);
 
-        hideIf("APUseCustomShape", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings);
-        hideIf("APCustom", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings || !KICConfig.APUseCustomShape);
-        hideIf("APCustomShapeQuality", () -> !KICConfig.pearlCalculator || !KICConfig.advancedPearlSettings || !KICConfig.APUseCustomShape);
+        hideIf("APUseCustomShape", () -> !pearlCalculator || !advancedPearlSettings);
+        hideIf("APCustom", () -> !pearlCalculator || !advancedPearlSettings || !APUseCustomShape);
+        hideIf("APCustomShapeQuality", () -> !pearlCalculator || !advancedPearlSettings || !APUseCustomShape);
 
         addDependency("advancedPearlSettingsInfo", "advancedPearlSettings");
         addDependency("APInitialDelay", "advancedPearlSettings");
@@ -181,31 +182,28 @@ public class KICConfig extends Config {
 
         addListener("invButtonLoc", ButtonManager::updateCheckboxAlignment);
 
-        addDependency("showSpotNames", "showSpots");
-        addDependency("hideSpotIfClose", "showSpots");
+        hideIf("showSpotNames", () -> !showSpots);
+        hideIf("hideSpotIfClose", () -> !showSpots);
+
+        hideIf("supplySpotColor", () -> !showNothingSupplyWaypoints && !showNothingSupplyWaypointsBeacon);
+        hideIf("supplyColor", () -> !supplyWaypoints && !supplyBox);
+        hideIf("autoRefillPearlsTicks", () -> !autoRefillPearls);
 
         addDependency("ACAutoBuy", "kuudraProfitCalculator");
-        addDependency("ACAlwaysAutoBuy", "kuudraProfitCalculator");
-        addDependency("ACAlwaysAutoBuy", "ACAutoBuy");
-        addDependency("ACAutoBuyMinProfit", "kuudraProfitCalculator");
-        addDependency("ACAutoBuyMinProfit", "ACAutoBuy");
-        addDependency("ACAutoCloseGui", "kuudraProfitCalculator");
-        addDependency("ACAutoCloseGui", "ACAutoBuy");
+        hideIf("ACAlwaysAutoBuy", () -> !kuudraProfitCalculator || !ACAutoBuy);
+        hideIf("ACAutoBuyMinProfit", () -> !kuudraProfitCalculator || !ACAutoBuy);
+        hideIf("ACAutoCloseGui", () -> !(ACAutoBuy || ACInstaBuy));
+        hideIf("ACAutoCloseDelay", () -> !(ACAutoBuy || ACInstaBuy) || !ACAutoCloseGui);
+        hideIf("ACInitialInstaBuyDelay", () -> !ACInstaBuy);
         addDependency("ACAutoReroll", "kuudraProfitCalculator");
-        addDependency("ACOnlyRerollInT5", "kuudraProfitCalculator");
-        addDependency("ACOnlyRerollInT5", "ACAutoReroll");
-        addDependency("ACShouldRerollType", "kuudraProfitCalculator");
-        addDependency("ACShouldRerollType", "ACAutoReroll");
-        addDependency("ACAutoRerollMinValue", "kuudraProfitCalculator");
-        addDependency("ACAutoRerollMinValue", "ACAutoReroll");
+        hideIf("ACOnlyRerollInT5", () -> !kuudraProfitCalculator || !ACAutoReroll);
+        hideIf("ACShouldRerollType", () -> !kuudraProfitCalculator || !ACAutoReroll);
+        hideIf("ACAutoRerollMinValue", () -> !kuudraProfitCalculator || !ACAutoReroll);
 
-        addDependency("kuudraProfitTrackerAddRunTimeDelay", "kuudraProfitTracker");
-        addDependency("kuudraProfitTrackerTotalTimeToAdd", "kuudraProfitTracker");
-        addDependency("kuudraProfitTrackerTotalTimeToAdd", "kuudraProfitTrackerAddRunTimeDelay");
-        hideIf("kuudraProfitTrackerAddRunTimeDelay", () -> !KICConfig.kuudraProfitTracker);
-        hideIf("kuudraProfitTrackerTotalTimeToAdd", () -> !KICConfig.kuudraProfitTracker || !KICConfig.kuudraProfitTrackerAddRunTimeDelay);
+        hideIf("kuudraProfitTrackerAddRunTimeDelay", () -> !kuudraProfitTracker);
+        hideIf("kuudraProfitTrackerTotalTimeToAdd", () -> !kuudraProfitTracker || !kuudraProfitTrackerAddRunTimeDelay);
 
-        addDependency("kuudraNotificationsMoveable", "kuudraNotifications");
+        // Notifications
         addDependency("kuudraNotiNoEquals", "kuudraNotifications");
         addDependency("kuudraNotiNoShop", "kuudraNotifications");
         addDependency("kuudraNotiNoXCannon", "kuudraNotifications");
@@ -226,24 +224,37 @@ public class KICConfig extends Config {
         addDependency("kuudraNotiGrabbedTime", "kuudraNotifications");
         addDependency("kuudraNotiPlacedTime", "kuudraNotifications");
 
+        addDependency("kuudraNotiTotalProftTime", "kuudraNotiTotalProfit");
+
         // Crimson
         addDependency("kaDefaultAttributeLvl", "kaUseDefaultAttributeLvl");
 
         // Chat
-        addDependency("partyCommandRuns", "partyCommands");
-        addDependency("partyCommandStats", "partyCommands");
-        addDependency("partyCommandAp", "partyCommands");
-        addDependency("partyCommandKick", "partyCommands");
-        addDependency("partyCommandCata", "partyCommands");
-        addDependency("partyCommandRtca", "partyCommands");
-        addDependency("dmCommandRuns", "dmCommands");
-        addDependency("dmCommandStats", "dmCommands");
-        addDependency("dmCommandAp", "dmCommands");
-        addDependency("dmCommandCata", "dmCommands");
-        addDependency("dmCommandRtca", "dmCommands");
+        hideIf("partyCommandRuns", () -> !partyCommands);
+        hideIf("partyCommandStats", () -> !partyCommands);
+        hideIf("partyCommandAp", () -> !partyCommands);
+        hideIf("partyCommandKick", () -> !partyCommands);
+        hideIf("partyCommandCata", () -> !partyCommands);
+        hideIf("partyCommandRtca", () -> !partyCommands);
+        hideIf("dmCommandRuns", () -> !dmCommands);
+        hideIf("dmCommandStats", () -> !dmCommands);
+        hideIf("dmCommandAp", () -> !dmCommands);
+        hideIf("dmCommandCata", () -> !dmCommands);
+        hideIf("dmCommandRtca", () -> !dmCommands);
 
-        // World
-        addDependency("serverAlertTime", "serverAlert");
+        // Misc
+        registerKeyBind(openEmptyECBP, TrackEmptySlots::openEmptyEcOrBp);
+        hideIf("trackEnderChestPages", () -> !trackEmptyECBP);
+        hideIf("trackBackpacks", () -> !trackEmptyECBP);
+        hideIf("openEmptyECBP", () -> !trackEmptyECBP);
+
+        for (int i = 1; i <= 9; i++) {
+            hideIf("ec" + i, () -> !trackEmptyECBP || !trackEnderChestPages);
+        }
+
+        for (int i = 1; i <= 18; i++) {
+            hideIf("bp" + i, () -> !trackEmptyECBP || !trackBackpacks);
+        }
     }
 
     // Categories
@@ -260,19 +271,17 @@ public class KICConfig extends Config {
     // GENERAL
     private transient static final String PRESETS = "Presets";
     private transient static final String TESTER = "Tester";
-    private transient static final String ADMIN = "Admin";
 
     // KUUDRA
-    private transient static final String KUUDRA_SUB = "Kuudra";
+    private transient static final String KUUDRA_PARTY_FINDER = "Kuudra Party Finder";
+    private transient static final String KUUDRA_SPLITS = "Kuudra Splits";
     private transient static final String KUUDRA_BOSS = "Kuudra Boss";
     private transient static final String KUUDRA_WAYPOINTS = "Kuudra Waypoints";
-    private transient static final String KUUDRA_PRE = "Kuudra Pre";
-    private transient static final String KUUDRA_MISC = "Kuudra Miscellaneous";
+    private transient static final String KUUDRA_P1 = "Kuudra Phase 1";
+    private transient static final String KUUDRA_P2 = "Kuudra Phase 2";
     private transient static final String KUUDRA_PROFIT_CALC = "Kuudra Profit Calculator";
     private transient static final String KUUDRA_AUTO_CHEST = "Kuudra Auto Chest";
     private transient static final String KUUDRA_PROFIT_TRACKER = "Kuudra Profit Tracker";
-    private transient static final String KUUDRA_AUTO_KICK = "Auto Kick";
-    private transient static final String KUUDRA_SPLITS = "Kuudra Splits";
     private transient static final String KUUDRA_NOTIFICATIONS = "Kuudra Notifications";
 
     // CRIMSON
@@ -360,39 +369,13 @@ public class KICConfig extends Config {
     )
     public static boolean testerModeLogInChat = false;
 
-    @Dropdown(
-            name = "KIC Admin GUI Style",
-            options = {
-                    "Default", "Prism", "PackHQ"
-            },
-            subcategory = ADMIN
-    )
-    public static int KICAdminGuiStyle = 1;
-
-    @Dropdown(
-            name = "KIC Admin GUI Color",
-            subcategory = ADMIN,
-            options = {
-                    "Black", "Dark Blue", "Dark Green", "Dark Aqua", "Dark Red", "Dark Purple",
-                    "Gold", "Gray", "Dark Gray", "Blue", "Green", "Aqua", "Red", "Light Purple",
-                    "Yellow"
-            }
-    )
-    public static int KICAdminGuiColor = 12;
-
-    @KeyBind(
-            name = "Dev Key",
-            size = 2,
-            subcategory = ADMIN
-    )
-    public static OneKeyBind devKey = new OneKeyBind(UKeyboard.KEY_EQUALS);
-
     // KUUDRA
 
+    // KUUDRA_PARTY_FINDER
     @Switch(
             name = "Party Finder",
             category = KUUDRA,
-            subcategory = KUUDRA_SUB,
+            subcategory = KUUDRA_PARTY_FINDER,
             description = "Toggle Party Finder stats."
     )
     public static boolean partyFinder = true;
@@ -400,7 +383,7 @@ public class KICConfig extends Config {
     @Switch(
             name = "Party Finder Gui Stats (KIC+)",
             category = KUUDRA,
-            subcategory = KUUDRA_SUB
+            subcategory = KUUDRA_PARTY_FINDER
     )
     public static boolean partyFinderGuiStats = false;
 
@@ -410,24 +393,117 @@ public class KICConfig extends Config {
                     "KIC", "Attribute Mod"
             },
             category = KUUDRA,
-            subcategory = KUUDRA_SUB,
-            size = 2
+            subcategory = KUUDRA_PARTY_FINDER
     )
     public static int kuudraStatsStyle = 0;
 
-    @Switch(
-            name = "Total Time Server Lagged For",
+    @Info(
+            text = "Auto Kick is a \"USE AT YOUR OWN RISK!\" feature!",
+            type = InfoType.WARNING,
             category = KUUDRA,
-            subcategory = KUUDRA_SUB,
-            description = "At the end of the run show how long the server lagged for."
+            subcategory = KUUDRA_PARTY_FINDER,
+            size = 2
     )
-    public static boolean showTotalServerLag = true;
+    public static boolean UseAtYourOwnRisk0;
+
+    @Switch(
+            name = "Auto Kick",
+            category = KUUDRA,
+            subcategory = KUUDRA_PARTY_FINDER,
+            size = 2,
+            description = "Automatically kicks people who do not meet the set requirements.\nUSE AT YOUR OWN RISK!"
+    )
+    public static boolean kuudraAutoKick = false;
+
+    @Page(
+            name = "Auto Kick Options",
+            category = KUUDRA,
+            subcategory = KUUDRA_PARTY_FINDER,
+            location = PageLocation.BOTTOM
+    )
+    public KuudraAutoKickOptions kuudraAutoKickOptions = new KuudraAutoKickOptions();
+
+    // KUUDRA_SPLITS
+    @Switch(
+            name = "Kuudra Splits",
+            category = KUUDRA,
+            subcategory = KUUDRA_SPLITS
+    )
+    public static boolean kuudraSplits = true;
+
+    @Switch(
+            name = "Kuudra Supply Times",
+            category = KUUDRA,
+            subcategory = KUUDRA_SPLITS
+    )
+    public static boolean kuudraSupplyTimes = true;
+
+    @Switch(
+            name = "Kuudra Fresh Times",
+            category = KUUDRA,
+            subcategory = KUUDRA_SPLITS
+    )
+    public static boolean kuudraFreshTimes = true;
+
+    @Page(
+            name = "Kuudra Splits Options",
+            category = KUUDRA,
+            subcategory = KUUDRA_SPLITS,
+            location = PageLocation.BOTTOM
+    )
+    public KuudraSplitsOptions kuudraSplitsOptions = new KuudraSplitsOptions();
+
+    // KUUDRA_BOSS
+    @Switch(
+            name = "Kuudra Boss Bar",
+            category = KUUDRA,
+            subcategory = KUUDRA_BOSS
+    )
+    public static boolean showKuudraBossBar = true;
+
+    @Switch(
+            name = "Show Kuudra Outline",
+            category = KUUDRA,
+            subcategory = KUUDRA_BOSS
+    )
+    public static boolean showKuudraOutline = true;
+
+    @Switch(
+            name = "Show Kuudra Health",
+            category = KUUDRA,
+            subcategory = KUUDRA_BOSS
+    )
+    public static boolean showKuudraHealth = true;
+
+    // KUUDRA_WAYPOINTS
+    @Switch(
+            name = "Supply Drop Spot Waypoint",
+            category = KUUDRA,
+            subcategory = KUUDRA_WAYPOINTS
+    )
+    public static boolean showNothingSupplyWaypoints = false;
+
+    @Switch(
+            name = "Supply Drop Spot Beacon",
+            category = KUUDRA,
+            subcategory = KUUDRA_WAYPOINTS
+    )
+    public static boolean showNothingSupplyWaypointsBeacon = false;
+
+    @Color(
+            name = "Supply Drop Spot Color",
+            category = KUUDRA,
+            subcategory = KUUDRA_WAYPOINTS,
+            size = 2
+    )
+    public static OneColor supplySpotColor = new OneColor(255,255,255);
 
     @Switch(
             name = "Dynamic Pearl Calculator",
             category = KUUDRA,
             subcategory = KUUDRA_WAYPOINTS,
-            description = "Shows you where to throw your pearl for from any position to land on the supply spot."
+            description = "Shows you where to throw your pearl for from any position to land on the supply spot.",
+            size = 2
     )
     public static boolean pearlCalculator = true;
 
@@ -453,30 +529,10 @@ public class KICConfig extends Config {
     public static boolean showDoublePearls = true;
 
     @Switch(
-            name = "Show Supply Spots Without Any Supplies",
-            category = KUUDRA,
-            subcategory = KUUDRA_WAYPOINTS
-    )
-    public static boolean showNothingSupplyWaypoints = false;
-
-    @Switch(
-            name = "Show Beacon At Supply Spots Without Any Supplies",
-            category = KUUDRA,
-            subcategory = KUUDRA_WAYPOINTS
-    )
-    public static boolean showNothingSupplyWaypointsBeacon = false;
-
-    @Color(
-            name = "Supply Spot Color",
-            category = KUUDRA,
-            subcategory = KUUDRA_WAYPOINTS
-    )
-    public static OneColor supplySpotColor = new OneColor(0,0,100);
-
-    @Switch(
             name = "Show All Supply Waypoints",
             category = KUUDRA,
-            subcategory = KUUDRA_WAYPOINTS
+            subcategory = KUUDRA_WAYPOINTS,
+            description = "Show all waypoints that don’t have supplies placed yet, instead of only those relevant to the current location.\nWARNING: Significant performance impact!"
     )
     public static boolean showAll = false;
 
@@ -566,7 +622,7 @@ public class KICConfig extends Config {
             category = KUUDRA,
             subcategory = KUUDRA_WAYPOINTS
     )
-    public static float APWaypointSizeScaleSky = 0.50f;
+    public static float APWaypointSizeScaleSky = 0.75f;
 
     @Slider(
             name = "Pearl Timer Size Scale (Flat)",
@@ -575,7 +631,7 @@ public class KICConfig extends Config {
             category = KUUDRA,
             subcategory = KUUDRA_WAYPOINTS
     )
-    public static float APTextSizeScaleFlat = 0.50f;
+    public static float APTextSizeScaleFlat = 0.75f;
 
     @Slider(
             name = "Pearl Waypoint Size Scale (Flat)",
@@ -584,7 +640,7 @@ public class KICConfig extends Config {
             category = KUUDRA,
             subcategory = KUUDRA_WAYPOINTS
     )
-    public static float APWaypointSizeScaleFlat = 0.50f;
+    public static float APWaypointSizeScaleFlat = 0.75f;
 
     @Dropdown(
             name = "Timer Position",
@@ -620,87 +676,55 @@ public class KICConfig extends Config {
     )
     public static int APCustomShapeQuality = 16;
 
+    // KUUDRA_P1
     @Switch(
             name = "Show Pre Spots",
             category = KUUDRA,
-            subcategory = KUUDRA_PRE
+            subcategory = KUUDRA_P1,
+            size = 2
     )
     public static boolean showSpots = false;
 
     @Switch(
             name = "Show Pre Spot Names",
             category = KUUDRA,
-            subcategory = KUUDRA_PRE
+            subcategory = KUUDRA_P1
     )
     public static boolean showSpotNames = false;
 
     @Switch(
             name = "Hide Pre Spot If close",
             category = KUUDRA,
-            subcategory = KUUDRA_PRE
+            subcategory = KUUDRA_P1
     )
     public static boolean hideSpotIfClose = true;
 
     @Switch(
-            name = "Kuudra Boss Bar",
-            category = KUUDRA,
-            subcategory = KUUDRA_BOSS
-    )
-    public static boolean showKuudraBossBar = true;
-
-    @Switch(
-            name = "Show Kuudra Outline",
-            category = KUUDRA,
-            subcategory = KUUDRA_BOSS
-    )
-    public static boolean showKuudraOutline = true;
-
-    @Switch(
-            name = "Show Kuudra Health",
-            category = KUUDRA,
-            subcategory = KUUDRA_BOSS
-    )
-    public static boolean showKuudraHealth = true;
-
-    @Switch(
-            name = "Elle ESP",
-            category = KUUDRA,
-            subcategory = KUUDRA_MISC
-    )
-    public static boolean elleESP = true;
-
-    @Switch(
             name = "Show Kuudra Supply Waypoints",
             category = KUUDRA,
-            subcategory = KUUDRA_MISC
+            subcategory = KUUDRA_P1
     )
     public static boolean supplyWaypoints = true;
 
     @Switch(
-            name = "Show Kuudra Supply Box",
+            name = "Show Supply Hitbox",
             category = KUUDRA,
-            subcategory = KUUDRA_MISC
+            subcategory = KUUDRA_P1
     )
     public static boolean supplyBox = false;
 
     @Color(
             name = "Supply Color",
             category = KUUDRA,
-            subcategory = KUUDRA_MISC
+            subcategory = KUUDRA_P1,
+            size = 2
     )
     public static OneColor supplyColor = new OneColor(0, 255, 180);
 
     @Switch(
-            name = "Supply Pile Build Progress Beacon",
-            category = KUUDRA,
-            subcategory = KUUDRA_MISC
-    )
-    public static boolean supplyWaypointsProgress = true;
-
-    @Switch(
             name = "Auto Refill Pearls In Hotbar",
             category = KUUDRA,
-            subcategory = KUUDRA_MISC
+            subcategory = KUUDRA_P1
     )
     public static boolean autoRefillPearls = false;
 
@@ -709,11 +733,26 @@ public class KICConfig extends Config {
             min = 10, max = 600,
             step = 10,
             category = KUUDRA,
-            subcategory = KUUDRA_MISC,
-            size = 2
+            subcategory = KUUDRA_P1
     )
-    public static int autoRefillPearlsTicks = 200;
+    public static int autoRefillPearlsTicks = 100;
 
+    // KUUDRA_P2
+    @Switch(
+            name = "Elle ESP",
+            category = KUUDRA,
+            subcategory = KUUDRA_P2
+    )
+    public static boolean elleESP = true;
+
+    @Switch(
+            name = "Supply Pile Build Progress Beacon",
+            category = KUUDRA,
+            subcategory = KUUDRA_P2
+    )
+    public static boolean supplyWaypointsProgress = true;
+
+    // KUUDRA_PROFIT_CALC
     @Switch(
             name = "Profit Calculator",
             category = KUUDRA,
@@ -746,6 +785,7 @@ public class KICConfig extends Config {
     )
     public KuudraProfitCalculatorOptions kuudraProfitCalculatorOptions = new KuudraProfitCalculatorOptions();
 
+    // KUUDRA_AUTO_CHEST
     @Info(
             text = "Auto Buy and Auto Reroll are \"USE AT YOUR OWN RISK!\" settings!",
             type = InfoType.WARNING,
@@ -767,9 +807,20 @@ public class KICConfig extends Config {
     @Switch(
             name = "Auto Buy",
             category = KUUDRA,
-            subcategory = KUUDRA_AUTO_CHEST
+            subcategory = KUUDRA_AUTO_CHEST,
+            description = "Automatically open the chest after profit has been calculated, waits profit calculator.",
+            size = 2
     )
     public static boolean ACAutoBuy = false;
+
+    @Number(
+            name = "Minimum Total Profit For Auto Buy",
+            description = "Set the minimum total profit required to auto buy the chest. (Set to 0 to turn off)",
+            min = 0, max = 100_000_000,
+            category = KUUDRA,
+            subcategory = KUUDRA_AUTO_CHEST
+    )
+    public static int ACAutoBuyMinProfit = 0;
 
     @Switch(
             name = "Always Buy",
@@ -783,19 +834,18 @@ public class KICConfig extends Config {
             name = "Insta Buy",
             category = KUUDRA,
             subcategory = KUUDRA_AUTO_CHEST,
-            description = "Instantly open the chest when the GUI opens, ignoring profit calculator.",
-            size = 2
+            description = "Instantly open the chest when the GUI opens, ignoring profit calculator. Does not reroll even if auto-reroll is enabled."
     )
     public static boolean ACInstaBuy = false;
 
     @Number(
-            name = "Minimun Total Profit For Auto Buy",
-            description = "Set the minimum total profit required to auto buy the chest. (Set to 0 to turn off)",
-            min = 0, max = 100_000_000,
+            name = "Delay Before Insta Buy After Opening GUI",
+            min = 100, max = 1000,
+            step = 50,
             category = KUUDRA,
             subcategory = KUUDRA_AUTO_CHEST
     )
-    public static int ACAutoBuyMinProfit = 0;
+    public static int  ACInitialInstaBuyDelay = 300;
 
     @Switch(
             name = "Auto Close Chest After Buy",
@@ -809,20 +859,9 @@ public class KICConfig extends Config {
             min = 100, max = 1000,
             step = 50,
             category = KUUDRA,
-            subcategory = KUUDRA_AUTO_CHEST,
-            size = 2
+            subcategory = KUUDRA_AUTO_CHEST
     )
     public static int ACAutoCloseDelay = 250;
-
-    @Number(
-            name = "Delay Before Insta Buy After Opening GUI",
-            min = 100, max = 1000,
-            step = 50,
-            category = KUUDRA,
-            subcategory = KUUDRA_AUTO_CHEST,
-            size = 2
-    )
-    public static int  ACInitialInstaBuyDelay = 300;
 
     @Info(
             text = "Auto Reroll Options",
@@ -857,7 +896,7 @@ public class KICConfig extends Config {
     public static int ACShouldRerollType = 1;
 
     @Number(
-            name = "Minimun Total Value Of First 2 Slots",
+            name = "Reroll If First Two Slots Are Under",
             description = "Specifies the minimum combined value of the first 2 slots required to avoid a reroll. If their total value is below this threshold, the chest will be rerolled.",
             min = 1, max = 10_000_000,
             category = KUUDRA,
@@ -865,6 +904,7 @@ public class KICConfig extends Config {
     )
     public static int ACAutoRerollMinValue = 2_000_000;
 
+    // KUUDRA_PROFIT_TRACKER
     @Switch(
             name = "Profit Tracker",
             category = KUUDRA,
@@ -876,8 +916,7 @@ public class KICConfig extends Config {
     @Switch(
             name = "Include Delay In Run Time",
             category = KUUDRA,
-            subcategory = KUUDRA_PROFIT_TRACKER,
-            size = 2
+            subcategory = KUUDRA_PROFIT_TRACKER
     )
     public static boolean kuudraProfitTrackerAddRunTimeDelay = true;
 
@@ -896,61 +935,6 @@ public class KICConfig extends Config {
             location = PageLocation.BOTTOM
     )
     public KuudraProfitTrackerOptions kuudraProfitTrackerOptions = new KuudraProfitTrackerOptions();
-
-    @Info(
-            text = "Settings under " + KUUDRA_AUTO_KICK + " are \"USE AT YOUR OWN RISK!\" settings!",
-            type = InfoType.WARNING,
-            category = KUUDRA,
-            subcategory = KUUDRA_AUTO_KICK,
-            size = 2
-    )
-    public static boolean UseAtYourOwnRisk0;
-
-    @Switch(
-            name = "Auto Kick",
-            category = KUUDRA,
-            subcategory = KUUDRA_AUTO_KICK,
-            size = 2,
-            description = "Automatically kicks people who do not meet the set requirements.\nUSE AT YOUR OWN RISK!"
-    )
-    public static boolean kuudraAutoKick = false;
-
-    @Page(
-            name = "Auto Kick Options",
-            category = KUUDRA,
-            subcategory = KUUDRA_AUTO_KICK,
-            location = PageLocation.BOTTOM
-    )
-    public KuudraAutoKickOptions kuudraAutoKickOptions = new KuudraAutoKickOptions();
-
-    @Switch(
-            name = "Kuudra Splits",
-            category = KUUDRA,
-            subcategory = KUUDRA_SPLITS
-    )
-    public static boolean kuudraSplits = true;
-
-    @Switch(
-            name = "Kuudra Supply Times",
-            category = KUUDRA,
-            subcategory = KUUDRA_SPLITS
-    )
-    public static boolean kuudraSupplyTimes = true;
-
-    @Switch(
-            name = "Kuudra Fresh Times",
-            category = KUUDRA,
-            subcategory = KUUDRA_SPLITS
-    )
-    public static boolean kuudraFreshTimes = true;
-
-    @Page(
-            name = "Kuudra Splits Options",
-            category = KUUDRA,
-            subcategory = KUUDRA_SPLITS,
-            location = PageLocation.BOTTOM
-    )
-    public KuudraSplitsOptions kuudraSplitsOptions = new KuudraSplitsOptions();
 
     @Switch(
             name = "Notifications",
@@ -1155,6 +1139,15 @@ public class KICConfig extends Config {
     )
     public static int ahHelperUnderCut = 1;
 
+    @Info(
+            text = "Clicking on '[KIC] Container Helper [Value/Helper]' toggles the overlay mode between Value and Helper.",
+            type = InfoType.INFO,
+            category = CRIMSON,
+            subcategory = CRIMSON_CONTAINER,
+            size = 2
+    )
+    public static boolean containerHelperInfo;
+
     @Switch(
             name = "Container Helper",
             category = CRIMSON,
@@ -1177,7 +1170,8 @@ public class KICConfig extends Config {
     public static boolean crimsonTooltipPrices = true;
 
     @Switch(
-            name = "Show Prices Per Attribute",
+            name = "Show Prices For Each Attribute",
+            description = "Displays the price next to each attribute in the tooltip.",
             category = CRIMSON,
             subcategory = CRIMSON_TOOLTIP
     )
@@ -1228,18 +1222,20 @@ public class KICConfig extends Config {
     public static int kaDefaultAttributeLvl = 5;
 
     @Slider(
-            name = "Kic Auction - (Price/lvl X) - Armor/Equipment/Fishing",
+            name = "(Price/lvl X) - Armor/Equipment/Fishing",
             category = CRIMSON,
             min = 1, max = 10,
-            subcategory = CRIMSON_AH
+            subcategory = CRIMSON_AH,
+            description = "Sets the comparison level (X) used to display item's attribute price per level.\nExample: If set to 5 and an item costs 200m at level 10, it will show as (6.25M/lvl 5)."
     )
     public static int kaPricePerXLvl = 5;
 
     @Slider(
-            name = "Kic Auction - (Price/lvl X) - Shards",
+            name = "(Price/lvl X) - Shards",
             category = CRIMSON,
             min = 1, max = 10,
-            subcategory = CRIMSON_AH
+            subcategory = CRIMSON_AH,
+            description = "Sets the comparison level (X) used to display shard's attribute price per level.\nExample: If set to 5 and a shard costs 200m at level 10, it will show as (6.25M/lvl 5)."
     )
     public static int kaPricePerXLvlShards = 4;
 
@@ -1460,7 +1456,8 @@ public class KICConfig extends Config {
 
     @Switch(
             name = "Show Current Armor Next To Hotbar",
-            category = MISC
+            category = MISC,
+            size = 2
     )
     public static boolean showArmorInHud = false;
 
@@ -1471,6 +1468,197 @@ public class KICConfig extends Config {
             size = 2
     )
     public static int invButtonLoc = 0;
+
+    @Switch(
+            name = "Track Empty Slots In Ender Chest Pages And Backpacks",
+            category = MISC,
+            size = 2
+    )
+    public static boolean trackEmptyECBP = false;
+
+    @Switch(
+            name = "Track Ender Chest Pages",
+            category = MISC,
+            size = 2
+    )
+    public static boolean trackEnderChestPages = false;
+
+    @Switch(
+            name = "Track Backpacks",
+            category = MISC,
+            size = 2
+    )
+    public static boolean trackBackpacks = true;
+
+    @KeyBind(
+            name = "Open EC or BP With Empty Slots Keybind",
+            description = "Key to press when you want to open an ender chest page or backpack with empty slots.",
+            size = 2,
+            category = MISC
+    )
+    public static OneKeyBind openEmptyECBP = new OneKeyBind(UKeyboard.KEY_NONE);
+
+    @Switch(
+            name = "Ender Chest Page 1",
+            category = MISC
+    )
+    public static boolean ec1 = false;
+
+    @Switch(
+            name = "Ender Chest Page 2",
+            category = MISC
+    )
+    public static boolean ec2 = false;
+
+    @Switch(
+            name = "Ender Chest Page 3",
+            category = MISC
+    )
+    public static boolean ec3 = false;
+
+    @Switch(
+            name = "Ender Chest Page 4",
+            category = MISC
+    )
+    public static boolean ec4 = false;
+
+    @Switch(
+            name = "Ender Chest Page 5",
+            category = MISC
+    )
+    public static boolean ec5 = false;
+
+    @Switch(
+            name = "Ender Chest Page 6",
+            category = MISC
+    )
+    public static boolean ec6 = false;
+
+    @Switch(
+            name = "Ender Chest Page 7",
+            category = MISC
+    )
+    public static boolean ec7 = false;
+
+    @Switch(
+            name = "Ender Chest Page 8",
+            category = MISC
+    )
+    public static boolean ec8 = false;
+
+    @Switch(
+            name = "Ender Chest Page 9",
+            category = MISC
+    )
+    public static boolean ec9 = false;
+
+    @Switch(
+            name = "Backpack 1",
+            category = MISC
+    )
+    public static boolean bp1 = false;
+
+    @Switch(
+            name = "Backpack 2",
+            category = MISC
+    )
+    public static boolean bp2 = false;
+
+    @Switch(
+            name = "Backpack 3",
+            category = MISC
+    )
+    public static boolean bp3 = false;
+
+    @Switch(
+            name = "Backpack 4",
+            category = MISC
+    )
+    public static boolean bp4 = false;
+
+    @Switch(
+            name = "Backpack 5",
+            category = MISC
+    )
+    public static boolean bp5 = false;
+
+    @Switch(
+            name = "Backpack 6",
+            category = MISC
+    )
+    public static boolean bp6 = false;
+
+    @Switch(
+            name = "Backpack 7",
+            category = MISC
+    )
+    public static boolean bp7 = false;
+
+    @Switch(
+            name = "Backpack 8",
+            category = MISC
+    )
+    public static boolean bp8 = false;
+
+    @Switch(
+            name = "Backpack 9",
+            category = MISC
+    )
+    public static boolean bp9 = false;
+
+    @Switch(
+            name = "Backpack 10",
+            category = MISC
+    )
+    public static boolean bp10 = false;
+
+    @Switch(
+            name = "Backpack 11",
+            category = MISC
+    )
+    public static boolean bp11 = false;
+
+    @Switch(
+            name = "Backpack 12",
+            category = MISC
+    )
+    public static boolean bp12 = false;
+
+    @Switch(
+            name = "Backpack 13",
+            category = MISC
+    )
+    public static boolean bp13 = false;
+
+    @Switch(
+            name = "Backpack 14",
+            category = MISC
+    )
+    public static boolean bp14 = false;
+
+    @Switch(
+            name = "Backpack 15",
+            category = MISC
+    )
+    public static boolean bp15 = false;
+
+    @Switch(
+            name = "Backpack 16",
+            category = MISC
+    )
+    public static boolean bp16 = false;
+
+    @Switch(
+            name = "Backpack 17",
+            category = MISC
+    )
+    public static boolean bp17 = false;
+
+    @Switch(
+            name = "Backpack 18",
+            category = MISC
+    )
+    public static boolean bp18 = false;
 
     // HUDS
 

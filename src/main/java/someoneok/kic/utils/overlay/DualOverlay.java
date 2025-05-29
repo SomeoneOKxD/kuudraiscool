@@ -2,6 +2,7 @@ package someoneok.kic.utils.overlay;
 
 import net.minecraft.client.gui.GuiChat;
 import someoneok.kic.models.Island;
+import someoneok.kic.utils.ApiUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -79,7 +80,7 @@ public class DualOverlay extends MovableOverlay {
 
     @Override
     public void render() {
-        if (!shouldRender()) return;
+        if (!ApiUtils.isVerified() || !shouldRender()) return;
 
         if (editing) {
             movableOverlay.render();

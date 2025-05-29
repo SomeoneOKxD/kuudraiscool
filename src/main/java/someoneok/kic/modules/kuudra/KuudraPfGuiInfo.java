@@ -17,6 +17,7 @@ import someoneok.kic.models.APIException;
 import someoneok.kic.models.Island;
 import someoneok.kic.models.overlay.OverlayExamples;
 import someoneok.kic.modules.misc.ButtonManager;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.LocationUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.dev.KICLogger;
@@ -56,7 +57,8 @@ public class KuudraPfGuiInfo {
         shouldRender = KICConfig.partyFinderGuiStats && hasPremium() &&
                 LocationUtils.currentIsland == Island.CRIMSON_ISLE &&
                 "Forgotten Skull".equals(LocationUtils.subArea) &&
-                "Party Finder".equals(event.getChestName());
+                "Party Finder".equals(event.getChestName()) &&
+                ApiUtils.isVerified();
         if (!shouldRender) return;
 
         if (ButtonManager.isChecked("partyFinderGuiStatsExample")) {

@@ -67,7 +67,7 @@ repositories {
     maven("https://repo.spongepowered.org/maven/")
     maven("https://repo.polyfrost.cc/releases/")
     maven("https://repo.hypixel.net/repository/Hypixel/")
-
+    maven("https://repo.nea.moe/releases")
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1/")
 }
 
@@ -102,6 +102,8 @@ dependencies {
 
     compileOnly("com.squareup.okio:okio:1.17.6")
     shadowImpl("com.squareup.okio:okio:1.17.6")
+
+    shadowImpl("moe.nea:libautoupdate:0.1.0")
 }
 
 // Tasks:

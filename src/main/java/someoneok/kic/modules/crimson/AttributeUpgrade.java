@@ -11,6 +11,7 @@ import someoneok.kic.models.APIException;
 import someoneok.kic.models.crimson.UpgradeData;
 import someoneok.kic.models.kicauction.KICAuctionItem;
 import someoneok.kic.models.request.AttributeUpgradeRequest;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.dev.KICLogger;
 
@@ -29,6 +30,11 @@ public class AttributeUpgrade {
     private static final GuiNewChat chatGui = KIC.mc.ingameGUI.getChatGUI();
 
     public static void show(AttributeUpgradeRequest attributeUpgradeRequest) {
+        if (!ApiUtils.isVerified()) {
+            sendMessageToPlayer(KICPrefix + " §cMod disabled: not verified.");
+            return;
+        }
+
         upgradeData = null;
         timestamp = 0;
         message = null;

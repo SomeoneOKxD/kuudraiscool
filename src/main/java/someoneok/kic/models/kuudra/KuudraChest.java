@@ -16,6 +16,7 @@ import someoneok.kic.models.crimson.*;
 import someoneok.kic.models.request.Request;
 import someoneok.kic.modules.kuudra.GodRoll;
 import someoneok.kic.modules.kuudra.KuudraProfitTracker;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.CacheManager;
 import someoneok.kic.utils.ItemUtils;
 import someoneok.kic.utils.NetworkUtils;
@@ -213,6 +214,7 @@ public enum KuudraChest {
     }
 
     public void updateValues(Runnable callback) {
+        if (!ApiUtils.isVerified()) return;
         KICLogger.info("Updating values");
 
         List<Value> itemsToFetch = values.values().stream()

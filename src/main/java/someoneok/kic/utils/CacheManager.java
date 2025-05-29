@@ -105,6 +105,8 @@ public class CacheManager {
     }
 
     public static void updateAttributeItemsCache(Runnable callback) {
+        if (!ApiUtils.isVerified()) return;
+
         List<AttributeItemValue> itemsToFetch = attributeItems.values().stream()
                 .filter(item -> !item.isFetching() && !item.isCached())
                 .collect(Collectors.toList());

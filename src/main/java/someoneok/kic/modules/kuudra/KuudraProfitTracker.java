@@ -10,6 +10,8 @@ import someoneok.kic.models.kuudra.KuudraChest;
 import someoneok.kic.models.kuudra.KuudraKey;
 import someoneok.kic.models.overlay.ProfitTrackerData;
 import someoneok.kic.models.request.ShareTrackerRequest;
+import someoneok.kic.utils.ApiUtils;
+import someoneok.kic.utils.LocationUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.overlay.*;
 
@@ -53,7 +55,9 @@ public class KuudraProfitTracker {
     }
 
     private static void maybeUpdatePersonalBest(long runTimeMs) {
-        long oldPb = KIC.userData.getKuudraPersonalBest();
+        if (LocationUtils.kuudraTier != 5) return;
+        Long oldPb = KIC.userData.getKuudraPersonalBest();
+        if (oldPb == null) oldPb = 0L;
 
         if (oldPb == 0 || runTimeMs < oldPb) {
             KIC.userData.setKuudraPersonalBest(runTimeMs);
@@ -255,13 +259,13 @@ public class KuudraProfitTracker {
         if (KuudraProfitTrackerOptions.showTime) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.timeColor);
             text.append("\n").append(color).append("§lTime: §r")
-                    .append(color).append(formatElapsedTime(session.getTime(), 0, 4));
+                    .append(color).append(formatElapsedTime(session.getTime(), 0, 3));
         }
 
         if (KuudraProfitTrackerOptions.showAverageTimePerRun) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.averageTimePerRunColor);
             text.append("\n").append(color).append("§lAverage: §r")
-                    .append(color).append(formatElapsedTime(session.getAverageRunTime(), 0, 4)).append("/run");
+                    .append(color).append(formatElapsedTime(session.getAverageRunTime(), 0, 3)).append("/run");
         }
 
         if (KuudraProfitTrackerOptions.showRate) {
@@ -273,7 +277,7 @@ public class KuudraProfitTracker {
         if (KuudraProfitTrackerOptions.showGodRolls) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.godRollColor);
             text.append("\n").append(color).append("§lGod Rolls: §r")
-                    .append(color).append(parseToShorthandNumber(session.getTotalGodRolls()));
+                    .append(color).append(session.getTotalGodRolls());
             if (KuudraProfitTrackerOptions.showGodRollValue) {
                 text.append(String.format(" §7(§a+%s§7)", parseToShorthandNumber(session.getGodRollValue())));
             }
@@ -348,6 +352,11 @@ public class KuudraProfitTracker {
     }
 
     public static void shareTracker() {
+        if (!ApiUtils.isVerified()) {
+            sendMessageToPlayer(KICPrefix + " §cMod disabled: not verified.");
+            return;
+        }
+
         Multithreading.runAsync(() -> {
             ShareTrackerRequest shareTrackerRequest = new ShareTrackerRequest(lifetimeView);
             String requestBody = KIC.GSON.toJson(shareTrackerRequest);

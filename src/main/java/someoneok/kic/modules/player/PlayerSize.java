@@ -8,12 +8,13 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import someoneok.kic.config.KICConfig;
+import someoneok.kic.utils.ApiUtils;
 
 @SideOnly(Side.CLIENT)
 public class PlayerSize {
     @SubscribeEvent
     public void onRenderPlayerPre(RenderPlayerEvent.Pre event) {
-        if (!KICConfig.playerSizeToggle || KICConfig.playerSizingMethod != 0) return;
+        if (!KICConfig.playerSizeToggle || KICConfig.playerSizingMethod != 0 || !ApiUtils.isVerified()) return;
 
         EntityPlayer player = event.entityPlayer;
 
@@ -42,7 +43,7 @@ public class PlayerSize {
 
     @SubscribeEvent
     public void onRenderPlayerPost(RenderPlayerEvent.Post event) {
-        if (!KICConfig.playerSizeToggle || KICConfig.playerSizingMethod != 0) return;
+        if (!KICConfig.playerSizeToggle || KICConfig.playerSizingMethod != 0 || !ApiUtils.isVerified()) return;
 
         EntityPlayer player = event.entityPlayer;
 

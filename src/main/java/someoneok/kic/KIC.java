@@ -14,7 +14,6 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.Island;
 import someoneok.kic.models.UserData;
 import someoneok.kic.models.overlay.OverlayExamples;
-import someoneok.kic.modules.admin.Dev;
 import someoneok.kic.modules.crimson.AuctionHelper;
 import someoneok.kic.modules.crimson.CrimsonContainerHelper;
 import someoneok.kic.modules.crimson.TooltipPrice;
@@ -30,7 +29,6 @@ import someoneok.kic.utils.ws.KICWS;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
-import java.io.File;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -56,7 +54,6 @@ public class KIC {
     public static SSLContext CUSTOM_SSL_CONTEXT;
     public static String discordUrl = "https://discord.gg/gsz58gazAK";
     public static KICConfig config;
-    public static File modsDir;
     public static UserData userData;
 
     private final ArrayList<Object> modules = new ArrayList<>();
@@ -65,7 +62,7 @@ public class KIC {
         Collections.addAll(modules,
                 new KICWS(),
                 new LocationUtils(),
-//                new AutoUpdater(),
+                new Updater(),
                 new TitleUtils(),
                 new PlayerSize(),
                 new KuudraUserInfo(),
@@ -75,7 +72,7 @@ public class KIC {
                 new CrimsonContainerHelper(),
                 new ChatCommands(),
                 new KICAuction(),
-                new Emojis(),
+                new ChatHandler(),
                 new Waypoints(),
                 new Kuudra(),
                 new GodRoll(),
@@ -85,7 +82,7 @@ public class KIC {
                 new TooltipPrice(),
                 new AuctionHelper(),
                 new ArmorHud(),
-                new Dev()
+                new TrackEmptySlots()
         );
     }
 
@@ -124,14 +121,10 @@ public class KIC {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        File configDir = event.getModConfigurationDirectory();
-        File minecraftDir = configDir.getParentFile();
-        modsDir = new File(minecraftDir, "mods");
-
+        Updater.initialize();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             KICLogger.info("KIC-Cleanup-ShutdownHook");
             KICWS.close();
-//            deleteOldMod();
         }, "KIC-Cleanup-ShutdownHook"));
     }
 
@@ -159,7 +152,7 @@ public class KIC {
                 OverlayExamples.PROFIT_CALCULATOR));
 
         OverlayManager.addOverlay(new DualOverlay(
-                () -> KICConfig.kuudraProfitTracker,
+                () -> KICConfig.kuudraProfitTracker && KICConfig.kuudraProfitCalculator,
                 "ProfitTracker",
                 "Profit Tracker",
                 profitTrackerIslands,

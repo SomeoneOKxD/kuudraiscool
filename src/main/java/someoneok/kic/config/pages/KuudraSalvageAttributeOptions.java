@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class KuudraSalvageAttributeOptions {
+    private transient static final String ATTRIBUTE = "Attributes";
+
     @Info(
             text = "Salvage Value Attributes",
             type = InfoType.INFO,
@@ -23,87 +25,110 @@ public class KuudraSalvageAttributeOptions {
     public static boolean ignored2;
 
     @Switch(
-            name = "Life Recovery"
+            name = "Use Salvage Value for Matching Attributes",
+            size = 2
+    )
+    public static boolean useSalvageValue = true;
+
+    @Switch(
+            name = "Life Recovery",
+            subcategory = ATTRIBUTE
     )
     public static boolean lifeRecovery = true;
 
     @Switch(
-            name = "Arachno Resistance"
+            name = "Arachno Resistance",
+            subcategory = ATTRIBUTE
     )
     public static boolean arachnoResistance = true;
 
     @Switch(
-            name = "Blazing Resistance"
+            name = "Blazing Resistance",
+            subcategory = ATTRIBUTE
     )
     public static boolean blazingResistance = true;
 
     @Switch(
-            name = "Breeze"
+            name = "Breeze",
+            subcategory = ATTRIBUTE
     )
     public static boolean breeze = false;
 
     @Switch(
-            name = "Dominance"
+            name = "Dominance",
+            subcategory = ATTRIBUTE
     )
     public static boolean dominance = false;
 
     @Switch(
-            name = "Ender Resistance"
+            name = "Ender Resistance",
+            subcategory = ATTRIBUTE
     )
     public static boolean enderResistance = true;
 
     @Switch(
-            name = "Experience"
+            name = "Experience",
+            subcategory = ATTRIBUTE
     )
     public static boolean experience = true;
 
     @Switch(
-            name = "Fortitude"
+            name = "Fortitude",
+            subcategory = ATTRIBUTE
     )
     public static boolean fortitude = true;
 
     @Switch(
-            name = "Life Regeneration"
+            name = "Life Regeneration",
+            subcategory = ATTRIBUTE
     )
     public static boolean lifeRegeneration = true;
 
     @Switch(
-            name = "Lifeline"
+            name = "Lifeline",
+            subcategory = ATTRIBUTE
     )
     public static boolean lifeline = false;
 
     @Switch(
-            name = "Magic Find"
+            name = "Magic Find",
+            subcategory = ATTRIBUTE
     )
     public static boolean magicFind = false;
 
     @Switch(
-            name = "Mana Pool"
+            name = "Mana Pool",
+            subcategory = ATTRIBUTE
     )
     public static boolean manaPool = false;
 
     @Switch(
-            name = "Mana Regeneration"
+            name = "Mana Regeneration",
+            subcategory = ATTRIBUTE
     )
     public static boolean manaRegeneration = false;
 
     @Switch(
-            name = "Vitality"
+            name = "Vitality",
+            subcategory = ATTRIBUTE
     )
     public static boolean vitality = false;
 
     @Switch(
-            name = "Speed"
+            name = "Speed",
+            subcategory = ATTRIBUTE
     )
     public static boolean speed = true;
 
     @Switch(
-            name = "Undead Resistance"
+            name = "Undead Resistance",
+            subcategory = ATTRIBUTE
     )
     public static boolean undeadResistance = false;
 
     @Switch(
-            name = "Veteran"
+            name = "Veteran",
+            subcategory = ATTRIBUTE
     )
     public static boolean veteran = false;
 

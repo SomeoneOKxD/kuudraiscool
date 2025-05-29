@@ -14,6 +14,7 @@ import someoneok.kic.mixin.AccessorGuiEditSign;
 import someoneok.kic.models.crimson.AttributeItem;
 import someoneok.kic.models.crimson.AttributeItemValue;
 import someoneok.kic.models.crimson.Attributes;
+import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.CacheManager;
 import someoneok.kic.utils.ItemUtils;
 import someoneok.kic.utils.dev.KICLogger;
@@ -63,7 +64,7 @@ public class AuctionHelper {
     }
 
     private boolean shouldIgnore(GuiContainerEvent.ForegroundDrawnEvent event) {
-        if (!KICConfig.crimsonAuctionHelper || !(event.getContainer() instanceof ContainerChest)) return true;
+        if (!ApiUtils.isVerified() || !KICConfig.crimsonAuctionHelper || !(event.getContainer() instanceof ContainerChest)) return true;
 
         String name = event.getChestName();
         return !("Create BIN Auction".equals(name) || "Create Auction".equals(name));
@@ -135,7 +136,7 @@ public class AuctionHelper {
 
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent event) {
-        if (!KICConfig.crimsonAuctionHelper || !(event.gui instanceof GuiEditSign)) return;
+        if (!ApiUtils.isVerified() || !KICConfig.crimsonAuctionHelper || !(event.gui instanceof GuiEditSign)) return;
 
         TileEntitySign potentialSign = ((AccessorGuiEditSign) event.gui).getTileSign();
 
