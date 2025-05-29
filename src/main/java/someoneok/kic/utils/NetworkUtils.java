@@ -100,7 +100,7 @@ public class NetworkUtils {
 
     private static String sendRequest(String url, boolean requiresKey, boolean verifying, String method, String requestBody) throws APIException {
         if (!verifying && requiresKey && !ApiUtils.isVerified()) {
-            throw new APIException("Key is not verified.", 0);
+            throw new APIException("Your api key is not verified.", 0);
         }
         try (InputStreamReader input = new InputStreamReader(
                 setupConnection(url, requiresKey, method, requestBody),

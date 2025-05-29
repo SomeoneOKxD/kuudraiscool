@@ -13,9 +13,10 @@ import someoneok.kic.models.misc.ChatMode;
 import someoneok.kic.modules.kuudra.KuudraProfitTracker;
 import someoneok.kic.modules.kuudra.KuudraUserInfo;
 import someoneok.kic.modules.misc.ChatHandler;
-import someoneok.kic.modules.misc.EasyUpdater;
+import someoneok.kic.modules.misc.TrackEmptySlots;
 import someoneok.kic.modules.premium.Misc;
 import someoneok.kic.utils.ApiUtils;
+import someoneok.kic.utils.Updater;
 import someoneok.kic.utils.overlay.EditHudScreen;
 import someoneok.kic.utils.overlay.OverlayDataHandler;
 
@@ -34,7 +35,8 @@ public class KICCommand extends CommandBase {
             "resetprofittracker", "rpt", "resetpt",
             "kuudra", "t1", "t2", "t3", "t4", "t5",
             "skpt", "sharekpt", "sharetracker", "edithuds",
-            "pb", "resetpb", "resetkpb", "chat", "premium"
+            "pb", "resetpb", "resetkpb", "chat", "premium",
+            "ecbp", "checkupdates"
     ));
     private static final List<String> chatModes = Arrays.asList("kc", "kcp", "mc");
 
@@ -158,8 +160,12 @@ public class KICCommand extends CommandBase {
                 Misc.getStatus(player2);
                 break;
 
+            case "checkupdates":
+                Updater.checkForUpdates(true);
+                break;
+
             case "update":
-                Multithreading.runAsync(EasyUpdater::downloadAndExtractUpdate);
+                Updater.performUpdate();
                 break;
 
             case "edithuds":
@@ -229,6 +235,10 @@ public class KICCommand extends CommandBase {
                 base.appendSibling(link);
 
                 sender.addChatMessage(base);
+                break;
+
+            case "ecbp":
+                TrackEmptySlots.openEmptyEcOrBp();
                 break;
 
             case "help":
@@ -316,6 +326,20 @@ public class KICCommand extends CommandBase {
                 "§8* §a/kic resetpb",
                 "§7Resets your kuudra T5 personal best\n\n§7Alias: /kic resetkpb",
                 "/kic resetpb"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponentSuggest(
+                true,
+                "§8* §a/kic ecbp",
+                "§7Opens an ender chest page or backpack with empty slots",
+                "/kic ecbp"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponentSuggest(
+                true,
+                "§8* §a/kic checkupdates",
+                "§7Checks whether a new version of the mod is available.",
+                "/kic checkupdates"
         ));
 
         sender.addChatMessage(createHoverAndClickComponentSuggest(

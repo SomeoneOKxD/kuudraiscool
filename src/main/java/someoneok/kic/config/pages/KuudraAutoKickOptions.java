@@ -196,10 +196,11 @@ public class KuudraAutoKickOptions {
     public static boolean useWhitelist = false;
 
     @Text(
-            name = "Whitelisted Players (Separate players with ;)",
+            name = "Whitelisted IGNs and UUIDs (Separate players with ;)",
             multiline = true,
             subcategory = MISC,
-            size = 2
+            size = 2,
+            description = "Example: 9593fa76cdca4d9aa6d2dbb92e33294a;Xaned;sophlie"
     )
     public static String whitelisted = "";
 
@@ -212,10 +213,11 @@ public class KuudraAutoKickOptions {
     public static boolean useBlacklist = false;
 
     @Text(
-            name = "Blacklisted Players (Separate players with ;)",
+            name = "Blacklisted IGNs and UUIDs (Separate players with ;)",
             multiline = true,
             subcategory = MISC,
-            size = 2
+            size = 2,
+            description = "Example: 9593fa76cdca4d9aa6d2dbb92e33294a;JustJex;a0137b1af91d4bde963cc0a0b3f0df44"
     )
     public static String blacklisted = "";
 }

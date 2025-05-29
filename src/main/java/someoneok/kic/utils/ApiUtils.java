@@ -94,6 +94,7 @@ public class ApiUtils {
 
         if (!isAdmin()) {
             KICConfig.autoPearls = false;
+            KICConfig.autoRefillPearls = false;
         }
 
         if (!isTester() || !isBeta() || !isDev()) {

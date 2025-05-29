@@ -259,13 +259,13 @@ public class KuudraProfitTracker {
         if (KuudraProfitTrackerOptions.showTime) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.timeColor);
             text.append("\n").append(color).append("§lTime: §r")
-                    .append(color).append(formatElapsedTime(session.getTime(), 0, 4));
+                    .append(color).append(formatElapsedTime(session.getTime(), 0, 3));
         }
 
         if (KuudraProfitTrackerOptions.showAverageTimePerRun) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.averageTimePerRunColor);
             text.append("\n").append(color).append("§lAverage: §r")
-                    .append(color).append(formatElapsedTime(session.getAverageRunTime(), 0, 4)).append("/run");
+                    .append(color).append(formatElapsedTime(session.getAverageRunTime(), 0, 3)).append("/run");
         }
 
         if (KuudraProfitTrackerOptions.showRate) {

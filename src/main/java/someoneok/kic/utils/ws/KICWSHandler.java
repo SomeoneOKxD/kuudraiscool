@@ -4,18 +4,17 @@ import cc.polyfrost.oneconfig.utils.JsonUtils;
 import cc.polyfrost.oneconfig.utils.Multithreading;
 import cc.polyfrost.oneconfig.utils.Notifications;
 import com.google.gson.JsonObject;
-import net.minecraft.event.ClickEvent;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.Color;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.CacheManager;
+import someoneok.kic.utils.Updater;
 import someoneok.kic.utils.dev.KICLogger;
 
 import java.time.Instant;
 import java.util.Objects;
 
-import static someoneok.kic.utils.GeneralUtils.createClickComponent;
 import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
 import static someoneok.kic.utils.StringUtils.isNullOrEmpty;
 import static someoneok.kic.utils.TitleUtils.showSubtitle;
@@ -41,7 +40,7 @@ public class KICWSHandler {
                 if (ApiUtils.hasPremium()) handleChat(data, true, true);
                 break;
             case "UPDATE":
-                handleUpdate(data);
+                handleUpdate();
                 break;
             case "ANNOUNCEMENT":
                 handleAnnouncement(data);
@@ -89,21 +88,8 @@ public class KICWSHandler {
         }
     }
 
-    private static void handleUpdate(JsonObject data) {
-        try {
-            JsonObject jsonData = data.getAsJsonObject("data");
-            String version = jsonData.get("version").getAsString();
-            String downloadUrl = jsonData.get("downloadUrl").getAsString();
-
-            sendMessageToPlayer(createClickComponent(
-                    true,
-                    String.format("%s §7| §6§lNew version of kuudraiscool is available! (%s)", KIC.KICPrefix, version),
-                    ClickEvent.Action.OPEN_URL,
-                    downloadUrl
-            ));
-        } catch (Exception e) {
-            KICLogger.error(e.getMessage());
-        }
+    private static void handleUpdate() {
+        Updater.checkForUpdates(false);
     }
 
     private static void handleAnnouncement(JsonObject data) {

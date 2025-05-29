@@ -193,6 +193,7 @@ public class Kuudra {
         if (raw.contains("destroyed one of Kuudra's pods!") && currentPhase != 5) {
             KICLogger.info("Phase 5 (Dps)");
             currentPhase = 5;
+            if (!KuudraPhase.BUILD.hasEnded()) KuudraPhase.BUILD.end(now, ticks);
             if (!KuudraPhase.EATEN.hasEnded()) KuudraPhase.EATEN.end(now, ticks);
             if (KuudraPhase.STUN.hasStarted() && !KuudraPhase.STUN.hasEnded()) {
                 KuudraPhase.STUN.end(now, ticks);

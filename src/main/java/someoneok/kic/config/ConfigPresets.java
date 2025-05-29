@@ -131,6 +131,7 @@ public class ConfigPresets {
         KICConfig.trackEmptyECBP = false;
         KICConfig.trackEnderChestPages = false;
         KICConfig.trackBackpacks = true;
+        KICConfig.openEmptyECBP = new OneKeyBind(UKeyboard.KEY_NONE);
         KICConfig.ec1 = false;
         KICConfig.ec2 = false;
         KICConfig.ec3 = false;

@@ -63,7 +63,6 @@ public class Waypoints {
     private final Pattern progressPattern = Pattern.compile("\\[\\|+]\\s*(\\d+)%");
     private final Color allColor = new Color(255, 0, 0);
     private final Color myColor = new Color(0, 255, 0);
-    private final Color supplyColor = new Color(255, 155, 0);
 
     private long progressStartTime = -1;
     private boolean tracking = false;

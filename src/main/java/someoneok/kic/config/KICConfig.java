@@ -69,10 +69,9 @@ public class KICConfig extends Config {
         // Tester & Admin
         hideIf("testerMode", () -> !isTester() && !isDev() && !isBeta());
         hideIf("testerModeLogInChat", () -> !isTester() && !isDev() && !isBeta());
-        hideIf("KICAdminGuiStyle", () -> !isAdmin());
-        hideIf("KICAdminGuiColor", () -> !isAdmin());
         hideIf("autoPearls", () -> !isAdmin());
-        hideIf("devKey", () -> !isDev());
+        hideIf("autoRefillPearls", () -> !isAdmin());
+        hideIf("autoRefillPearlsTicks", () -> !isAdmin());
 
         // Premium
         hideIf("partyFinderGuiStats", () -> !hasPremium());
@@ -478,6 +477,28 @@ public class KICConfig extends Config {
 
     // KUUDRA_WAYPOINTS
     @Switch(
+            name = "Supply Drop Spot Waypoint",
+            category = KUUDRA,
+            subcategory = KUUDRA_WAYPOINTS
+    )
+    public static boolean showNothingSupplyWaypoints = false;
+
+    @Switch(
+            name = "Supply Drop Spot Beacon",
+            category = KUUDRA,
+            subcategory = KUUDRA_WAYPOINTS
+    )
+    public static boolean showNothingSupplyWaypointsBeacon = false;
+
+    @Color(
+            name = "Supply Drop Spot Color",
+            category = KUUDRA,
+            subcategory = KUUDRA_WAYPOINTS,
+            size = 2
+    )
+    public static OneColor supplySpotColor = new OneColor(255,255,255);
+
+    @Switch(
             name = "Dynamic Pearl Calculator",
             category = KUUDRA,
             subcategory = KUUDRA_WAYPOINTS,
@@ -510,31 +531,10 @@ public class KICConfig extends Config {
     @Switch(
             name = "Show All Supply Waypoints",
             category = KUUDRA,
-            subcategory = KUUDRA_WAYPOINTS
+            subcategory = KUUDRA_WAYPOINTS,
+            description = "Show all waypoints that don’t have supplies placed yet, instead of only those relevant to the current location.\nWARNING: Significant performance impact!"
     )
     public static boolean showAll = false;
-
-    @Switch(
-            name = "Supply Drop Spot Waypoint",
-            category = KUUDRA,
-            subcategory = KUUDRA_WAYPOINTS
-    )
-    public static boolean showNothingSupplyWaypoints = false;
-
-    @Switch(
-            name = "Supply Drop Spot Beacon",
-            category = KUUDRA,
-            subcategory = KUUDRA_WAYPOINTS
-    )
-    public static boolean showNothingSupplyWaypointsBeacon = false;
-
-    @Color(
-            name = "Supply Drop Spot Color",
-            category = KUUDRA,
-            subcategory = KUUDRA_WAYPOINTS,
-            size = 2
-    )
-    public static OneColor supplySpotColor = new OneColor(255,255,255);
 
     @Switch(
             name = "Auto Pearls",
@@ -1170,7 +1170,7 @@ public class KICConfig extends Config {
     public static boolean crimsonTooltipPrices = true;
 
     @Switch(
-            name = "Show Prices Per Attribute",
+            name = "Show Prices For Each Attribute",
             description = "Displays the price next to each attribute in the tooltip.",
             category = CRIMSON,
             subcategory = CRIMSON_TOOLTIP
@@ -1456,7 +1456,8 @@ public class KICConfig extends Config {
 
     @Switch(
             name = "Show Current Armor Next To Hotbar",
-            category = MISC
+            category = MISC,
+            size = 2
     )
     public static boolean showArmorInHud = false;
 

@@ -30,7 +30,7 @@ public class KuudraAutoKick {
     private static final List<String> gemTiers = Arrays.asList("PERFECT", "FLAWLESS", "FINE", "FLAWED", "ROUGH", "NONE");
 
     public static void autoKick(
-            String user, int lifeline, int mana_pool, int cata_level, int t5_comps, int magical_power, int rag_chim_level,
+            String user, String uuid, int lifeline, int mana_pool, int cata_level, int t5_comps, int magical_power, int rag_chim_level,
             int term_duplex_level, String rag_gemstone, String chestplate, String leggings, String boots,
             boolean term_p7, boolean term_c6, boolean wither_impact, int legion_level, int strong_fero_mana,
             long bank_balance, long gold_collection, int golden_dragon_level,
@@ -42,11 +42,14 @@ public class KuudraAutoKick {
 
         String lowerUser = user.toLowerCase();
 
-        if (useWhitelist && parsePlayerList(whitelisted).contains(lowerUser)) {
+        Set<String> whitelist = parsePlayerList(whitelisted);
+        if (useWhitelist && (whitelist.contains(lowerUser) || whitelist.contains(uuid))) {
+            KICLogger.info("[AutoKick] User is whitelisted.");
             return;
         }
 
-        if (useBlacklist && parsePlayerList(blacklisted).contains(lowerUser)) {
+        Set<String> blacklist = parsePlayerList(blacklisted);
+        if (useBlacklist && (blacklist.contains(lowerUser) || blacklist.contains(uuid))) {
             sendCommand(String.format("/pc [KIC] %s was kicked for: blacklisted", user));
             Multithreading.schedule(() -> sendCommand("/p kick " + user), 500, TimeUnit.MILLISECONDS);
             return;
@@ -137,7 +140,8 @@ public class KuudraAutoKick {
     }
 
     private static Set<String> parsePlayerList(String input) {
-        return Arrays.stream(input.split(";"))
+        String cleanedInput = input.replaceAll("-", "");
+        return Arrays.stream(cleanedInput.split(";"))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .map(String::toLowerCase)

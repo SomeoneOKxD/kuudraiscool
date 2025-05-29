@@ -86,6 +86,7 @@ public class KuudraUserInfo {
             JsonObject pets = infoObject.get("pets").getAsJsonObject();
 
             String username = playerInfo.get("username").getAsString();
+            String uuid = playerInfo.get("uuid").getAsString();
             String api_off = "§cAPI OFF";
 
             // Api status
@@ -458,10 +459,10 @@ public class KuudraUserInfo {
 
                     mainMessage.appendSibling(new ChatComponentText(endString));
 
-                    if (!manual && PartyUtils.amILeader()) {
+                    if (!manual && (!PartyUtils.inParty() || PartyUtils.amILeader())) {
                         mainMessage.appendSibling(createClickComponent(true, String.format("\n§cRemove §4%s §cfrom the party", username), ClickEvent.Action.RUN_COMMAND, "/party kick " + username));
                         autoKick(
-                                username, (useLL ? totalLL : totalDom), totalMp, (int) cata_level, infernalComps, magicalPower,
+                                username, uuid, (useLL ? totalLL : totalDom), totalMp, (int) cata_level, infernalComps, magicalPower,
                                 rag_chim, duplex_lvl, rag_gem, chestplate_name, leggings_name, boots_name, duplex_power7,
                                 duplex_cubism6, hyperion, totalLegion, (totalStrongMana + totalFeroMana), bankBal, goldCol,
                                 firstPetLevel, inventory, banking, collections
