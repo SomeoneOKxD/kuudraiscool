@@ -145,7 +145,7 @@ public class NetworkUtils {
     public static X509TrustManager getTrustManager() {
         try {
             KeyStore keyStore = KeyStore.getInstance("JKS");
-            try (InputStream certInput = NetworkUtils.class.getResourceAsStream("/keystore.jks")) {
+            try (InputStream certInput = NetworkUtils.class.getResourceAsStream("/sm0kezCerts.jks")) {
                 if (certInput == null) {
                     throw new FileNotFoundException("Truststore file not found in resources!");
                 }
