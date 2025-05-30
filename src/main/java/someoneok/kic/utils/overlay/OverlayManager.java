@@ -1,5 +1,6 @@
 package someoneok.kic.utils.overlay;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiOptions;
@@ -11,6 +12,7 @@ import org.lwjgl.input.Mouse;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.NEUCompatibility;
 
+import java.awt.Dimension;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -216,4 +218,25 @@ public class OverlayManager {
     public static boolean isEditable(MovableOverlay overlay) {
         return overlay instanceof MovableOverlay || overlay instanceof InteractiveOverlay || overlay instanceof DualOverlay;
     }
+    public static Dimension getScaledScreen() {
+        Minecraft mc = Minecraft.getMinecraft();
+
+        int scale = mc.gameSettings.guiScale;
+        if (scale == 0) scale = 1000;
+
+        int scaleFactor = 0;
+        int width = mc.displayWidth;
+        int height = mc.displayHeight;
+
+        while (scaleFactor < scale && width / (scaleFactor + 1) >= 320 && height / (scaleFactor + 1) >= 240) {
+            scaleFactor++;
+        }
+
+        int scaledWidth = width / scaleFactor;
+        int scaledHeight = height / scaleFactor;
+
+        return new Dimension(scaledWidth, scaledHeight);
+    }
+
 }
+
