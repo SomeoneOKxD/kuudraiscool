@@ -32,7 +32,6 @@ public class EditHudScreen extends GuiScreen {
 
     private GuiButton toggleModeButton;
     private GuiButton manageOverlaysButton;
-    private GuiButton resetOverlaysButton;
     private final List<GuiCheckBox> overlayCheckBoxes = new ArrayList<>();
     private final Map<OverlayType, Map<String, Boolean>> visibilityByMode = new EnumMap<>(OverlayType.class);
 
@@ -59,8 +58,7 @@ public class EditHudScreen extends GuiScreen {
 
         this.buttonList.clear();
         this.buttonList.add(toggleModeButton = new GuiButton(0, x, y, btnWidth, btnHeight, getModeText()));
-        this.buttonList.add(manageOverlaysButton = new GuiButton(1, x, y - 50, btnWidth, btnHeight, "Manage Overlays"));
-        this.buttonList.add(resetOverlaysButton = new GuiButton(2, x, y - 25, btnWidth, btnHeight, "Reset To Center"));
+        this.buttonList.add(manageOverlaysButton = new GuiButton(1, x, y - 25, btnWidth, btnHeight, "Manage Overlays"));
 
         infoWidth = this.fontRendererObj.getStringWidth(INFO);
 
@@ -102,11 +100,7 @@ public class EditHudScreen extends GuiScreen {
             currentMode = (currentMode == OverlayType.NORMAL) ? OverlayType.INGUI : OverlayType.NORMAL;
             toggleModeButton.displayString = getModeText();
             showPopup = false;
-        }
-        else if (button== resetOverlaysButton){
-            resetAllOverlays();
-        }
-        else if (button == manageOverlaysButton) {
+        } else if (button == manageOverlaysButton) {
             showPopup = !showPopup;
             if (showPopup) buildOverlayPopup();
         }
@@ -131,7 +125,7 @@ public class EditHudScreen extends GuiScreen {
         }
 
         int infoX = (this.width - infoWidth) / 2;
-        int infoY = toggleModeButton.yPosition - 65;
+        int infoY = toggleModeButton.yPosition - 40;
         this.fontRendererObj.drawStringWithShadow(INFO, infoX, infoY, 0xFFFFFF);
 
         if (showPopup && !overlayCheckBoxes.isEmpty()) {
@@ -273,13 +267,5 @@ public class EditHudScreen extends GuiScreen {
     private boolean shouldRender(MovableOverlay overlay) {
         return overlay.configOption.get() && isEditable(overlay)
                 && (overlay instanceof DualOverlay || overlay.type == currentMode);
-    }
-
-    private void resetAllOverlays() {
-        for (OverlayBase overlay : OverlayManager.getOverlays()) {
-            if (overlay.type == currentMode) {
-                overlay.reset();
-            }
-        }
     }
 }
