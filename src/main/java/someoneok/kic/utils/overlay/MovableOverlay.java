@@ -7,6 +7,7 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.Island;
 import someoneok.kic.utils.ApiUtils;
 
+import java.awt.Dimension;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -32,10 +33,17 @@ public class MovableOverlay extends OverlayBase {
     }
 
     public void onMouseDragged(int mouseX, int mouseY) {
-        if (dragging) {
-            this.x = mouseX - dragX;
-            this.y = mouseY - dragY;
-        }
+        if (!dragging) return;
+
+        Dimension screen = OverlayManager.getScaledScreen();
+        int screenWidth = screen.width;
+        int screenHeight = screen.height;
+
+        int newX = mouseX - dragX;
+        int newY = mouseY - dragY;
+
+        x = Math.max(0, Math.min(newX, screenWidth - getWidth()));
+        y = Math.max(0, Math.min(newY, screenHeight - getHeight()));
     }
 
     public void setHovered(boolean hovered) {
