@@ -277,9 +277,8 @@ public class EditHudScreen extends GuiScreen {
 
     private void resetAllOverlays() {
         for (MovableOverlay overlay : OverlayManager.getOverlays()) {
-            if (!shouldRender(overlay) || !isOverlayVisible(overlay)) continue;{
-                overlay.reset();
-            }
+            if (!shouldRender(overlay) || !isOverlayVisible(overlay)) continue;
+            overlay.reset();
         }
     }
 }
