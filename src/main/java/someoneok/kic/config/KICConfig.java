@@ -1177,6 +1177,13 @@ public class KICConfig extends Config {
     )
     public static boolean crimsonTooltipPerAttribute = true;
 
+    @Switch(
+            name = "Show Salvage Value In Tooltip",
+            category = CRIMSON,
+            subcategory = CRIMSON_TOOLTIP
+    )
+    public static boolean crimsonTooltipSalvage = true;
+
     @Dropdown(
             name = "KIC Auction Color",
             category = CRIMSON,

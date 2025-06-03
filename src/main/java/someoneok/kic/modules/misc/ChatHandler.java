@@ -23,33 +23,36 @@ public class ChatHandler extends ChannelOutboundHandlerAdapter {
         if (msg instanceof C01PacketChatMessage && ApiUtils.isVerified()) {
             String message = ((C01PacketChatMessage) msg).getMessage();
 
-            switch (currentChatMode) {
-                case KICCHAT:
-                    KICWS.sendChatMessage(message, false);
-                    return;
-
-                case KICPLUSCHAT:
-                    if (ApiUtils.hasPremium()) {
-                        KICWS.sendChatMessage(message, true);
+            if (shouldProcess(message)) {
+                switch (currentChatMode) {
+                    case KICCHAT:
+                        if (shouldSend(message)) KICWS.sendChatMessage(message, false);
                         return;
-                    } else {
-                        currentChatMode = ChatMode.MC;
-                        sendMessageToPlayer(KIC.KICPrefix + " §cKIC+ chat requires premium. Switching to Minecraft chat.");
-                        break;
-                    }
 
-                case MC:
-                default:
-                    if (KICConfig.emojis) {
-                        String replaced = replaceEmojis(message);
-                        if (!replaced.equals(message)) {
-                            sendChatMessage(replaced);
+                    case KICPLUSCHAT:
+                        if (ApiUtils.hasPremium()) {
+                            if (shouldSend(message)) KICWS.sendChatMessage(message, true);
                             return;
+                        } else {
+                            currentChatMode = ChatMode.KICCHAT;
+                            sendMessageToPlayer(KIC.KICPrefix + " §cKIC+ chat requires premium. Switching to KIC chat.");
+                            break;
                         }
-                    }
-                    break;
+
+                    case MC:
+                    default:
+                        if (KICConfig.emojis) {
+                            String replaced = replaceEmojis(message);
+                            if (!replaced.equals(message)) {
+                                sendChatMessage(replaced);
+                                return;
+                            }
+                        }
+                        break;
+                }
             }
         }
+
         ctx.write(msg, promise);
     }
 
@@ -57,5 +60,40 @@ public class ChatHandler extends ChannelOutboundHandlerAdapter {
     public void connect(FMLNetworkEvent.ClientConnectedToServerEvent event) {
         ChannelPipeline pipeline = event.manager.channel().pipeline();
         pipeline.addBefore("packet_handler", this.getClass().getName(), this);
+    }
+
+    private boolean shouldProcess(String message) {
+        String cmd = message.trim().toLowerCase();
+        if (cmd.startsWith("/")) {
+            if (cmd.startsWith("/chat")) {
+                if (cmd.equalsIgnoreCase("/chat kc") || cmd.equalsIgnoreCase("/chat kic")) {
+                    currentChatMode = ChatMode.KICCHAT;
+                    sendMessageToPlayer(KIC.KICPrefix + " §aSwitched to §bKIC Chat§a mode.");
+                    return true;
+                } else if (cmd.equalsIgnoreCase("/chat kcp") || cmd.equalsIgnoreCase("/chat kic+")) {
+                    if (ApiUtils.hasPremium()) {
+                        currentChatMode = ChatMode.KICPLUSCHAT;
+                        sendMessageToPlayer(KIC.KICPlusPrefix + " §aSwitched to §dKIC+ Chat§a mode.");
+                    } else {
+                        currentChatMode = ChatMode.KICCHAT;
+                        sendMessageToPlayer(KIC.KICPrefix + " §cKIC+ chat requires premium. Switching to KIC chat.");
+                    }
+                    return true;
+                } else {
+                    currentChatMode = ChatMode.MC;
+                }
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean shouldSend(String message) {
+        String cmd = message.trim().toLowerCase();
+        return !cmd.equalsIgnoreCase("/chat kc")
+                && !cmd.equalsIgnoreCase("/chat kic")
+                && !cmd.equalsIgnoreCase("/chat kcp")
+                && !cmd.equalsIgnoreCase("/chat kic+");
     }
 }

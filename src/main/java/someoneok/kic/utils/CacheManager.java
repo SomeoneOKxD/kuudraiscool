@@ -11,9 +11,12 @@ import someoneok.kic.KIC;
 import someoneok.kic.models.APIException;
 import someoneok.kic.models.crimson.AttributeItemValue;
 import someoneok.kic.models.crimson.Attributes;
-import someoneok.kic.models.request.AttributesPriceRequest;
+import someoneok.kic.models.crimson.AuctionItemValue;
+import someoneok.kic.models.crimson.BazaarItemValue;
+import someoneok.kic.models.request.Request;
 import someoneok.kic.utils.dev.KICLogger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,6 +30,8 @@ public class CacheManager {
     private static long auctionUpdate = 0;
     private static final long EXPIRED = 600000;
     private static final Map<String, AttributeItemValue> attributeItems = new ConcurrentHashMap<>();
+    private static final Map<String, BazaarItemValue> bazaarItems = new ConcurrentHashMap<>();
+    private static final Map<String, AuctionItemValue> auctionItems = new ConcurrentHashMap<>();
 
     /**
      * Adds an {@link AttributeItemValue} to the cache or refreshes it if expired.
@@ -46,6 +51,14 @@ public class CacheManager {
 
     public static boolean addItemAuctionHelper(AttributeItemValue item) {
         return addItemInternal(item, auctionUpdate, true);
+    }
+
+    public static boolean addBazaarItem(BazaarItemValue item) {
+        return addBazaarItemInternal(item);
+    }
+
+    public static boolean addAuctionItem(AuctionItemValue item) {
+        return addAuctionItemInternal(item);
     }
 
     private static boolean addItemInternal(AttributeItemValue item, long freshnessRef, boolean isAuctionTimestamp) {
@@ -75,10 +88,59 @@ public class CacheManager {
         return false;
     }
 
+    private static boolean addBazaarItemInternal(BazaarItemValue item) {
+        BazaarItemValue value = getBazaarItem(item.getItemId());
+
+        if (value == null || !bazaarItemsMatch(item, value)) {
+            bazaarItems.put(item.getItemId(), item);
+            return true;
+        }
+
+        if (!value.isCached() && !value.isFetching()) {
+            return true;
+        }
+
+        long now = System.currentTimeMillis();
+        boolean isFresh = (now - value.getTimestamp() < EXPIRED);
+
+        if (!isFresh && !value.isFetching()) {
+            value.setTimestamp(now);
+            value.setCached(false);
+            value.setFetching(false);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean addAuctionItemInternal(AuctionItemValue item) {
+        AuctionItemValue value = getAuctionItem(item.getUuid());
+
+        if (value == null) {
+            auctionItems.put(item.getUuid(), item);
+            return true;
+        }
+
+        if (!value.isCached() && !value.isFetching()) {
+            return true;
+        }
+
+        long now = System.currentTimeMillis();
+        boolean isFresh = (now - value.getTimestamp() < EXPIRED);
+
+        if (!isFresh && !value.isFetching()) {
+            value.setTimestamp(now);
+            value.setCached(false);
+            value.setFetching(false);
+            return true;
+        }
+
+        return false;
+    }
+
     private static boolean itemsMatch(AttributeItemValue i1, AttributeItemValue i2) {
         if (!Objects.equals(i1.getUuid(), i2.getUuid()) ||
-                !Objects.equals(i1.getItemId(), i2.getItemId()) ||
-                !Objects.equals(i1.getName(), i2.getName())) {
+                !Objects.equals(i1.getItemId(), i2.getItemId())) {
             return false;
         }
 
@@ -100,18 +162,38 @@ public class CacheManager {
         return directMatch || swappedMatch;
     }
 
+    private static boolean bazaarItemsMatch(BazaarItemValue i1, BazaarItemValue i2) {
+        return Objects.equals(i1.getItemId(), i2.getItemId()) && Objects.equals(i1.getItemCount(), i2.getItemCount());
+    }
+
     public static AttributeItemValue getAttributeItem(String uuid) {
         return attributeItems.get(uuid);
     }
 
-    public static void updateAttributeItemsCache(Runnable callback) {
+    public static BazaarItemValue getBazaarItem(String itemId) {
+        return bazaarItems.get(itemId);
+    }
+
+    public static AuctionItemValue getAuctionItem(String uuid) {
+        return auctionItems.get(uuid);
+    }
+
+    public static void updateItemsCache(Runnable callback) {
         if (!ApiUtils.isVerified()) return;
 
         List<AttributeItemValue> itemsToFetch = attributeItems.values().stream()
                 .filter(item -> !item.isFetching() && !item.isCached())
                 .collect(Collectors.toList());
 
-        if (itemsToFetch.isEmpty()) {
+        List<BazaarItemValue> bazaarItemsToFetch = bazaarItems.values().stream()
+                .filter(item -> !item.isFetching() && !item.isCached())
+                .collect(Collectors.toList());
+
+        List<AuctionItemValue> auctionItemsToFetch = auctionItems.values().stream()
+                .filter(item -> !item.isFetching() && !item.isCached())
+                .collect(Collectors.toList());
+
+        if (itemsToFetch.isEmpty() && bazaarItemsToFetch.isEmpty() && auctionItemsToFetch.isEmpty()) {
             if (callback != null) {
                 callback.run();
             }
@@ -120,10 +202,28 @@ public class CacheManager {
 
         KICLogger.info("Updating cache from api");
 
-        List<AttributesPriceRequest> requestItems = itemsToFetch.stream()
-                .map(AttributeItemValue::mapToRequest)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        List<Request> requestItems = new ArrayList<>();
+
+        requestItems.addAll(
+                itemsToFetch.stream()
+                        .map(AttributeItemValue::mapToRequest)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList())
+        );
+
+        requestItems.addAll(
+                bazaarItemsToFetch.stream()
+                        .map(BazaarItemValue::mapToRequest)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList())
+        );
+
+        requestItems.addAll(
+                auctionItemsToFetch.stream()
+                        .map(AuctionItemValue::mapToRequest)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList())
+        );
 
         itemsToFetch.forEach(item -> item.setFetching(true));
 
@@ -133,37 +233,73 @@ public class CacheManager {
 
         Multithreading.runAsync(() -> {
             try {
-                JsonArray response = JsonUtils.parseString(NetworkUtils.sendPostRequest("https://api.sm0kez.com/crimson/prices/attributes", true, requestBody)).getAsJsonArray();
+                JsonArray response = JsonUtils.parseString(NetworkUtils.sendPostRequest("https://api.sm0kez.com/crimson/prices", true, requestBody)).getAsJsonArray();
                 long time = System.currentTimeMillis();
 
                 if (response != null) {
                     for (JsonElement element : response) {
                         JsonObject obj = element.getAsJsonObject();
-                        String uuid = obj.get("uuid").getAsString();
-                        AttributeItemValue item = attributeItems.get(uuid);
-                        if (item != null) {
-                            item.setFetching(false);
-                            item.setCached(true);
-                            item.setTimestamp(time);
+                        String type = obj.get("type").getAsString();
+                        switch (type) {
+                            case "ATTRIBUTES":
+                                String uuid = obj.get("uuid").getAsString();
+                                AttributeItemValue attributeItemValue = getAttributeItem(uuid);
+                                if (attributeItemValue == null) continue;
 
-                            Attributes attributes = item.getAttributes();
-                            attributes.setLbPrice1(obj.get("priceAttribute1").getAsLong());
-                            attributes.setAvgPrice1(obj.get("averagePriceAttribute1").getAsLong());
-                            if (obj.has("priceAttribute2") && !obj.get("priceAttribute2").isJsonNull()) {
-                                attributes.setLbPrice2(obj.get("priceAttribute2").getAsLong());
-                                attributes.setAvgPrice2(obj.get("averagePriceAttribute2").getAsLong());
-                            }
-                            attributes.setGodroll(obj.get("godRoll").getAsBoolean());
-                            if (obj.has("godRollPrice") && !obj.get("godRollPrice").isJsonNull()) {
-                                attributes.setGodrollLbPrice(obj.get("godRollPrice").getAsLong());
-                                attributes.setGodrollAvgPrice(obj.get("averageGodRollPrice").getAsLong());
-                            }
+                                attributeItemValue.setFetching(false);
+                                attributeItemValue.setCached(true);
+                                attributeItemValue.setTimestamp(time);
+
+                                Attributes attributes = attributeItemValue.getAttributes();
+                                attributes.setLbPrice1(obj.get("priceAttribute1").getAsLong());
+                                attributes.setAvgPrice1(obj.get("averagePriceAttribute1").getAsLong());
+                                if (obj.has("priceAttribute2") && !obj.get("priceAttribute2").isJsonNull()) {
+                                    attributes.setLbPrice2(obj.get("priceAttribute2").getAsLong());
+                                    attributes.setAvgPrice2(obj.get("averagePriceAttribute2").getAsLong());
+                                }
+                                attributes.setGodroll(obj.get("godRoll").getAsBoolean());
+                                if (obj.has("godRollPrice") && !obj.get("godRollPrice").isJsonNull()) {
+                                    attributes.setGodrollLbPrice(obj.get("godRollPrice").getAsLong());
+                                    attributes.setGodrollAvgPrice(obj.get("averageGodRollPrice").getAsLong());
+                                }
+                                break;
+                            case "BAZAAR":
+                                String itemId = obj.get("itemId").getAsString();
+                                BazaarItemValue bazaarItemValue = getBazaarItem(itemId);
+                                if (bazaarItemValue == null) continue;
+
+                                long buyPriceBazaar = obj.get("buyPrice").getAsLong();
+                                long sellPriceBazaar = obj.get("sellPrice").getAsLong();
+                                bazaarItemValue.setPrice(buyPriceBazaar, sellPriceBazaar);
+                                bazaarItemValue.setFetching(false);
+                                bazaarItemValue.setCached(true);
+                                bazaarItemValue.setTimestamp(time);
+                            case "AUCTION":
+                                String uuid2 = obj.get("uuid").getAsString();
+                                AuctionItemValue auctionItemValue = getAuctionItem(uuid2);
+                                if (auctionItemValue == null) continue;
+
+                                long priceAuction = obj.get("price").getAsLong();
+                                long avgAuction = obj.get("averagePrice").getAsLong();
+                                auctionItemValue.setPrice(priceAuction, avgAuction);
+                                auctionItemValue.setFetching(false);
+                                auctionItemValue.setCached(true);
+                                auctionItemValue.setTimestamp(time);
+                                break;
                         }
                     }
                 }
             } catch (APIException e) {
                 sendMessageToPlayer(String.format("%s §c%s", KICPrefix, e.getMessage()));
                 itemsToFetch.forEach(item -> {
+                    item.setFetching(false);
+                    item.setCached(false);
+                });
+                bazaarItemsToFetch.forEach(item -> {
+                    item.setFetching(false);
+                    item.setCached(false);
+                });
+                auctionItemsToFetch.forEach(item -> {
                     item.setFetching(false);
                     item.setCached(false);
                 });
@@ -178,6 +314,8 @@ public class CacheManager {
     private static void cleanupCaches() {
         long currentTime = System.currentTimeMillis();
         attributeItems.entrySet().removeIf(entry -> currentTime - entry.getValue().getTimestamp() > EXPIRED);
+        bazaarItems.entrySet().removeIf(entry -> currentTime - entry.getValue().getTimestamp() > EXPIRED);
+        auctionItems.entrySet().removeIf(entry -> currentTime - entry.getValue().getTimestamp() > EXPIRED);
     }
 
     @SubscribeEvent

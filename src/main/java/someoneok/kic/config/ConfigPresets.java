@@ -95,6 +95,7 @@ public class ConfigPresets {
         KICConfig.crimsonContainerBlockClicks = true;
         KICConfig.crimsonTooltipPrices = true;
         KICConfig.crimsonTooltipPerAttribute = true;
+        KICConfig.crimsonTooltipSalvage = true;
         KICConfig.KICAuctionColor = 12;
         KICConfig.KICAuctionStyle = 1;
         KICConfig.openKAGUIAgain = true;

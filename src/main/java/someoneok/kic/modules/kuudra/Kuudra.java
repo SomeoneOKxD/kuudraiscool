@@ -32,6 +32,7 @@ import someoneok.kic.utils.PlayerUtils;
 import someoneok.kic.utils.RenderUtils;
 import someoneok.kic.utils.dev.KICLogger;
 import someoneok.kic.utils.overlay.OverlayUtils;
+import someoneok.kic.utils.ws.KICWS;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -268,6 +269,7 @@ public class Kuudra {
                 KuudraProfitTracker.onRunEnded(runTime, failed);
             }
 
+            KICWS.sendLag(LocationUtils.kuudraTier, getTotalLagTimeTicks(), runTime);
             if (KuudraSplitsOptions.showTotalServerLag) Multithreading.schedule(() -> sendMessageToPlayer(String.format("%s §cServer lagged for §f%.2fs §7(§f%d ticks§7)", KIC.KICPrefix, getTotalLagTimeS(), getTotalLagTimeTicks())), 500, TimeUnit.MILLISECONDS);
             if (KuudraSplitsOptions.showDetailedOverview) Multithreading.schedule(() -> KuudraSplits.sendDetailedSplits(now, ticks, freshTimes), 525, TimeUnit.MILLISECONDS);
         }

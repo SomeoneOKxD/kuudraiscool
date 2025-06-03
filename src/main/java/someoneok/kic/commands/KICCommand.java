@@ -296,8 +296,8 @@ public class KICCommand extends CommandBase {
         sender.addChatMessage(createHoverAndClickComponentSuggest(
                 true,
                 "§8* §a/kic kuudra [player]",
-                "§7Check Kuudra info for a player\n\n§7Example: /kuudra xaned\n§7Alias: /kuudra",
-                "/kuudra "
+                "§7Check Kuudra info for a player\n\n§7Example: /kic kuudra xaned\n§7Alias: /kic kuudra",
+                "/kic kuudra "
         ));
 
         sender.addChatMessage(createHoverAndClickComponentSuggest(
@@ -340,6 +340,20 @@ public class KICCommand extends CommandBase {
                 "§8* §a/kic checkupdates",
                 "§7Checks whether a new version of the mod is available.",
                 "/kic checkupdates"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponentSuggest(
+                true,
+                "§8* §a/kic premium",
+                "§7Info about the premium features in KIC.",
+                "/kic premium"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponentSuggest(
+                true,
+                "§8* §a/kuudra [player]",
+                "§7Check Kuudra info for a player\n\n§7Example: /kuudra xaned\n§7Alias: /kuudra",
+                "/kuudra "
         ));
 
         sender.addChatMessage(createHoverAndClickComponentSuggest(

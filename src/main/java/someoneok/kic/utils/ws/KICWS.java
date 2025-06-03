@@ -24,7 +24,7 @@ public class KICWS {
     private static OkHttpClient client;
     private static WebSocket webSocket;
     private static boolean isReconnecting = false;
-    private static final int RECONNECT_DELAY = 30;
+    private static final int RECONNECT_DELAY = 15;
     private static boolean isConnected = false;
     private static boolean isConnecting = false;
     private static boolean isClosing = false;
@@ -164,6 +164,11 @@ public class KICWS {
             String type = premium ? "PREMIUM_CHAT" : "CHAT";
             sendMessage("{\"type\":\"" + type + "\",\"data\":{\"message\":\"" + StringEscapeUtils.escapeJson(message) + "\"}}");
         }
+    }
+
+    public static void sendLag(int tier, long totalTicks, long runtime) {
+        if (!ApiUtils.isVerified() || (tier == 0 && totalTicks == 0 && runtime == 0)) return;
+        sendMessage("{\"type\":\"LAG\",\"data\":{\"tier\":" + tier + ",\"totalTicks\":" + totalTicks + ",\"runTime\":" + runtime + "}}");
     }
 
     public static void close() {

@@ -138,11 +138,11 @@ public class KICWSHandler {
                         sendMessageToPlayer(String.format("%s §7| §bAuction data updated! §7(§3%s§7)", KIC.KICDataPrefix, timeString));
                         break;
                     case 1:
-                        Multithreading.runAsync(() -> Notifications.INSTANCE.send("[KIC-DATA] Auction data updated!", "Auction data was updated " + timeString));
+                        Multithreading.runAsync(() -> Notifications.INSTANCE.send("[KIC] Auction data updated!", "Auction data was updated " + timeString));
                         break;
                     case 2:
                         sendMessageToPlayer(String.format("%s §7| §bAuction data updated! §7(§3%s§7)", KIC.KICDataPrefix, timeString));
-                        Multithreading.runAsync(() -> Notifications.INSTANCE.send("[KIC-DATA] Auction data updated!", "Auction data was updated " + timeString));
+                        Multithreading.runAsync(() -> Notifications.INSTANCE.send("[KIC] Auction data updated!", "Auction data was updated " + timeString));
                         break;
                 }
             }

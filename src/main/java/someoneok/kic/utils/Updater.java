@@ -1,6 +1,7 @@
 package someoneok.kic.utils;
 
 import cc.polyfrost.oneconfig.utils.Multithreading;
+import com.google.gson.JsonElement;
 import moe.nea.libautoupdate.*;
 import net.minecraft.event.ClickEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -16,31 +17,57 @@ import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
 
 public class Updater {
     private static final long CACHE_TIMEOUT = 5 * 60 * 1000L;
+    private static final String GITHUB_OWNER = "SomeoneOKxD";
+    private static final String GITHUB_REPO = "kuudraiscool";
+
     private static UpdateContext updateContext;
-    private static boolean updatePending = false;
     private static long lastChecked = 0;
     private static PotentialUpdate cachedUpdate = null;
 
     private static boolean isCheckingUpdate = false;
     private static boolean isDownloadingUpdate = false;
+    private static boolean updatePending = false;
 
     public static void initialize() {
         updateContext = new UpdateContext(
-                UpdateSource.gistSource("SomeoneOKxD", "14f6692b48192ce381939b9491d6ebe4"),
+                UpdateSource.githubUpdateSource(GITHUB_OWNER, GITHUB_REPO),
                 UpdateTarget.deleteAndSaveInTheSameFolder(Updater.class),
-                CurrentVersion.of(getIntVersion()),
+                new CurrentVersion() {
+                    @Override
+                    public String display() {
+                        return KIC.VERSION;
+                    }
+
+                    @Override
+                    public boolean isOlderThan(JsonElement element) {
+                        if (element == null || element.isJsonNull()) return true;
+                        String asString = element.getAsString();
+                        if (asString == null) return true;
+                        return getIntVersion(KIC.VERSION) < getIntVersion(asString);
+                    }
+
+                    @Override
+                    public String toString() {
+                        return KIC.VERSION;
+                    }
+                },
                 KIC.MODID
         );
 
         updateContext.cleanup();
     }
 
-    private static int getIntVersion() {
-        String[] parts = KIC.VERSION.split("\\.");
-        int major = parts.length > 0 ? Integer.parseInt(parts[0]) : 0;
-        int minor = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
-        int patch = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
-        return major * 10000 + minor * 100 + patch;
+    private static int getIntVersion(String version) {
+        try {
+            String[] parts = version.replace("v", "").split("\\.");
+            int major = parts.length > 0 ? Integer.parseInt(parts[0]) : 0;
+            int minor = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+            int patch = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
+            return major * 10000 + minor * 100 + patch;
+        } catch (NumberFormatException e) {
+            KICLogger.warn("[Version] Failed to parse version string: " + version);
+            return 0;
+        }
     }
 
     public static void checkForUpdates(boolean manual) {
@@ -52,30 +79,19 @@ public class Updater {
 
         if (isCacheValid && cachedUpdate != null) {
             isCheckingUpdate = false;
-            if (cachedUpdate.isUpdateAvailable()) {
-                String message = "\n" + KICPrefix + " §eUpdate available: §f§lv" + cachedUpdate.getUpdate().getVersionName() + "\n§aClick here or run '/kic update' to install.\n";
-                sendMessageToPlayer(createClickComponent(true, message, ClickEvent.Action.RUN_COMMAND, "/kic update"));
-            } else if (manual) {
-                sendMessageToPlayer(KICPrefix + " §aYou're already on the latest version.");
-            }
+            handleCachedUpdate(manual);
             return;
         }
 
-        updateContext.checkUpdate("upstream").thenAccept(potentialUpdate -> {
+        updateContext.checkUpdate("full").thenAccept(potentialUpdate -> {
             lastChecked = System.currentTimeMillis();
             cachedUpdate = potentialUpdate;
-
-            if (potentialUpdate != null && potentialUpdate.isUpdateAvailable()) {
-                String message = "\n" + KICPrefix + " §eUpdate available: §f§lv" + cachedUpdate.getUpdate().getVersionName() + "\n§aClick here or run '/kic update' to install.\n";
-                sendMessageToPlayer(createClickComponent(true, message, ClickEvent.Action.RUN_COMMAND, "/kic update"));
-            } else if (manual) {
-                sendMessageToPlayer(KICPrefix + " §aYou're already on the latest version.");
-            }
             isCheckingUpdate = false;
+            handleCachedUpdate(manual);
         }).exceptionally(ex -> {
+            isCheckingUpdate = false;
             sendMessageToPlayer(KICPrefix + " §cFailed to check for updates please try again later or ask for help in the discord.");
             KICLogger.error("[CFU] Error while checking for update: " + ex.getMessage());
-            isCheckingUpdate = false;
             return null;
         });
     }
@@ -95,45 +111,50 @@ public class Updater {
         boolean isCacheValid = (now - lastChecked) < CACHE_TIMEOUT;
 
         if (isCacheValid && cachedUpdate != null && cachedUpdate.isUpdateAvailable()) {
-            isDownloadingUpdate = true;
-            cachedUpdate.launchUpdate().thenRun(() -> {
-                updatePending = true;
-                isDownloadingUpdate = false;
-                sendMessageToPlayer(KICPrefix + " §aUpdate downloaded. Restart the game to apply it.");
-            }).exceptionally(ex -> {
-                isDownloadingUpdate = false;
-                sendMessageToPlayer(KICPrefix + " §cFailed to update the mod please try again later or ask for help in the discord.");
-                KICLogger.error("[PU1] Error while updating: " + ex.getMessage());
-                return null;
-            });
+            downloadUpdate(cachedUpdate);
             return;
         }
 
         isDownloadingUpdate = true;
-        updateContext.checkUpdate("upstream").thenAccept(potentialUpdate -> {
+        updateContext.checkUpdate("full").thenAccept(potentialUpdate -> {
             lastChecked = System.currentTimeMillis();
             cachedUpdate = potentialUpdate;
+            isDownloadingUpdate = false;
 
-            if (potentialUpdate == null || !potentialUpdate.isUpdateAvailable()) {
+            if (potentialUpdate != null && potentialUpdate.isUpdateAvailable()) {
+                downloadUpdate(potentialUpdate);
+            } else {
                 sendMessageToPlayer(KICPrefix + " §aYou're already on the latest version.");
-                isDownloadingUpdate = false;
-                return;
             }
-
-            potentialUpdate.launchUpdate().thenRun(() -> {
-                updatePending = true;
-                isDownloadingUpdate = false;
-                sendMessageToPlayer(KICPrefix + " §aUpdate successful: New version will be active after restarting the game.");
-            }).exceptionally(ex -> {
-                isDownloadingUpdate = false;
-                sendMessageToPlayer(KICPrefix + " §cFailed to update the mod please try again later or ask for help in the discord.");
-                KICLogger.error("[PU2] Error while updating: " + ex.getMessage());
-                return null;
-            });
         }).exceptionally(ex -> {
             isDownloadingUpdate = false;
             sendMessageToPlayer(KICPrefix + " §cFailed to check for updates please try again later or ask for help in the discord.");
             KICLogger.error("[PU] Error while checking for update: " + ex.getMessage());
+            return null;
+        });
+    }
+
+    private static void handleCachedUpdate(boolean manual) {
+        if (cachedUpdate != null && cachedUpdate.isUpdateAvailable()) {
+            String message = "\n" + KICPrefix + " §eUpdate available: §f§lv" + cachedUpdate.getUpdate().getVersionNumber().getAsString()
+                    + "\n§aClick here or run '/kic update' to install.\n";
+            sendMessageToPlayer(createClickComponent(true, message, ClickEvent.Action.RUN_COMMAND, "/kic update"));
+        } else if (manual) {
+            sendMessageToPlayer(KICPrefix + " §aYou're already on the latest version.");
+        }
+    }
+
+    private static void downloadUpdate(PotentialUpdate potentialUpdate) {
+        isDownloadingUpdate = true;
+
+        potentialUpdate.launchUpdate().thenRun(() -> {
+            isDownloadingUpdate = false;
+            updatePending = true;
+            sendMessageToPlayer(KICPrefix + " §aUpdate downloaded. Restart the game to apply it.");
+        }).exceptionally(ex -> {
+            isDownloadingUpdate = false;
+            sendMessageToPlayer(KICPrefix + " §cFailed to apply update.");
+            KICLogger.error("[Download] Error: " + ex.getMessage());
             return null;
         });
     }
