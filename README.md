@@ -2,27 +2,17 @@
   Kuudraiscool (KIC)
 </h1>
 
-<p align="center">
-  <a href="https://github.com/SomeoneOKxD/kuudraiscool/releases">
-    <img src="assets/KIC-LOGO.png" alt="kic_logo" width="150">
-  </a>
-  <br>
-  <a href="https://discord.gg/gsz58gazAK">
-    <img src="https://img.shields.io/discord/1263545045449965679?style=for-the-badge&label=Discord&color=8B0000" alt="Discord">
-  </a>
-  <a href="https://github.com/SomeoneOKxD/kuudraiscool">
-    <img src="https://img.shields.io/github/downloads/SomeoneOkxD/kuudraiscool/total?style=for-the-badge&label=Downloads&color=8B0000" alt="Downloads">
-  </a>
-  <a href="https://openjdk.org">
-    <img src="https://img.shields.io/badge/Made_With-Java-8B0000?style=for-the-badge&logo=OpenJDK&logoColor=white" alt="Made with Java">
-  </a>
-  <a href="https://github.com/SomeoneOKxD/kuudraiscool/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/SomeoneOKxD/kuudraiscool?style=for-the-badge&color=8B0000" alt="License">
-  </a>
-  <br><br>
+<div align="center">
+<a href="https://github.com/SomeoneOKxD/kuudraiscool/releases"><img src="assets/KIC-LOGO.png" alt="kic_logo" width="150"></a>
+
+[![Discord](https://img.shields.io/discord/1263545045449965679?style=for-the-badge&label=Discord&color=8B0000)](https://discord.gg/gsz58gazAK)
+[![Downloads](https://img.shields.io/github/downloads/SomeoneOkxD/kuudraiscool/total?style=for-the-badge&label=Downloads&color=8B0000)](https://github.com/SomeoneOKxD/kuudraiscool)
+[![Made with Java](https://img.shields.io/badge/Made_With-Java-8B0000?style=for-the-badge&logo=OpenJDK&logoColor=white)](https://openjdk.org)
+[![License](https://img.shields.io/github/license/SomeoneOKxD/kuudraiscool?style=for-the-badge&color=8B0000)](https://github.com/SomeoneOKxD/kuudraiscool/blob/main/LICENSE)
+
   <b>Kuudraiscool (KIC)</b> is a <b>Minecraft Forge 1.8.9 mod</b> for <b>Hypixel SkyBlock</b>, originally built to improve the <b>Kuudra gameplay</b>, but now expanded with a growing set of <b>quality-of-life features</b>.<br><br>
   This mod started as a simple ChatTriggers module, but has since been rewritten from the ground up in Java as a full Forge mod — giving it more power, performance, and potential.
-</p>
+</div>
 
 ---
 
@@ -48,7 +38,7 @@
 
 - <details>
     <summary>Dynamic Waypoints</summary>
-    Shows you the perfect location and time to throw your pearl so you land on the supply drop location<br>
+    Shows you the perfect location and time to throw your pearl so you land on the supply drop location.<br>
     <img src="assets/features/skyAndDouble.gif" alt="Sky And Double" width="400"/><br>  
     <img src="assets/features/skyAndFlat.gif" alt="Sky And Flat" width="400"/><br>  
 </details>
@@ -86,7 +76,7 @@
 
 - <details>
     <summary>Build Progress</summary>
-    Shows a beacon beam which changes color from red to green based on the progress<br>  
+    Shows a beacon beam which changes color from red to green based on the progress.<br>  
     <img src="./assets/features/build.gif" alt="Build Progress" width="400"/><br>  
 </details>
 
@@ -104,7 +94,7 @@
 
 - <details>
     <summary>God Roll Hologram</summary>
-    Shows a hologram around the paid chest whenever you get a god roll<br>  
+    Shows a hologram around the paid chest whenever you get a god roll.<br>  
     <img src="./assets/features/godroll.png" alt="God roll hologram" width="400"/><br>  
 </details>
 
@@ -179,7 +169,7 @@
 
 - <details>
     <summary>Chat Commands</summary>
-    Works in both party and dms<br>
+    Works in both party and dms.<br>
     - <code>.runs [player]</code><br>  
       <img src="./assets/features/chat-commands/runs.png" alt="Party .runs" width="400"/><br>  
     - <code>.stats [player]</code><br>  

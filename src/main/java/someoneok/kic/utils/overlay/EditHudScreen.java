@@ -102,11 +102,9 @@ public class EditHudScreen extends GuiScreen {
             currentMode = (currentMode == OverlayType.NORMAL) ? OverlayType.INGUI : OverlayType.NORMAL;
             toggleModeButton.displayString = getModeText();
             showPopup = false;
-        }
-        else if (button== resetOverlaysButton){
+        } else if (button== resetOverlaysButton){
             resetAllOverlays();
-        }
-        else if (button == manageOverlaysButton) {
+        } else if (button == manageOverlaysButton) {
             showPopup = !showPopup;
             if (showPopup) buildOverlayPopup();
         }

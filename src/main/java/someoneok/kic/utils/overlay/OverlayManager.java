@@ -9,6 +9,7 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Mouse;
+import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.NEUCompatibility;
 
@@ -218,25 +219,19 @@ public class OverlayManager {
     public static boolean isEditable(MovableOverlay overlay) {
         return overlay instanceof MovableOverlay || overlay instanceof InteractiveOverlay || overlay instanceof DualOverlay;
     }
+
     public static Dimension getScaledScreen() {
-        Minecraft mc = Minecraft.getMinecraft();
+        int scale = KIC.mc.gameSettings.guiScale;
+        if (scale == 0) scale = Integer.MAX_VALUE;
 
-        int scale = mc.gameSettings.guiScale;
-        if (scale == 0) scale = 1000;
+        int width = KIC.mc.displayWidth;
+        int height = KIC.mc.displayHeight;
 
-        int scaleFactor = 0;
-        int width = mc.displayWidth;
-        int height = mc.displayHeight;
+        int scaleFactor = Math.min(width / 320, height / 240);
+        scaleFactor = Math.min(scaleFactor, scale);
+        scaleFactor = Math.max(scaleFactor, 1);
 
-        while (scaleFactor < scale && width / (scaleFactor + 1) >= 320 && height / (scaleFactor + 1) >= 240) {
-            scaleFactor++;
-        }
-
-        int scaledWidth = width / scaleFactor;
-        int scaledHeight = height / scaleFactor;
-
-        return new Dimension(scaledWidth, scaledHeight);
+        return new Dimension(width / scaleFactor, height / scaleFactor);
     }
-
 }
 
