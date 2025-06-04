@@ -130,7 +130,7 @@ public class AttributeItemValue implements Value {
         }
     }
 
-    private long getSalvageValue(long essencePrice) {
+    public long getSalvageValue(long essencePrice) {
         int totalTiers = 0;
         Attributes attributes = item.getAttributes();
         if (attributes.getLevel1() > 0) totalTiers += 1 << (attributes.getLevel1() - 1);

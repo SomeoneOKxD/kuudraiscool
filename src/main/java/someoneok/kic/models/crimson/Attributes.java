@@ -21,9 +21,9 @@ public class Attributes {
     private long godrollAvgPrice;
 
     public Attributes(String name1, int level1, String name2, int level2) {
-        this.name1 = name1;
+        this.name1 = name1 == null ? null : name1.replace("mending", "vitality");
         this.level1 = level1;
-        this.name2 = name2;
+        this.name2 = name2 == null ? null : name2.replace("mending", "vitality");
         this.level2 = level2;
 
         this.lbPrice1 = 0;

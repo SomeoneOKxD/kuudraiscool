@@ -7,6 +7,7 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.crimson.AttributeItem;
 import someoneok.kic.models.crimson.AttributeItemValue;
 import someoneok.kic.models.crimson.Attributes;
+import someoneok.kic.models.crimson.BazaarItemValue;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.CacheManager;
 import someoneok.kic.utils.LocationUtils;
@@ -39,6 +40,20 @@ public class TooltipPrice {
         if (!tooltip.contains(formattedMainValue)) {
             tooltip.removeIf(line -> line.contains("§r§3§lItem Value: §r§6"));
             tooltip.add(formattedMainValue);
+        }
+
+        // Salvage Value
+        if (KICConfig.crimsonTooltipSalvage && canBeSalvaged(value.getItemId())) {
+            BazaarItemValue essence = CacheManager.getBazaarItem("ESSENCE_CRIMSON");
+            if (essence != null) {
+                String formattedSalvageValue = "§r§e§lSalvage Value: §r§6" + parseToShorthandNumber(value.getSalvageValue(essence.getPrice(true)));
+                if (!tooltip.contains(formattedSalvageValue)) {
+                    tooltip.removeIf(line -> line.contains("§r§e§lSalvage Value: §r§6"));
+                    tooltip.add(formattedSalvageValue);
+                }
+            }
+        } else {
+            tooltip.removeIf(line -> line.contains("§r§e§lSalvage Value: §r§6"));
         }
 
         if (KICConfig.crimsonTooltipPerAttribute) {
@@ -77,5 +92,10 @@ public class TooltipPrice {
                 return;
             }
         }
+    }
+
+    private boolean canBeSalvaged(String itemId) {
+        String lower = itemId.toLowerCase();
+        return lower.contains("helmet") || lower.contains("chestplate") || lower.contains("leggings") || lower.contains("boots");
     }
 }

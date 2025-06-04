@@ -16,9 +16,7 @@ import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.events.GuiContainerEvent;
 import someoneok.kic.models.NEUCompatibility;
-import someoneok.kic.models.crimson.AttributeItem;
-import someoneok.kic.models.crimson.AttributeItemValue;
-import someoneok.kic.models.crimson.Attributes;
+import someoneok.kic.models.crimson.*;
 import someoneok.kic.modules.misc.ButtonManager;
 import someoneok.kic.utils.*;
 import someoneok.kic.utils.dev.KICLogger;
@@ -175,6 +173,8 @@ public class CrimsonContainerHelper {
                 }
             }
         }
+        boolean cacheCheck = CacheManager.addBazaarItem(new BazaarItemValue(new BazaarItem("ESSENCE_CRIMSON", "§dCrimson Essence")));
+        if (cacheCheck && !cacheUpdateNeeded) cacheUpdateNeeded = true;
 
         if (!items.equals(newItems)) {
             items.clear();
@@ -190,7 +190,7 @@ public class CrimsonContainerHelper {
 
         if (itemsChanged || miscChanged || cacheUpdateNeeded) {
             if (cacheUpdateNeeded) {
-                CacheManager.updateAttributeItemsCache(this::updateOverlay);
+                CacheManager.updateItemsCache(this::updateOverlay);
             } else {
                 updateOverlay();
             }

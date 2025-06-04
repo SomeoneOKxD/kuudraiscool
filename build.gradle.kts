@@ -103,7 +103,7 @@ dependencies {
     compileOnly("com.squareup.okio:okio:1.17.6")
     shadowImpl("com.squareup.okio:okio:1.17.6")
 
-    shadowImpl("moe.nea:libautoupdate:0.1.0")
+    shadowImpl("moe.nea:libautoupdate:1.3.1")
 }
 
 // Tasks:

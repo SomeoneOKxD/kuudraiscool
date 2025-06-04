@@ -89,7 +89,7 @@ public class AuctionHelper {
 
         boolean needsUpdate = CacheManager.addItemAuctionHelper(new AttributeItemValue(currentAuctionItem));
         if (needsUpdate) {
-            CacheManager.updateAttributeItemsCache(this::updateOverlay);
+            CacheManager.updateItemsCache(this::updateOverlay);
         } else {
             updateOverlay();
         }

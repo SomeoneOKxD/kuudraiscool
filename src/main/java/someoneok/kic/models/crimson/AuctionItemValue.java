@@ -24,6 +24,10 @@ public class AuctionItemValue implements Value {
         return item.getItemId();
     }
 
+    public String getUuid() {
+        return item.getUuid();
+    }
+
     public String getName() {
         return item.getName();
     }
