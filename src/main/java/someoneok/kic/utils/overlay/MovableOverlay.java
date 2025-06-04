@@ -7,7 +7,7 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.Island;
 import someoneok.kic.utils.ApiUtils;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.util.Set;
 import java.util.function.Supplier;
 
