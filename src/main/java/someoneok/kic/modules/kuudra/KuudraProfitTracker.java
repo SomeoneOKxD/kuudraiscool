@@ -21,10 +21,13 @@ import java.util.List;
 import static someoneok.kic.KIC.KICPrefix;
 import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
 import static someoneok.kic.utils.StringUtils.*;
+import someoneok.kic.utils.LocationUtils;
 
 public class KuudraProfitTracker {
+    private static final int MAX_TIER = 5;
     private static boolean showConfirm = false;
     private static boolean lifetimeView = false;
+    private static int selectedTier = 0;
 
     public static void changeView() {
         lifetimeView = !lifetimeView;
@@ -34,18 +37,19 @@ public class KuudraProfitTracker {
 
     public static void onRunEnded(long runTimeMs, boolean failed) {
         ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
+        int tier = LocationUtils.kuudraTier;
 
-        data.addRun();
+        data.addRun(tier);
 
         long runTime = runTimeMs / 1000;
         if (KICConfig.kuudraProfitTrackerAddRunTimeDelay) {
             runTime += KICConfig.kuudraProfitTrackerTotalTimeToAdd;
         }
 
-        data.addTime(runTime);
+        data.addTime(runTime, tier);
 
         if (failed) {
-            data.addFailedRun();
+            data.addFailedRun(tier);
         } else {
             maybeUpdatePersonalBest(runTimeMs);
         }
@@ -75,17 +79,18 @@ public class KuudraProfitTracker {
 
     public static void onRunEnded(boolean failed) {
         ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
+        int tier = LocationUtils.kuudraTier;
 
-        data.addRun();
+        data.addRun(tier);
         long averageTime = data.getLifetime().getAverageRunTime();
 
         if (KICConfig.kuudraProfitTrackerAddRunTimeDelay) {
             averageTime += KICConfig.kuudraProfitTrackerTotalTimeToAdd;
         }
 
-        data.addTime(averageTime);
+        data.addTime(averageTime, tier);
 
-        if (failed) data.addFailedRun();
+        if (failed) data.addFailedRun(tier);
 
         OverlayDataHandler.saveOverlaysData();
         updateTracker();
@@ -93,48 +98,38 @@ public class KuudraProfitTracker {
 
     public static void onReroll() {
         ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
-        data.addReroll();
+        int tier = LocationUtils.kuudraTier;
+        data.addReroll(tier);
         OverlayDataHandler.saveOverlaysData();
         updateTracker();
     }
 
     public static void onChestBought(KuudraChest chest, boolean rerolled) {
         ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
+        int tier = LocationUtils.kuudraTier;
 
         long totalProfit = chest.getTotalValue(rerolled);
-        data.addProfit(totalProfit);
+        data.addProfit(totalProfit, tier);
 
         int essence = chest.getEssence();
-        if (essence > 0) data.addEssence(essence);
+        if (essence > 0) data.addEssence(essence, tier);
 
         int teeth = chest.getTeeth();
-        if (teeth > 0) data.addTeeth(teeth);
+        if (teeth > 0) data.addTeeth(teeth, tier);
 
-        if (chest.hasGodRoll()) data.addGodRoll(chest.getGodRoll());
+        if (chest.hasGodRoll()) data.addGodRoll(chest.getGodRoll(), tier);
 
         KuudraKey key = chest.getKeyNeeded();
         if (key == null) {
-            data.addFreeChest();
+            data.addFreeChest(tier);
         } else {
+            data.addPaidChest(tier);
             switch (key) {
-                case BASIC:
-                    data.addBasicChest();
-                    break;
-                case HOT:
-                    data.addHotChest();
-                    break;
-                case BURNING:
-                    data.addBurningChest();
-                    break;
-                case FIERY:
-                    data.addFieryChest();
-                    break;
-                case INFERNAL:
-                    data.addInfernalChest();
-                    break;
-                default:
-                    data.addFreeChest();
-                    break;
+                case BASIC: data.addBasicChest(tier); break;
+                case HOT: data.addHotChest(tier); break;
+                case BURNING: data.addBurningChest(tier); break;
+                case FIERY: data.addFieryChest(tier); break;
+                case INFERNAL: data.addInfernalChest(tier); break;
             }
         }
 
@@ -208,18 +203,40 @@ public class KuudraProfitTracker {
         if (lifetimeView) {
             text.append(" §r§7[")
                     .append(Color.getColorCode(KuudraProfitTrackerOptions.sessionColor))
-                    .append("§lLIFETIME§r§7]");
+                    .append("§lLIFETIME");
+            if (selectedTier != 0) {
+                text.append(" (T").append(selectedTier).append(")");
+            }
+            text.append("§r§7]");
         } else if (KuudraProfitTrackerOptions.showCurrentSession) {
             text.append(" §r§7[")
                     .append(Color.getColorCode(KuudraProfitTrackerOptions.sessionColor))
-                    .append("§lCURRENT§r§7]");
+                    .append("§lCURRENT");
+            if (selectedTier != 0) {
+                text.append(" (T").append(selectedTier).append(")");
+            }
+            text.append("§r§7]");
         }
 
         text.append("\n");
 
         ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
-        ProfitTrackerData.ProfitTrackerSession session = lifetimeView ? data.getLifetime() : data.getCurrent();
-
+        ProfitTrackerData.ProfitTrackerSession session;
+        if (lifetimeView) {
+            if (selectedTier != 0) {
+                session = data.getLifetimeTierSessions().get(selectedTier);
+                if (session == null) session = data.getLifetime(); // fallback
+            } else {
+                session = data.getLifetime();
+            }
+        } else {
+            if (selectedTier != 0) {
+                session = data.getTierSessions().get(selectedTier);
+                if (session == null) session = data.getCurrent(); // fallback
+            } else {
+                session = data.getCurrent();
+            }
+        }
         if (KuudraProfitTrackerOptions.showProfit) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.profitColor);
             text.append("\n").append(color).append("§lProfit: §r")
@@ -297,29 +314,15 @@ public class KuudraProfitTracker {
 
         segments.add(new OverlaySegment(text.toString()));
         segments.add(new OverlaySegment("\n§7-=-=-=-=-=-=-=-=-=-=-"));
-        segments.add(new OverlaySegment(
-                "\n§7[§aChange Session§7]",
-                KuudraProfitTracker::changeView,
-                true
-        ));
-        segments.add(new OverlaySegment(
-                "\n§7[§aNew Session§7]",
-                () -> newSession(false),
-                true
-        ));
+        segments.add(new OverlaySegment("\n§7[§aChange Session§7]", KuudraProfitTracker::changeView, true));
+        segments.add(new OverlaySegment("\n§7[§aNew Session§7]", () -> newSession(false), true));
+        segments.add(new OverlaySegment("\n§7[§aSwitch Tier§7]", KuudraProfitTracker::cycleTier, true));
+
         if (showConfirm) {
             segments.add(new OverlaySegment("\n§7§oAre you sure? "));
-            segments.add(new OverlaySegment(
-                    "§7[§2YES§7]",
-                    () -> newSession(true),
-                    true
-            ));
+            segments.add(new OverlaySegment("§7[§2YES§7]", () -> newSession(true), true));
             segments.add(new OverlaySegment(" "));
-            segments.add(new OverlaySegment(
-                    "§7[§4NO§7]",
-                    () -> newSession(false),
-                    true
-            ));
+            segments.add(new OverlaySegment("§7[§4NO§7]", () -> newSession(false), true));
         }
 
         overlay.setExampleText(text.toString());
@@ -329,7 +332,6 @@ public class KuudraProfitTracker {
 
     public static void resetTracker() {
         OverlayDataManager.getProfitTrackerData().reset();
-
         OverlayDataHandler.saveOverlaysData();
         updateTracker();
         sendMessageToPlayer(KIC.KICPrefix + " §aKuudra profit tracker has been reset.");
@@ -340,7 +342,6 @@ public class KuudraProfitTracker {
             showConfirm = false;
             if (confirmed) {
                 OverlayDataManager.getProfitTrackerData().newSession();
-
                 OverlayDataHandler.saveOverlaysData();
                 updateTracker();
             }
@@ -372,5 +373,10 @@ public class KuudraProfitTracker {
             }
             sendMessageToPlayer(String.format("%s §aShared your profit tracker in the KIC discord!", KICPrefix));
         });
+    }
+
+    private static void cycleTier() {
+        selectedTier = (selectedTier + 1) % (MAX_TIER + 1);
+        updateTracker();
     }
 }
