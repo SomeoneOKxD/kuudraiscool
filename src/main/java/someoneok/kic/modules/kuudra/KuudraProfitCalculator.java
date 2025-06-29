@@ -14,7 +14,6 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.config.pages.KuudraProfitCalculatorOptions;
 import someoneok.kic.events.GuiContainerEvent;
 import someoneok.kic.models.Island;
-import someoneok.kic.models.crimson.AttributeItemValue;
 import someoneok.kic.models.crimson.AuctionItemValue;
 import someoneok.kic.models.crimson.BazaarItemValue;
 import someoneok.kic.models.kuudra.KuudraChest;
@@ -38,10 +37,12 @@ import static someoneok.kic.modules.kuudra.KuudraProfitTracker.onChestBought;
 import static someoneok.kic.modules.kuudra.KuudraProfitTracker.onReroll;
 import static someoneok.kic.utils.GeneralUtils.clickSlot;
 import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.ItemUtils.useSalvageValue;
 import static someoneok.kic.utils.StringUtils.*;
 
 public class KuudraProfitCalculator {
     private static final Pattern ESSENCE_REGEX = Pattern.compile("§d(?<type>\\w+) Essence §8x(?<count>\\d+)");
+    private static final Pattern SHARD_REGEX = Pattern.compile("(?<name>§.?(?<type>.+?) Shard) §8x(?<count>\\d+)");
     private KuudraChest currentChest;
     private boolean rerolled = false;
     private boolean rerollReset = false;
@@ -67,7 +68,7 @@ public class KuudraProfitCalculator {
             if (chestType == null) return;
 
             ItemStack openChest = inv.getStackInSlot(31);
-            if (openChest == null || !validBuyItem(openChest)) return;
+            if (!validBuyItem(openChest)) return;
 
             if (chestType.hasItems() || (chestType == KuudraChest.FREE && chestType.getRawEssence() != 0)) {
                 changeType(chestType);
@@ -80,10 +81,23 @@ public class KuudraProfitCalculator {
                         ItemStack lootSlot = inv.getStackInSlot(i);
                         if (lootSlot == null) continue;
 
-                        String lootDisplayName = lootSlot.getDisplayName();
-                        int essence = getCrimsonEssenceCount(lootDisplayName);
+                        String displayName = lootSlot.getDisplayName();
+                        int essence = getCrimsonEssenceCount(displayName);
                         if (essence != -1) {
-                            chestType.setEssence(essence);
+                            chestType.addEssence(essence);
+                            continue;
+                        }
+
+                        Matcher matcher = SHARD_REGEX.matcher(displayName);
+                        if (matcher.find()) {
+                            String name = matcher.group("name");
+                            String type = matcher.group("type");
+                            String countStr = matcher.group("count");
+                            try {
+                                int count = Integer.parseInt(countStr);
+                                String shardId = "SHARD_" + type.toUpperCase().replaceAll(" ", "_");
+                                chestType.addShard(name, shardId, count);
+                            } catch (NumberFormatException ignored) {}
                             continue;
                         }
 
@@ -257,24 +271,12 @@ public class KuudraProfitCalculator {
                 itemValue = item.getValue();
                 name = item.getName();
 
-                if ("RUNIC_STAFF".equals(item.getItemId()) && KuudraProfitCalculatorOptions.ignoreAuroraStaff) {
+                if (("RUNIC_STAFF".equals(item.getItemId()) && KuudraProfitCalculatorOptions.ignoreAuroraStaff)
+                        || ("HOLLOW_WAND".equals(item.getItemId()) && KuudraProfitCalculatorOptions.ignoreHollowWand)) {
                     name = "§f§m" + removeFormatting(item.getName());
-                }
-            } else if (value instanceof AttributeItemValue) {
-                AttributeItemValue item = (AttributeItemValue) value;
-                name = item.getFullName();
-                itemValue = item.getValue(currentChest.getEssenceValue());
-
-                if (item.isUsingCustomValue(currentChest.getEssenceValue())) {
-                    if ("ATTRIBUTE_SHARD".equals(item.getItemId())) {
-                        name = "§f§m" + removeFormatting(item.getFullName());
-                    } else {
-                        name = "§e§m" + removeFormatting(item.getFullName());
-                    }
-                }
-
-                if ("HOLLOW_WAND".equals(item.getItemId()) && KuudraProfitCalculatorOptions.ignoreHollowWands) {
-                    name = "§f§m" + removeFormatting(item.getFullName());
+                } else if (useSalvageValue(item)) {
+                    itemValue = item.getSalvagePrice();
+                    name = "§e§m" + removeFormatting(item.getName());
                 }
             }
             if (!isNullOrEmpty(name)) {

@@ -4,11 +4,13 @@ public class AuctionItem {
     private final String itemId;
     private final String name;
     private final String uuid;
+    private final int stars;
 
-    public AuctionItem(String itemId, String name, String uuid) {
+    public AuctionItem(String itemId, String name, String uuid, int stars) {
         this.itemId = itemId;
         this.name = name;
         this.uuid = uuid;
+        this.stars = stars;
     }
 
     public String getItemId() {
@@ -23,12 +25,17 @@ public class AuctionItem {
         return uuid;
     }
 
+    public int getStars() {
+        return stars;
+    }
+
     @Override
     public String toString() {
         return "AuctionItem{" +
                 "itemId='" + itemId + '\'' +
                 ", name='" + name + '\'' +
                 ", uuid='" + uuid + '\'' +
+                ", stars=" + stars +
                 '}';
     }
 }

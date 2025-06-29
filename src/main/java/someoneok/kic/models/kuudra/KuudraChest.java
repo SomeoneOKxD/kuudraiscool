@@ -14,58 +14,66 @@ import someoneok.kic.models.APIException;
 import someoneok.kic.models.HypixelRarity;
 import someoneok.kic.models.crimson.*;
 import someoneok.kic.models.request.Request;
-import someoneok.kic.modules.kuudra.GodRoll;
+import someoneok.kic.modules.kuudra.Hologram;
 import someoneok.kic.modules.kuudra.KuudraProfitTracker;
 import someoneok.kic.utils.ApiUtils;
-import someoneok.kic.utils.CacheManager;
 import someoneok.kic.utils.ItemUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.dev.KICLogger;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static someoneok.kic.KIC.KICPrefix;
 import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.ItemUtils.getItemStars;
+import static someoneok.kic.utils.ItemUtils.isArmorPiece;
 import static someoneok.kic.utils.StringUtils.isNullOrEmpty;
 
 public enum KuudraChest {
     FREE("Free Chest"),
     PAID("Paid Chest");
 
-    private final List<String> bazaarItemIds = Arrays.asList("KUUDRA_TEETH", "MANDRAA", "KUUDRA_MANDIBLE", "ESSENCE_CRIMSON", "KISMET_FEATHER");
-    private final List<String> valuables = Arrays.asList("WHEEL_OF_FATE", "BURNING_KUUDRA_CORE", "ENRAGER", "TENTACLE_DYE", "ULTIMATE_FATAL_TEMPO", "ULTIMATE_INFERNO");
+    private static final int[] ESSENCE_TOTALS = {30, 65, 105, 150, 200, 255, 315, 385, 465, 555};
+    private static final int[] HEAVY_PEARL_TOTALS = {0, 0, 0, 0, 0, 0, 0, 2, 5, 9};
+    private final List<String> bazaarItemIds = Arrays.asList("KUUDRA_TEETH", "MANDRAA", "KUUDRA_MANDIBLE", "ESSENCE_CRIMSON", "KISMET_FEATHER", "HEAVY_PEARL");
+    private final List<String> valuables = Arrays.asList("WHEEL_OF_FATE", "BURNING_KUUDRA_CORE", "TORMENTOR", "HELLSTORM_STAFF", "TENTACLE_DYE", "ENCHANTMENT_ULTIMATE_FATAL_TEMPO_1", "ENCHANTMENT_ULTIMATE_INFERNO_1", "ANANKE_FEATHER");
+
     private final String displayText;
     private KuudraKey keyNeeded;
     private int essence;
     private final Map<String, Value> values = new HashMap<>();
+    private long totalValue;
+    private boolean hasValuable;
+    private Value valuableItem;
     private BazaarItemValue essenceValue;
     private BazaarItemValue kismetValue;
-    private long totalValue;
-    private AttributeItemValue godRollItem;
-    private boolean hasValuables;
+    private BazaarItemValue heavyPearlValue;
 
     KuudraChest(String displayText) {
         this.displayText = displayText;
         this.keyNeeded = null;
         this.essence = 0;
         this.totalValue = 0;
+        this.hasValuable = false;
+        this.valuableItem = null;
+
         this.essenceValue = new BazaarItemValue(new BazaarItem("ESSENCE_CRIMSON", "§dCrimson Essence"));
         this.kismetValue = new BazaarItemValue(new BazaarItem("KISMET_FEATHER", "§9Kismet Feather"));
-        this.godRollItem = null;
-        this.hasValuables = false;
+        this.heavyPearlValue = new BazaarItemValue(new BazaarItem("Heavy Pearl", "§6Heavy Pearl"));
     }
 
     public void reset() {
         this.keyNeeded = null;
         this.essence = 0;
-        this.totalValue = 0;
         this.values.clear();
+        this.totalValue = 0;
+        this.hasValuable = false;
+        this.valuableItem = null;
+
         this.essenceValue = new BazaarItemValue(new BazaarItem("ESSENCE_CRIMSON", "§dCrimson Essence"));
         this.kismetValue = new BazaarItemValue(new BazaarItem("KISMET_FEATHER", "§9Kismet Feather"));
-        this.godRollItem = null;
-        this.hasValuables = false;
+        this.heavyPearlValue = new BazaarItemValue(new BazaarItem("Heavy Pearl", "§6Heavy Pearl"));
     }
 
     public String getDisplayText() {
@@ -85,7 +93,52 @@ public enum KuudraChest {
     }
 
     public void addItem(ItemStack item) {
-        this.processItem(item);
+        String type = getType(item);
+        if (type == null) return;
+        switch (type) {
+            case "BAZAAR-ENCHANTS":
+                String[] enchant = ItemUtils.getFirstEnchant(item);
+                String enchantId = enchant[0];
+                String enchantName = enchant[1];
+                if (isNullOrEmpty(enchantId) || isNullOrEmpty(enchantName)) return;
+                BazaarItem bzItem1 = new BazaarItem(enchantId, enchantName);
+                if (valuables.contains(bzItem1.getItemId()) && !hasValuable) hasValuable = true;
+                values.put(enchantId, new BazaarItemValue(bzItem1));
+                break;
+            case "BAZAAR":
+                String bazaarId = ItemUtils.getItemId(item);
+                if (isNullOrEmpty(bazaarId)) return;
+                String bzName = item.getDisplayName() == null ? "" : item.getDisplayName();
+                BazaarItem bzItem2 = new BazaarItem(bazaarId, bzName);
+                if (valuables.contains(bzItem2.getItemId()) && !hasValuable) hasValuable = true;
+                int count = item.stackSize;
+                if (count > 0) {
+                    bzItem2.setCount(count);
+                }
+                values.put(bazaarId, new BazaarItemValue(bzItem2));
+                break;
+            case "AUCTION":
+                String ahId = ItemUtils.getItemId(item);
+                String ahUuid = ItemUtils.getItemUuid(item);
+                String ahName = item.getDisplayName() == null ? "" : item.getDisplayName();
+                int stars = getItemStars(item);
+                if (isNullOrEmpty(ahId) || isNullOrEmpty(ahUuid)) return;
+                AuctionItem auctionItem = new AuctionItem(ahId, ahName, ahUuid, stars);
+                if (valuables.contains(auctionItem.getItemId()) && !hasValuable) hasValuable = true;
+                values.put(ahUuid, new AuctionItemValue(auctionItem));
+                break;
+        }
+    }
+
+    public void addShard(String name, String itemId, int count) {
+        Value existingShard = values.get(itemId);
+
+        if (existingShard == null) {
+            BazaarItem bazaarItem = new BazaarItem(itemId, name, count);
+            values.put(itemId, new BazaarItemValue(bazaarItem));
+        } else if (existingShard instanceof BazaarItemValue) {
+            ((BazaarItemValue) existingShard).addCount(count);
+        }
     }
 
     public int getTeeth() {
@@ -96,10 +149,12 @@ public enum KuudraChest {
         return 0;
     }
 
+    public void addEssence(int essence) {
+        this.essence += essence;
+    }
+
     public int getEssence() {
-        if (KuudraProfitCalculatorOptions.ignoreEssence) {
-            return 0;
-        }
+        if (KuudraProfitCalculatorOptions.ignoreEssence) return 0;
 
         int baseEssence = this.essence;
 
@@ -119,98 +174,19 @@ public enum KuudraChest {
     }
 
     public int getRawEssence() {
-        return this.essence;
+        return essence;
     }
 
-    public void setEssence(int essence) {
-        this.essence = essence;
+    public Map<String, Value> getValues() {
+        return values;
     }
 
-    public static Optional<KuudraChest> getFromName(String name) {
-        if (name == null || name.trim().isEmpty()) return Optional.empty();
-        for (KuudraChest chest : values()) {
-            if (chest.displayText.equalsIgnoreCase(name)) {
-                return Optional.of(chest);
-            }
-        }
-        return Optional.empty();
+    public BazaarItemValue getEssenceValue() {
+        return essenceValue;
     }
 
-    private void processItem(ItemStack itemStack) {
-        String type = getType(itemStack);
-        KICLogger.info(String.format("Item: %s | ItemID: %s | Type: %s", itemStack.getDisplayName(), ItemUtils.getItemId(itemStack), type));
-        if (type == null) return;
-        switch (type) {
-            case "ATTRIBUTES":
-                String uuid = ItemUtils.getItemUuid(itemStack);
-                AttributeItem attributeItem = ItemUtils.mapToAttributeItem(itemStack);
-                if (attributeItem == null) return;
-                if (valuables.contains(attributeItem.getItemId()) && !hasValuables) hasValuables = true;
-                if (KuudraProfitCalculatorOptions.forceT5Attribute) {
-                    Attributes attributes = attributeItem.getAttributes();
-                    if (KuudraProfitCalculatorOptions.forceT5AttributeOnlyLB) {
-                        if (KuudraProfitCalculatorOptions.attributePriceType == 0) {
-                            if (attributes.getLevel1() > 5) attributes.setLevel1(5);
-                            if (attributes.getLevel2() > 5) attributes.setLevel2(5);
-                        }
-                    } else {
-                        if (attributes.getLevel1() > 5) attributes.setLevel1(5);
-                        if (attributes.getLevel2() > 5) attributes.setLevel2(5);
-                    }
-                }
-                values.put(uuid, new AttributeItemValue(attributeItem));
-                break;
-            case "BAZAAR-ENCHANTS":
-                String[] enchant = ItemUtils.getFirstEnchant(itemStack);
-                String enchantId = enchant[0];
-                String enchantName = enchant[1];
-                if (isNullOrEmpty(enchantId) || isNullOrEmpty(enchantName)) return;
-                BazaarItem bazaarItem = new BazaarItem(enchantId, enchantName);
-                if (valuables.contains(bazaarItem.getItemId()) && !hasValuables) hasValuables = true;
-                values.put(enchantId, new BazaarItemValue(bazaarItem));
-                break;
-            case "BAZAAR":
-                String bazaarId = ItemUtils.getItemId(itemStack);
-                if (isNullOrEmpty(bazaarId)) return;
-                String name1 = itemStack.getDisplayName() == null ? "" : itemStack.getDisplayName();
-                BazaarItem bazaarItem2 = new BazaarItem(bazaarId, name1);
-                if (valuables.contains(bazaarItem2.getItemId()) && !hasValuables) hasValuables = true;
-                int count = itemStack.stackSize;
-                if (count > 0) {
-                    bazaarItem2.setCount(count);
-                }
-                values.put(bazaarId, new BazaarItemValue(bazaarItem2));
-                break;
-            case "AUCTION":
-                String auctionId = ItemUtils.getItemId(itemStack);
-                String auctionUuid = ItemUtils.getItemUuid(itemStack);
-                String name2 = itemStack.getDisplayName() == null ? "" : itemStack.getDisplayName();
-                if (isNullOrEmpty(auctionId) || isNullOrEmpty(auctionUuid)) return;
-                AuctionItem auctionItem = new AuctionItem(auctionId, name2, auctionUuid);
-                if (valuables.contains(auctionItem.getItemId()) && !hasValuables) hasValuables = true;
-                values.put(auctionUuid, new AuctionItemValue(auctionItem));
-                break;
-        }
-    }
-
-    private String getType(ItemStack item) {
-        if (!ItemUtils.hasItemId(item)) return null;
-        if (ItemUtils.hasAttributes(item)) {
-            return "ATTRIBUTES";
-        } else if (ItemUtils.hasEnchants(item)) {
-            return "BAZAAR-ENCHANTS";
-        } else {
-            String itemId = ItemUtils.getItemId(item);
-            if (itemId != null) {
-                if (bazaarItemIds.contains(itemId)) {
-                    return "BAZAAR";
-                } else {
-                    return "AUCTION";
-                }
-            } else {
-                return null;
-            }
-        }
+    public BazaarItemValue getKismetValue() {
+        return kismetValue;
     }
 
     public void updateValues(Runnable callback) {
@@ -223,6 +199,7 @@ public enum KuudraChest {
 
         if (!essenceValue.isFetching() && !essenceValue.isCached()) itemsToFetch.add(essenceValue);
         if (!kismetValue.isFetching() && !kismetValue.isCached()) itemsToFetch.add(kismetValue);
+        if (!values.containsKey("HEAVY_PEARL") && !heavyPearlValue.isFetching() && !heavyPearlValue.isCached()) itemsToFetch.add(heavyPearlValue);
 
         if (itemsToFetch.isEmpty()) {
             updateTotalValue();
@@ -257,50 +234,26 @@ public enum KuudraChest {
                         JsonObject obj = element.getAsJsonObject();
                         String type = obj.get("type").getAsString();
                         switch (type) {
-                            case "ATTRIBUTES":
-                                String uuid1 = obj.get("uuid").getAsString();
-                                Value v1 = values.get(uuid1);
-                                if (!(v1 instanceof AttributeItemValue)) continue;
-                                AttributeItemValue attributeItemValue = (AttributeItemValue) v1;
-                                attributeItemValue.setFetching(false);
-                                attributeItemValue.setCached(true);
-                                attributeItemValue.setItemPrice(obj.get("price").getAsLong());
-
-                                Attributes attributes = attributeItemValue.getAttributes();
-                                attributes.setLbPrice1(obj.get("priceAttribute1").getAsLong());
-                                attributes.setAvgPrice1(obj.get("averagePriceAttribute1").getAsLong());
-                                if (obj.has("priceAttribute2") && !obj.get("priceAttribute2").isJsonNull()) {
-                                    attributes.setLbPrice2(obj.get("priceAttribute2").getAsLong());
-                                    attributes.setAvgPrice2(obj.get("averagePriceAttribute2").getAsLong());
-                                }
-                                boolean godRoll = obj.get("godRoll").getAsBoolean();
-                                attributes.setGodroll(godRoll);
-                                if (obj.has("godRollPrice") && !obj.get("godRollPrice").isJsonNull()) {
-                                    attributes.setGodrollLbPrice(obj.get("godRollPrice").getAsLong());
-                                    attributes.setGodrollAvgPrice(obj.get("averageGodRollPrice").getAsLong());
-                                }
-                                if (godRoll) {
-                                    godRollItem = attributeItemValue;
-                                    GodRoll.show(attributeItemValue);
-                                }
-                                break;
                             case "BAZAAR":
                                 String itemId = obj.get("itemId").getAsString();
-                                Value v2;
+                                Value bzValue;
                                 if ("ESSENCE_CRIMSON".equals(itemId)) {
-                                    v2 = essenceValue;
+                                    bzValue = essenceValue;
                                 } else if ("KISMET_FEATHER".equals(itemId)) {
-                                    v2 = kismetValue;
+                                    bzValue = kismetValue;
+                                } else if ("HEAVY_PEARL".equals(itemId) && !values.containsKey("HEAVY_PEARL")) {
+                                    bzValue = heavyPearlValue;
                                 } else {
-                                    v2 = values.get(itemId);
+                                    bzValue = values.get(itemId);
                                 }
-                                if (!(v2 instanceof BazaarItemValue)) continue;
-                                BazaarItemValue bazaarItemValue = (BazaarItemValue) v2;
+                                if (!(bzValue instanceof BazaarItemValue)) continue;
+                                BazaarItemValue bazaarItemValue = (BazaarItemValue) bzValue;
                                 long buyPriceBazaar = obj.get("buyPrice").getAsLong();
                                 long sellPriceBazaar = obj.get("sellPrice").getAsLong();
                                 bazaarItemValue.setPrice(buyPriceBazaar, sellPriceBazaar);
                                 bazaarItemValue.setFetching(false);
                                 bazaarItemValue.setCached(true);
+                                bazaarItemValue.setTimestamp(System.currentTimeMillis());
                                 if ("ESSENCE_CRIMSON".equals(itemId)) {
                                     KuudraProfitTracker.updateEssencePrice(bazaarItemValue.getSingleValue());
                                 } else if ("KISMET_FEATHER".equals(itemId)) {
@@ -308,16 +261,27 @@ public enum KuudraChest {
                                 } else if ("KUUDRA_TEETH".equals(itemId)) {
                                     KuudraProfitTracker.updateTeethPrice(bazaarItemValue.getSingleValue());
                                 }
+                                if ("HEAVY_PEARL".equals(itemId) && values.containsKey("HEAVY_PEARL")) heavyPearlValue = bazaarItemValue;
+                                if (valuables.contains(itemId)) {
+                                    valuableItem = bazaarItemValue;
+                                    Hologram.show(valuableItem);
+                                }
+                                break;
                             case "AUCTION":
-                                String uuid2 = obj.get("uuid").getAsString();
-                                Value v3 = values.get(uuid2);
-                                if (!(v3 instanceof AuctionItemValue)) continue;
-                                AuctionItemValue auctionItemValue = (AuctionItemValue) v3;
+                                String uuid = obj.get("uuid").getAsString();
+                                Value ahValue = values.get(uuid);
+                                if (!(ahValue instanceof AuctionItemValue)) continue;
+                                AuctionItemValue auctionItemValue = (AuctionItemValue) ahValue;
                                 long priceAuction = obj.get("price").getAsLong();
                                 long avgAuction = obj.get("averagePrice").getAsLong();
                                 auctionItemValue.setPrice(priceAuction, avgAuction);
                                 auctionItemValue.setFetching(false);
                                 auctionItemValue.setCached(true);
+                                auctionItemValue.setTimestamp(System.currentTimeMillis());
+                                if (valuables.contains(auctionItemValue.getItemId())) {
+                                    valuableItem = auctionItemValue;
+                                    Hologram.show(valuableItem);
+                                }
                                 break;
                             case "KEY":
                                 if (keyNeeded != null) {
@@ -330,7 +294,6 @@ public enum KuudraChest {
                         }
                     }
                     updateTotalValue();
-                    addItemsToCache();
                 }
             } catch (APIException e) {
                 sendMessageToPlayer(String.format("%s §c%s", KICPrefix, e.getMessage()));
@@ -346,53 +309,55 @@ public enum KuudraChest {
         });
     }
 
-    public Map<String, Value> getValues() {
-        return values;
-    }
-
-    public BazaarItemValue getEssenceValue() {
-        return essenceValue;
-    }
-
-    public BazaarItemValue getKismetValue() {
-        return kismetValue;
-    }
-
     private void updateTotalValue() {
-        this.totalValue = 0;
+        long total = getEssence() * essenceValue.getValue();
 
-        this.totalValue += getEssence() * essenceValue.getValue();
+        for (Value value : values.values()) {
+            long valueToAdd;
 
-        values.values().forEach(value -> this.totalValue += getItemValue(value));
+            if (value instanceof AuctionItemValue) {
+                AuctionItemValue ahValue = (AuctionItemValue) value;
+                long currentValue = ahValue.getValue();
+
+                if (isArmorPiece(ahValue.getItemId())) {
+                    int stars = ahValue.getItem().getStars();
+                    long salvageValue = calculateSalvageValue(stars);
+                    ahValue.setSalvagePrice(salvageValue);
+
+                    if (KuudraProfitCalculatorOptions.forceSalvageValue || salvageValue > currentValue) {
+                        valueToAdd = salvageValue;
+                    } else {
+                        valueToAdd = currentValue;
+                    }
+                } else {
+                    valueToAdd = ahValue.getValue();
+                }
+            } else {
+                valueToAdd = value.getValue();
+            }
+
+            total += valueToAdd;
+        }
 
         if (keyNeeded != null) {
-            this.totalValue -= keyNeeded.getPrice();
+            total -= keyNeeded.getPrice();
         }
+
+        this.totalValue = total;
     }
 
     public long getTotalValue(boolean rerolled) {
-        if (rerolled) {
-            return this.totalValue - kismetValue.getValue();
+        return rerolled ? this.totalValue - kismetValue.getValue() : this.totalValue;
+    }
+
+    public static Optional<KuudraChest> getFromName(String name) {
+        if (name == null || name.trim().isEmpty()) return Optional.empty();
+        for (KuudraChest chest : values()) {
+            if (chest.displayText.equalsIgnoreCase(name)) {
+                return Optional.of(chest);
+            }
         }
-        return this.totalValue;
-    }
-
-    public boolean hasGodRoll() {
-        return godRollItem != null;
-    }
-
-    // Format uuid;itemId;attribute1;attribute1lvl;attribute2;attribute2lvl;lbPrice;avgPrice
-    public String getGodRoll() {
-        if (godRollItem == null) return null;
-        Attributes attributes = godRollItem.getAttributes();
-        return godRollItem.getUuid() + ";" +
-                godRollItem.getItemId() + ";" +
-                attributes.getName1() + ";" +
-                attributes.getLevel1() + ";" +
-                attributes.getName2() + ";" +
-                attributes.getLevel2() + ";" +
-                attributes.getGodrollLbPrice() + ";" +
-                attributes.getGodrollAvgPrice();
+        return Optional.empty();
     }
 
     private double getKuudraPetEssenceBoost(HypixelRarity rarity, int level) {
@@ -415,57 +380,33 @@ public enum KuudraChest {
     public boolean shouldReroll() {
         KICLogger.info("Checking shouldReroll for chest: " + this.getDisplayText());
 
-        if (this == KuudraChest.FREE) {
+        if (this == FREE) {
             KICLogger.info("Skipping reroll: Chest is FREE.");
             return false;
         }
 
         if (KICConfig.ACOnlyRerollInT5 && (keyNeeded == null || keyNeeded != KuudraKey.INFERNAL)) {
-            KICLogger.info("Skipping reroll: onlyRerollInT5 is enabled and keyNeeded is not INFERNAL.");
+            KICLogger.info("Skipping reroll: onlyRerollInT5 is enabled.");
             return false;
         }
 
-        if (hasGodRoll()) {
-            KICLogger.info("Skipping reroll: Found godroll");
-            return false;
-        }
-
-        if (hasValuables) {
+        if (hasValuable) {
             KICLogger.info("Skipping reroll: Item id found in valuables");
             return false;
         }
 
-        Set<String> failsafeAttributes = KuudraRerollFailsafeOptions.getEnabled();
-        KICLogger.info("Enabled failsafe attributes: " + failsafeAttributes);
+        Set<String> failsafeIds = KuudraRerollFailsafeOptions.getEnabled();
+        KICLogger.info("Enabled failsafe ids: " + failsafeIds);
 
         for (Value value : values.values()) {
-            if (value instanceof AttributeItemValue) {
-                AttributeItemValue attrItem = (AttributeItemValue) value;
-                Attributes attributes = attrItem.getAttributes();
-
-                if (attributes.hasAttribute1() && failsafeAttributes.contains(attributes.getName1().toLowerCase())) {
-                    KICLogger.info("Skipping reroll: Found failsafe attribute in slot 1: " + attributes.getName1());
-                    return false;
-                }
-                if (attributes.hasAttribute2() && failsafeAttributes.contains(attributes.getName2().toLowerCase())) {
-                    KICLogger.info("Skipping reroll: Found failsafe attribute in slot 2: " + attributes.getName2());
-                    return false;
-                }
-            }
+            if (failsafeIds.contains(value.getItemId())) return false;
         }
 
-        AtomicLong combinedValue = new AtomicLong(0);
-        StringBuilder sb = new StringBuilder("Combined items: ");
-        values.values().stream()
-                .filter(value -> !(value instanceof BazaarItemValue && "KUUDRA_TEETH".equals(((BazaarItemValue) value).getItemId())))
-                .forEach(value -> {
-                    long itemValue = getItemValue(value);
-                    combinedValue.addAndGet(itemValue);
-                    sb.append(getItemId(value)).append(": ").append(itemValue).append(" | ");
-                });
-        long finalValue = combinedValue.get();
+        long finalValue = values.values().stream()
+                .filter(value -> !"KUUDRA_TEETH".equals(value.getItemId()))
+                .mapToLong(Value::getValue)
+                .sum();
 
-        KICLogger.info(sb.toString());
         KICLogger.info("Combined chest value: " + finalValue);
         KICLogger.info("Kismet Feather cost: " + kismetValue.getValue());
         KICLogger.info("Auto Reroll Minimum Value: " + KICConfig.ACAutoRerollMinValue);
@@ -486,7 +427,7 @@ public enum KuudraChest {
     public boolean shouldBuy() {
         KICLogger.info("Checking shouldBuy for chest: " + this.getDisplayText());
 
-        if (this == KuudraChest.FREE) {
+        if (this == FREE) {
             KICLogger.info("Skipping buy: Chest is FREE.");
             return false;
         }
@@ -496,13 +437,8 @@ public enum KuudraChest {
             return true;
         }
 
-        if (hasValuables) {
+        if (hasValuable) {
             KICLogger.info("Should buy: Chest contains a valuable item");
-            return true;
-        }
-
-        if (hasGodRoll()) {
-            KICLogger.info("Should buy: Chest contains a god roll");
             return true;
         }
 
@@ -514,33 +450,58 @@ public enum KuudraChest {
         return shouldBuy;
     }
 
-    private String getItemId(Value value) {
-        if (value instanceof BazaarItemValue) {
-            return ((BazaarItemValue) value).getItemId();
-        } else if (value instanceof AuctionItemValue) {
-            return ((AuctionItemValue) value).getItemId();
-        } else if (value instanceof AttributeItemValue) {
-            return ((AttributeItemValue) value).getItemId();
+    private String getType(ItemStack item) {
+        if (!ItemUtils.hasItemId(item)) return null;
+
+        if (ItemUtils.hasEnchants(item)) {
+            return "BAZAAR-ENCHANTS";
+        } else {
+            String itemId = ItemUtils.getItemId(item);
+            if (itemId != null) {
+                if (bazaarItemIds.contains(itemId)) {
+                    return "BAZAAR";
+                } else {
+                    return "AUCTION";
+                }
+            } else {
+                return null;
+            }
         }
-        return null;
     }
 
-    private long getItemValue(Value value) {
-        if (value instanceof BazaarItemValue) {
-            return ((BazaarItemValue) value).getValue();
-        } else if (value instanceof AuctionItemValue) {
-            return ((AuctionItemValue) value).getValue();
-        } else if (value instanceof AttributeItemValue) {
-            return ((AttributeItemValue) value).getValue(this.essenceValue);
-        }
-        return 0;
+    private long calculateSalvageValue(int starLevel) {
+        int upgradeEssence = (starLevel >= 1 && starLevel <= ESSENCE_TOTALS.length)
+                ? ESSENCE_TOTALS[starLevel - 1] : 0;
+        int heavyPearlCost = (starLevel >= 1 && starLevel <= HEAVY_PEARL_TOTALS.length)
+                ? HEAVY_PEARL_TOTALS[starLevel - 1] : 0;
+
+        long flatEssence = 100L * essenceValue.getSingleValue();
+        long upgradeEssenceSalvage = (upgradeEssence / 2L) * essenceValue.getSingleValue();
+        long heavyPearlSalvage = (heavyPearlCost / 2L) * heavyPearlValue.getSingleValue();
+
+        return flatEssence + upgradeEssenceSalvage + heavyPearlSalvage;
     }
 
-    private void addItemsToCache() {
-        values.values().stream()
-                .filter(AttributeItemValue.class::isInstance)
-                .map(AttributeItemValue.class::cast)
-                .filter(AttributeItemValue::isCached)
-                .forEach(CacheManager::addItem);
+    public boolean hasValuable() {
+        return hasValuable;
+    }
+
+    // Format: type;itemId;lbPrice/buyPrice;avgPrice/sellPrice
+    public String getValuable() {
+        if (valuableItem instanceof BazaarItemValue) {
+            BazaarItemValue value = (BazaarItemValue) valuableItem;
+            return "BAZAAR;" +
+                    value.getItemId() + ";" +
+                    value.getPrice(true) + ";" +
+                    value.getPrice(false);
+        } else if (valuableItem instanceof AuctionItemValue) {
+            AuctionItemValue value = (AuctionItemValue) valuableItem;
+            return "AUCTION;" +
+                    value.getItemId() + ";" +
+                    value.getPrice(true) + ";" +
+                    value.getPrice(false);
+        } else {
+            return null;
+        }
     }
 }

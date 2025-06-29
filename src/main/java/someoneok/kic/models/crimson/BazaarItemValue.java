@@ -83,6 +83,14 @@ public class BazaarItemValue implements Value {
         return new BazaarPriceRequest(item.getItemId());
     }
 
+    public void setCount(int count) {
+        item.setCount(count);
+    }
+
+    public void addCount(int count) {
+        item.addCount(count);
+    }
+
     @Override
     public String toString() {
         return "BazaarItemValue{" +

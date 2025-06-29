@@ -19,8 +19,8 @@ public class ShareTrackerRequest {
     private final int infernalChests;
     private final int rerolls;
     private final long time;
-    private final int godRolls;
-    private final long godRollValue;
+    private final int valuables;
+    private final long valuablesValue;
     private final long essence;
 
     // ---- Settings ----
@@ -46,9 +46,9 @@ public class ShareTrackerRequest {
     private final String averageTimePerRunColor;
     private final Boolean showRate;
     private final String rateColor;
-    private final Boolean showGodRolls;
-    private final String godRollColor;
-    private final Boolean showGodRollValue;
+    private final Boolean showValuables;
+    private final String valuablesColor;
+    private final Boolean showValuablesValue;
     private final Boolean showEssence;
     private final String essenceColor;
     private final Boolean showEssenceValue;
@@ -73,8 +73,8 @@ public class ShareTrackerRequest {
         this.infernalChests = session.getInfernalChests();
         this.rerolls = session.getRerolls();
         this.time = session.getTime();
-        this.godRolls = session.getTotalGodRolls();
-        this.godRollValue = session.getGodRollValue();
+        this.valuables = session.getTotalValuables();
+        this.valuablesValue = session.getValuablesValue();
         this.essence = session.getEssence();
 
         this.sessionColor = colors[KuudraProfitTrackerOptions.sessionColor];
@@ -98,9 +98,9 @@ public class ShareTrackerRequest {
         this.averageTimePerRunColor = colors[KuudraProfitTrackerOptions.averageTimePerRunColor];
         this.showRate = KuudraProfitTrackerOptions.showRate;
         this.rateColor = colors[KuudraProfitTrackerOptions.rateColor];
-        this.showGodRolls = KuudraProfitTrackerOptions.showGodRolls;
-        this.godRollColor = colors[KuudraProfitTrackerOptions.godRollColor];
-        this.showGodRollValue = KuudraProfitTrackerOptions.showGodRollValue;
+        this.showValuables = KuudraProfitTrackerOptions.showValuables;
+        this.valuablesColor = colors[KuudraProfitTrackerOptions.valuableColor];
+        this.showValuablesValue = KuudraProfitTrackerOptions.showValuablesValue;
         this.showEssence = KuudraProfitTrackerOptions.showEssence;
         this.essenceColor = colors[KuudraProfitTrackerOptions.essenceColor];
         this.showEssenceValue = KuudraProfitTrackerOptions.showEssenceValue;

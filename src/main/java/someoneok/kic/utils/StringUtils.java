@@ -4,19 +4,16 @@ import net.minecraft.client.gui.FontRenderer;
 import someoneok.kic.KIC;
 import someoneok.kic.utils.dev.KICLogger;
 
-import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class StringUtils {
-    private final static Pattern SHORT_HAND_PATTERN = Pattern.compile("(\\d+(?:\\.\\d+)?)([kmbt])?");
     private static final Pattern UUID_V4_PATTERN = Pattern.compile(
             "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", Pattern.CASE_INSENSITIVE);
     private final static Pattern COLOR_CODE_PATTERN = Pattern.compile("(§.)");
@@ -37,26 +34,6 @@ public class StringUtils {
         }
 
         return formattedPlayer;
-    }
-
-    public static int parseFromShorthandNumber(String input) {
-        if (input == null || input.isEmpty()) return 0;
-
-        String sanitizedInput = input.replace(",", ".").toLowerCase();
-        Matcher matcher = SHORT_HAND_PATTERN.matcher(sanitizedInput);
-
-        if (!matcher.matches()) return 0;
-
-        double numberPart = Double.parseDouble(matcher.group(1));
-        String suffix = matcher.group(2) == null ? "" : matcher.group(2);
-
-        switch (suffix) {
-            case "k": return (int) Math.round(numberPart * 1_000);
-            case "m": return (int) Math.round(numberPart * 1_000_000);
-            case "b": return (int) Math.round(numberPart * 1_000_000_000);
-            case "t": return (int) Math.round(numberPart * 1_000_000_000_000L);
-            default: return (int) Math.round(numberPart);
-        }
     }
 
     public static String parseToShorthandNumber(double labelValue) {
@@ -213,39 +190,6 @@ public class StringUtils {
         return String.join(" ", parts) + " ago";
     }
 
-    public static String capitalizeEachWord(String str) {
-        String[] words = str.split(" ");
-        StringBuilder capitalized = new StringBuilder();
-        for (String word : words) {
-            if (!word.isEmpty()) {
-                capitalized.append(Character.toUpperCase(word.charAt(0)))
-                        .append(word.substring(1).toLowerCase())
-                        .append(" ");
-            }
-        }
-        return capitalized.toString().trim();
-    }
-
-    public static String toRoman(int number) {
-        if (number <= 0) return "";
-
-        String[] romanNumerals = {
-                "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"
-        };
-        int[] values = {
-                1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1
-        };
-
-        StringBuilder roman = new StringBuilder();
-        for (int i = 0; i < values.length; i++) {
-            while (number >= values[i]) {
-                roman.append(romanNumerals[i]);
-                number -= values[i];
-            }
-        }
-        return roman.toString();
-    }
-
     public static String generateDashString(String startString, String color) {
         FontRenderer fontRenderer = KIC.mc.fontRendererObj;
 
@@ -255,11 +199,6 @@ public class StringUtils {
         int dashCount = startWidth / dashWidth;
 
         return "\n" + color + new String(new char[dashCount]).replace('\0', '-');
-    }
-
-    public static String formatPrice(long price) {
-        NumberFormat format = NumberFormat.getInstance(Locale.US);
-        return format.format(price);
     }
 
     public static String getRankColor(String message) {

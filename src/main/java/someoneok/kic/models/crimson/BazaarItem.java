@@ -1,5 +1,7 @@
 package someoneok.kic.models.crimson;
 
+import java.util.Objects;
+
 public class BazaarItem {
     private final String itemId;
     private final String name;
@@ -9,6 +11,12 @@ public class BazaarItem {
         this.itemId = itemId;
         this.name = name;
         this.count = 1;
+    }
+
+    public BazaarItem(String itemId, String name, int count) {
+        this.itemId = itemId;
+        this.name = name;
+        this.count = count;
     }
 
     public String getItemId() {
@@ -25,6 +33,22 @@ public class BazaarItem {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public void addCount(int count) {
+        this.count += count;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        BazaarItem that = (BazaarItem) o;
+        return count == that.count && Objects.equals(itemId, that.itemId) && Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(itemId, name, count);
     }
 
     @Override

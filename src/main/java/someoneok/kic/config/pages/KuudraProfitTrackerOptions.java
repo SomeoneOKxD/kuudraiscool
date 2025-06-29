@@ -68,10 +68,10 @@ public class KuudraProfitTrackerOptions {
     public static boolean showRate = true;
 
     @Switch(
-            name = "Show God Rolls",
+            name = "Show Valuables",
             subcategory = TOGGLE
     )
-    public static boolean showGodRolls = false;
+    public static boolean showValuables = false;
 
     @Switch(
             name = "Show Essence",
@@ -201,7 +201,7 @@ public class KuudraProfitTrackerOptions {
     public static int rateColor = 5;
 
     @Dropdown(
-            name = "God Roll Color",
+            name = "Valuable Color",
             options = {
                     "Black", "Dark Blue", "Dark Green", "Dark Aqua", "Dark Red", "Dark Purple",
                     "Gold", "Gray", "Dark Gray", "Blue", "Green", "Aqua", "Red", "Light Purple",
@@ -209,7 +209,7 @@ public class KuudraProfitTrackerOptions {
             },
             subcategory = COLOR
     )
-    public static int godRollColor = 6;
+    public static int valuableColor = 6;
 
     @Dropdown(
             name = "Essence Color",
@@ -223,10 +223,10 @@ public class KuudraProfitTrackerOptions {
     public static int essenceColor = 5;
 
     @Switch(
-            name = "Show God Roll Value",
+            name = "Show Valuable Value",
             subcategory = VALUE
     )
-    public static boolean showGodRollValue = false;
+    public static boolean showValuablesValue = false;
 
     @Switch(
             name = "Show Essence Value",

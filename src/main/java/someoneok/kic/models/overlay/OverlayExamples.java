@@ -9,37 +9,26 @@ public class OverlayExamples {
             "§a+573.03K §7| §7Mana Vampire 5\n" +
             "§a+16.16K §7| §5Kuudra Teeth §ex3\n";
 
-    public static final String CONTAINER_HELPER = "§7[§a§lKIC§r§7]§r §a§lContainer Value §7- §7[§dValue§7/§8Helper§7]\n" +
-            "§r§64.79M §7| §r§fAttribute Shard §r§7- §r§7[§bMana Pool 2§7]\n" +
-            "§r§63.00M §7| §r§fAttribute Shard §r§7- §r§7[§bLife Regeneration 4§7]\n" +
-            "§r§61.80M §7| §r§5Molten Bracelet §r§7- §r§7[§bVitality 1§7] §r§7[§bUndead Resistance 1§7]\n" +
-            "§r§61.70M §7| §r§6Aurora Leggings §r§7- §r§7[§bBlazing Resistance 5§7] §r§7[§bLifeline 4§7]\n" +
-            "§r§61.30M §7| §r§fAttribute Shard §r§7- §r§7[§bBreeze 4§7]\n" +
-            "§r§61.00M §7| §r§6Hollow Boots §r§7- §r§7[§bEnder Resistance 4§7] §r§7[§bFortitude 5§7]\n" +
-            "§r§61.00M §7| §r§6Aurora Leggings §r§7- §r§7[§bLife Regeneration 2§7] §r§7[§bMagic Find 2§7]\n" +
-            "§r§61.00M §7| §r§6Crimson Chestplate §r§7- §r§7[§bMagic Find 1§7] §r§7[§bArachno Resistance 1§7]\n" +
-            "§r§6900.00K §7| §r§6Crimson Helmet §r§7- §r§7[§bLife Regeneration 5§7] §r§7[§bLifeline 4§7]\n" +
-            "§r§6700.00K §7| §r§6Aurora Leggings §r§7- §r§7[§bEnder Resistance 1§7] §r§7[§bLifeline 1§7]\n" +
-            "§r§6700.00K §7| §r§6Crimson Chestplate §r§7- §r§7[§bLifeline 2§7] §r§7[§bArachno Resistance 2§7]\n" +
-            "§r§6500.00K §7| §r§6Aurora Leggings §r§7- §r§7[§bLife Regeneration 5§7] §r§7[§bFortitude 5§7]\n" +
-            "§r§6500.00K §7| §r§6Crimson Helmet §r§7- §r§7[§bVitality 2§7] §r§7[§bDominance 2§7]\n" +
-            "§r§6500.00K §7| §r§6Hollow Chestplate §r§7- §r§7[§bVeteran 1§7] §r§7[§bMana Pool 1§7]\n" +
-            "§r§6500.00K §7| §r§6Crimson Helmet §r§7- §r§7[§bMana Regeneration 2§7] §r§7[§bBreeze 2§7]\n" +
-            "§r§6500.00K §7| §r§6Aurora Boots §r§7- §r§7[§bBreeze 1§7] §r§7[§bLifeline 1§7]\n" +
-            "§r§6489.00K §7| §r§6Aurora Helmet §r§7- §r§7[§bBlazing Resistance 1§7] §r§7[§bDominance 1§7]\n" +
-            "§r§6440.00K §7| §r§6Fervor Chestplate §r§7- §r§7[§bFortitude 1§7] §r§7[§bSpeed 1§7]\n" +
-            "§e↓ 10 §7Total: §623.75M\n" +
+    public static final String HUNTING_BOX_VALUE = "§7[§a§lKIC§r§7]§r §a§lHunting Box Value\n" +
+            "§r§614.23M §7| §r§6Burningsoul §cx18\n" +
+            "§r§67.81M §7| §r§6Shinyfish §cx13\n" +
+            "§r§64.74M §7| §r§fMist §cx14\n" +
+            "§r§64.72M §7| §r§aTide §cx16\n" +
+            "§r§63.75M §7| §r§9Cascade §cx8\n" +
+            "§r§63.21M §7| §r§9Kada Knight §cx48\n" +
+            "§r§62.41M §7| §r§5Cryo §cx6\n" +
+            "§r§62.28M §7| §r§6Blizzard §cx4\n" +
+            "§r§62.21M §7| §r§6Kraken §cx5\n" +
+            "§r§61.24M §7| §r§6Endstone Protector §cx4\n" +
+            "§r§6710.12K §7| §r§fBezal §cx3\n" +
+            "§r§6384.54K §7| §r§fTank Zombie §cx1\n" +
+            "§r§6347.36K §7| §r§aObsidian Defender §cx3\n" +
+            "§r§6103.54K §7| §r§fVoracious Spider §cx1\n" +
+            "§7Total: §648.14M\n" +
             "§7-=-=-=-=-=-=-=-=-=-=-\n" +
-            "§7- §aPrice Type §7[§dLB§7/§8AVG§7]\n" +
-            "§7- §aSort By §7[§dPrice▼§7/§8Price▲§7/§8Slot]";
-
-    public static final String AUCTION_HELPER = "§7-= §f§6Aurora Boots §7=-\n" +
-            "§7- §bMana Pool 5\n" +
-            " §7- §eLB -1.0: §64,999,999\n" +
-            " §7- §eAvg: §65,000,000\n" +
-            "§7- §bUndead Resistance 4\n" +
-            " §7- §eLB -1.0: §6349,999\n" +
-            " §7- §eAvg: §6500,000";
+            "§7- §aPrice Type §7[§dSell Offer§7/§8Insta Sell§7]\n" +
+            "§7- §aSort By §7[§dPrice§7/§8Owned§7/§8Slot§7]\n" +
+            "§7- §aSort Order §7[§8Ascending ▲§7/§dDescending ▼§7]";
 
     public static final String NOTIFICATIONS = "§6NOTIFICATIONS";
 

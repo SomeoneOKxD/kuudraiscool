@@ -14,10 +14,8 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.Island;
 import someoneok.kic.models.UserData;
 import someoneok.kic.models.overlay.OverlayExamples;
-import someoneok.kic.modules.crimson.AuctionHelper;
-import someoneok.kic.modules.crimson.CrimsonContainerHelper;
-import someoneok.kic.modules.crimson.TooltipPrice;
-import someoneok.kic.modules.crimson.auction.KICAuction;
+import someoneok.kic.modules.crimson.HuntingBoxValue;
+import someoneok.kic.modules.dev.Dev;
 import someoneok.kic.modules.kuudra.*;
 import someoneok.kic.modules.misc.*;
 import someoneok.kic.modules.player.PlayerSize;
@@ -43,12 +41,6 @@ public class KIC {
     public static final String KICDataPrefix = "§7[§a§lKIC-DATA§r§7]§r";
     public static final Gson GSON = new GsonBuilder().create();
     public static final Random RNG = new Random();
-    public static final List<String> ATTRIBUTES = Arrays.asList("arachno", "attack_speed", "blazing", "combo", "elite",
-            "ender", "ignition", "life_recovery", "mana_steal", "midas_touch", "undead", "warrior", "deadeye",
-            "arachno_resistance", "blazing_resistance", "breeze", "dominance", "ender_resistance", "experience",
-            "fortitude", "life_regeneration", "lifeline", "magic_find", "mana_pool", "mana_regeneration", "vitality",
-            "speed", "undead_resistance", "veteran", "blazing_fortune", "fishing_experience", "infection", "double_hook",
-            "fisherman", "fishing_speed", "hunter", "trophy_hunter", "mending");
 
     public static X509TrustManager CUSTOM_TRUST_MANAGER;
     public static SSLContext CUSTOM_SSL_CONTEXT;
@@ -69,20 +61,17 @@ public class KIC {
                 new PartyUtils(),
                 new OverlayManager(),
                 new KuudraProfitCalculator(),
-                new CrimsonContainerHelper(),
                 new ChatCommands(),
-                new KICAuction(),
                 new ChatHandler(),
                 new Waypoints(),
                 new Kuudra(),
-                new GodRoll(),
                 new Notifications(),
                 new KuudraPfGuiInfo(),
-                new CacheManager(),
-                new TooltipPrice(),
-                new AuctionHelper(),
                 new ArmorHud(),
-                new TrackEmptySlots()
+                new TrackEmptySlots(),
+                new HuntingBoxValue(),
+                new Dev(),
+                new Hologram()
         );
     }
 
@@ -110,7 +99,6 @@ public class KIC {
         registerModule(new ButtonManager()); // Needs to be here cus GUI stuff
 
         ButtonManager.updateCheckboxAlignment();
-        CacheManager.setAuctionUpdate(System.currentTimeMillis());
         KuudraSplits.resetKuudraSplitsOverlay();
 
         userData = OverlayDataManager.getUserData();
@@ -160,13 +148,13 @@ public class KIC {
                 ""));
 
         OverlayManager.addOverlay(new InteractiveOverlay(
-                () -> KICConfig.crimsonContainerHelper,
-                "ContainerHelper",
-                "Container Helper",
+                () -> KICConfig.crimsonHuntingBoxValue,
+                "HuntingBoxValue",
+                "Hunting Box Value",
                 allIslands,
                 () -> true,
                 OverlayType.INGUI,
-                OverlayExamples.CONTAINER_HELPER));
+                OverlayExamples.HUNTING_BOX_VALUE));
 
         OverlayManager.addOverlay(new MovableOverlay(
                 () -> KICConfig.partyFinderGuiStats,
@@ -194,15 +182,6 @@ public class KIC {
                 forgottenSkullCondition,
                 OverlayType.INGUI,
                 OverlayExamples.EXAMPLE_PLAYER_3));
-
-        OverlayManager.addOverlay(new InteractiveOverlay(
-                () -> KICConfig.crimsonAuctionHelper,
-                "AuctionHelper",
-                "Auction Helper",
-                allIslands,
-                () -> true,
-                OverlayType.INGUI,
-                OverlayExamples.AUCTION_HELPER));
 
         OverlayManager.addOverlay(new MovableOverlay(
                 () -> KICConfig.kuudraSplits,

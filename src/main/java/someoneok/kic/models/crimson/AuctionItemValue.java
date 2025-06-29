@@ -10,6 +10,7 @@ public class AuctionItemValue implements Value {
     private long timestamp;
     private long price;
     private long avgPrice;
+    private long salvagePrice;
 
     public AuctionItemValue(AuctionItem auctionItem) {
         item = auctionItem;
@@ -18,6 +19,7 @@ public class AuctionItemValue implements Value {
         this.timestamp = System.currentTimeMillis();
         this.price = 0;
         this.avgPrice = 0;
+        this.salvagePrice = 0;
     }
 
     public String getItemId() {
@@ -67,7 +69,20 @@ public class AuctionItemValue implements Value {
 
     public long getValue() {
         if ("RUNIC_STAFF".equals(item.getItemId()) && KuudraProfitCalculatorOptions.ignoreAuroraStaff) return 0;
-        return getPrice(KuudraProfitCalculatorOptions.miscellaneousPriceType == 0);
+        if ("HOLLOW_WAND".equals(item.getItemId()) && KuudraProfitCalculatorOptions.ignoreHollowWand) return 0;
+        return getPrice(KuudraProfitCalculatorOptions.auctionPriceType == 0);
+    }
+
+    public AuctionItem getItem() {
+        return item;
+    }
+
+    public long getSalvagePrice() {
+        return salvagePrice;
+    }
+
+    public void setSalvagePrice(long salvagePrice) {
+        this.salvagePrice = salvagePrice;
     }
 
     public AuctionPriceRequest mapToRequest() {
