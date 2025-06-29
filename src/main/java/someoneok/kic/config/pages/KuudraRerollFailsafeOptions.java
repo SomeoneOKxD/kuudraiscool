@@ -16,238 +16,117 @@ public class KuudraRerollFailsafeOptions {
     public static boolean ignored;
 
     @Info(
-            text = "Wheel Of Fate, Burning Kuudra Core, Enrager, Tentacle Dye, Fatal Tempo and Inferno are never rerolled by default!",
+            text = "Ananke Feather, Wheel Of Fate, Burning Kuudra Core, Tormentor, Hellstorm Wand, Tentacle Dye, Fatal Tempo and Inferno\nare never rerolled by default!",
             type = InfoType.INFO,
             size = 2
     )
     public static boolean ignored2;
 
     @Switch(
-            name = "Arachno"
+            name = "Bezal Shard"
     )
-    public static boolean arachno = false;
+    public static boolean bezal = false;
 
     @Switch(
-            name = "Attack Speed"
+            name = "Magma Slug Shard"
     )
-    public static boolean attackSpeed = false;
+    public static boolean magmaSlug = false;
 
     @Switch(
-            name = "Blazing"
+            name = "Kada Knight Shard"
     )
-    public static boolean blazing = false;
+    public static boolean kadaKnight = false;
 
     @Switch(
-            name = "Combo"
+            name = "Wither Spectre Shard"
     )
-    public static boolean combo = false;
+    public static boolean witherSpectre = false;
 
     @Switch(
-            name = "Elite"
+            name = "Matcho Shard"
     )
-    public static boolean elite = false;
+    public static boolean matcho = false;
 
     @Switch(
-            name = "Ender"
+            name = "Lava Flame Shard"
     )
-    public static boolean ender = false;
+    public static boolean lavaFlame = false;
 
     @Switch(
-            name = "Ignition"
+            name = "Fire Eel Shard"
     )
-    public static boolean ignition = false;
+    public static boolean fireEel = false;
 
     @Switch(
-            name = "Life Recovery"
+            name = "Flare Shard"
     )
-    public static boolean lifeRecovery = false;
+    public static boolean flare = false;
 
     @Switch(
-            name = "Mana Steal"
+            name = "Barbarian Duke X Shard"
     )
-    public static boolean manaSteal = false;
+    public static boolean barbarianDukeX = false;
 
     @Switch(
-            name = "Midas Touch"
+            name = "Hellwisp Shard"
     )
-    public static boolean midasTouch = false;
+    public static boolean hellwisp = false;
 
     @Switch(
-            name = "Undead"
+            name = "XYZ Shard"
     )
-    public static boolean undead = false;
+    public static boolean xyz = false;
 
     @Switch(
-            name = "Warrior"
+            name = "Taurus Shard"
     )
-    public static boolean warrior = false;
+    public static boolean taurus = false;
 
     @Switch(
-            name = "Deadeye"
+            name = "Lord Jawbus Shard"
     )
-    public static boolean deadeye = false;
+    public static boolean lordJawbus = false;
 
     @Switch(
-            name = "Arachno Resistance"
+            name = "Cinderbat Shard"
     )
-    public static boolean arachnoResistance = false;
+    public static boolean cinderbat = false;
 
     @Switch(
-            name = "Blazing Resistance"
+            name = "Daemon Shard"
     )
-    public static boolean blazingResistance = false;
+    public static boolean daemon = false;
 
     @Switch(
-            name = "Breeze"
+            name = "Moltenfish Shard"
     )
-    public static boolean breeze = false;
+    public static boolean moltenfish = false;
 
     @Switch(
-            name = "Dominance"
+            name = "Ananke Shard"
     )
-    public static boolean dominance = true;
-
-    @Switch(
-            name = "Ender Resistance"
-    )
-    public static boolean enderResistance = false;
-
-    @Switch(
-            name = "Experience"
-    )
-    public static boolean experience = false;
-
-    @Switch(
-            name = "Fortitude"
-    )
-    public static boolean fortitude = false;
-
-    @Switch(
-            name = "Life Regeneration"
-    )
-    public static boolean lifeRegeneration = false;
-
-    @Switch(
-            name = "Lifeline"
-    )
-    public static boolean lifeline = true;
-
-    @Switch(
-            name = "Magic Find"
-    )
-    public static boolean magicFind = true;
-
-    @Switch(
-            name = "Mana Pool"
-    )
-    public static boolean manaPool = true;
-
-    @Switch(
-            name = "Mana Regeneration"
-    )
-    public static boolean manaRegeneration = false;
-
-    @Switch(
-            name = "Vitality"
-    )
-    public static boolean vitality = false;
-
-    @Switch(
-            name = "Speed"
-    )
-    public static boolean speed = false;
-
-    @Switch(
-            name = "Undead Resistance"
-    )
-    public static boolean undeadResistance = false;
-
-    @Switch(
-            name = "Veteran"
-    )
-    public static boolean veteran = true;
-
-    @Switch(
-            name = "Blazing Fortune"
-    )
-    public static boolean blazingFortune = true;
-
-    @Switch(
-            name = "Fishing Experience"
-    )
-    public static boolean fishingExperience = true;
-
-    @Switch(
-            name = "Infection"
-    )
-    public static boolean infection = false;
-
-    @Switch(
-            name = "Double Hook"
-    )
-    public static boolean doubleHook = true;
-
-    @Switch(
-            name = "Fisherman"
-    )
-    public static boolean fisherman = false;
-
-    @Switch(
-            name = "Fishing Speed"
-    )
-    public static boolean fishingSpeed = true;
-
-    @Switch(
-            name = "Hunter"
-    )
-    public static boolean hunter = false;
-
-    @Switch(
-            name = "Trophy Hunter"
-    )
-    public static boolean trophyHunter = true;
+    public static boolean ananke = false;
 
     public static Set<String> getEnabled() {
         Set<String> set = new HashSet<>();
 
-        if (arachno) set.add("arachno");
-        if (attackSpeed) set.add("attack_speed");
-        if (blazing) set.add("blazing");
-        if (combo) set.add("combo");
-        if (elite) set.add("elite");
-        if (ender) set.add("ender");
-        if (ignition) set.add("ignition");
-        if (lifeRecovery) set.add("life_recovery");
-        if (manaSteal) set.add("mana_steal");
-        if (midasTouch) set.add("midas_touch");
-        if (undead) set.add("undead");
-        if (warrior) set.add("warrior");
-        if (deadeye) set.add("deadeye");
-        if (arachnoResistance) set.add("arachno_resistance");
-        if (blazingResistance) set.add("blazing_resistance");
-        if (breeze) set.add("breeze");
-        if (dominance) set.add("dominance");
-        if (enderResistance) set.add("ender_resistance");
-        if (experience) set.add("experience");
-        if (fortitude) set.add("fortitude");
-        if (lifeRegeneration) set.add("life_regeneration");
-        if (lifeline) set.add("lifeline");
-        if (magicFind) set.add("magic_find");
-        if (manaPool) set.add("mana_pool");
-        if (manaRegeneration) set.add("mana_regeneration");
-        if (vitality) set.add("vitality");
-        if (vitality) set.add("mending");
-        if (speed) set.add("speed");
-        if (undeadResistance) set.add("undead_resistance");
-        if (veteran) set.add("veteran");
-        if (blazingFortune) set.add("blazing_fortune");
-        if (fishingExperience) set.add("fishing_experience");
-        if (infection) set.add("infection");
-        if (doubleHook) set.add("double_hook");
-        if (fisherman) set.add("fisherman");
-        if (fishingSpeed) set.add("fishing_speed");
-        if (hunter) set.add("hunter");
-        if (trophyHunter) set.add("trophy_hunter");
+        if (bezal) set.add("SHARD_BEZAL");
+        if (magmaSlug) set.add("SHARD_MAGMA_SLUG");
+        if (kadaKnight) set.add("SHARD_KADA_KNIGHT");
+        if (witherSpectre) set.add("SHARD_WITHER_SPECTRE");
+        if (matcho) set.add("SHARD_MATCHO");
+        if (lavaFlame) set.add("SHARD_LAVA_FLAME");
+        if (fireEel) set.add("SHARD_FIRE_EEL");
+        if (flare) set.add("SHARD_FLARE");
+        if (barbarianDukeX) set.add("SHARD_BARBARIAN_DUKE_X");
+        if (hellwisp) set.add("SHARD_HELLWISP");
+        if (xyz) set.add("SHARD_XYZ");
+        if (taurus) set.add("SHARD_TAURUS");
+        if (lordJawbus) set.add("SHARD_LORD_JAWBUS");
+        if (cinderbat) set.add("SHARD_CINDERBAT");
+        if (daemon) set.add("SHARD_DAEMON");
+        if (moltenfish) set.add("SHARD_MOLTENFISH");
+        if (ananke) set.add("SHARD_ANANKE");
 
         return set;
     }

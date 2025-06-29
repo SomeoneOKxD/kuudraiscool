@@ -14,4 +14,10 @@ public interface Value {
     void setFetching(boolean fetching);
 
     void setCached(boolean cached);
+
+    long getValue();
+
+    String getItemId();
+
+    String getName();
 }

@@ -54,6 +54,13 @@ public class RotationUtils {
         smoothRotateTo(yaw, pitch, rotTime, () -> {});
     }
 
+    public static void rotateTo(float yaw, float pitch) {
+        if (mc.thePlayer != null) {
+            mc.thePlayer.rotationYaw = yaw;
+            mc.thePlayer.rotationPitch = pitch;
+        }
+    }
+
     private static float wrapAngle(float angle) {
         while (angle >= 180f) angle -= 360f;
         while (angle < -180f) angle += 360f;

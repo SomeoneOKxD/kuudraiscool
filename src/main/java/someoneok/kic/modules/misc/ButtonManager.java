@@ -8,6 +8,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.jetbrains.annotations.Contract;
 import org.lwjgl.input.Mouse;
 import someoneok.kic.config.KICConfig;
+import someoneok.kic.modules.crimson.HuntingBoxValue;
 import someoneok.kic.modules.kuudra.KuudraPfGuiInfo;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.LocationUtils;
@@ -30,7 +31,7 @@ public class ButtonManager {
     private static boolean alignRight = false;
 
     static {
-        register("containerValue", new GuiCheckBox(0, 0, 0, "Container Value", true), () -> KICConfig.crimsonContainerHelper);
+        register("huntingBoxValue", new GuiCheckBox(0, 0, 0, "Hunting Box Value", true), () -> HuntingBoxValue.shouldRender);
         register("partyFinderGuiStats", new GuiCheckBox(1, 0, 0, "Show PF Stats", true), () -> KuudraPfGuiInfo.shouldRender);
         register("partyFinderGuiStatsExample", new GuiCheckBox(2, 0, 0, "Show PF Stats Example", false), () -> KuudraPfGuiInfo.shouldRender);
     }

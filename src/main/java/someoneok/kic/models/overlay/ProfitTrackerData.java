@@ -126,9 +126,10 @@ public class ProfitTrackerData {
         lifetime.teeth += teeth;
     }
 
-    public void addGodRoll(String gr) {
-        current.godRolls.add(gr);
-        lifetime.godRolls.add(gr);
+    public void addValuable(String valuable) {
+        if (valuable == null || valuable.isEmpty()) return;
+        current.valuables.add(valuable);
+        lifetime.valuables.add(valuable);
     }
 
     public void newSession() {
@@ -193,10 +194,10 @@ public class ProfitTrackerData {
         @SerializedName("teeth")
         private int teeth;
 
-        // Format uuid;itemId;attribute1;attribute1lvl;attribute2;attribute2lvl;lbPrice;avgPrice
+        // Format type;itemId;lbPrice/buyPrice;avgPrice/sellPrice
         @Expose
-        @SerializedName("god_rolls")
-        private List<String> godRolls;
+        @SerializedName("valuables")
+        private List<String> valuables;
 
         public ProfitTrackerSession() {
             this.profit = 0;
@@ -212,7 +213,7 @@ public class ProfitTrackerData {
             this.infernalChests = 0;
             this.essence = 0;
             this.teeth = 0;
-            this.godRolls = new ArrayList<>();
+            this.valuables = new ArrayList<>();
         }
 
         public long getProfit() { return profit; }
@@ -230,18 +231,23 @@ public class ProfitTrackerData {
         public int getInfernalChests() { return infernalChests; }
         public long getEssence() { return essence; }
         public int getTeeth() { return teeth; }
-        public List<String> getGodRolls() { return godRolls; }
-        public int getTotalGodRolls() { return godRolls.size(); }
+        public List<String> getValuables() { return valuables; }
+        public int getTotalValuables() { return valuables.size(); }
 
-        public long getGodRollValue() {
-            boolean useLb = KuudraProfitCalculatorOptions.godRollPriceType == 0;
-
-            return godRolls.stream()
+        public long getValuablesValue() {
+            return valuables.stream()
                     .map(line -> line.split(";"))
-                    .filter(parts -> parts.length >= 8)
+                    .filter(parts -> parts.length >= 4)
                     .mapToLong(parts -> {
                         try {
-                            return useLb ? Long.parseLong(parts[6]) : Long.parseLong(parts[7]);
+                            boolean usePrice1 = false;
+                            if (parts[0].equalsIgnoreCase("BAZAAR")) {
+                                usePrice1 = KuudraProfitCalculatorOptions.bazaarPriceType == 1;
+                            } else if (parts[0].equalsIgnoreCase("AUCTION")) {
+                                usePrice1 = KuudraProfitCalculatorOptions.auctionPriceType == 0;
+                            }
+
+                            return usePrice1 ? Long.parseLong(parts[2]) : Long.parseLong(parts[3]);
                         } catch (NumberFormatException e) {
                             return 0L;
                         }
@@ -287,7 +293,6 @@ public class ProfitTrackerData {
             this.infernalChests = 0;
             this.essence = 0;
             this.teeth = 0;
-            this.godRolls = new ArrayList<>();
         }
     }
 }

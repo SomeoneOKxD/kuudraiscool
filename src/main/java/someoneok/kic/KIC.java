@@ -14,10 +14,8 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.Island;
 import someoneok.kic.models.UserData;
 import someoneok.kic.models.overlay.OverlayExamples;
-import someoneok.kic.modules.crimson.AuctionHelper;
-import someoneok.kic.modules.crimson.CrimsonContainerHelper;
-import someoneok.kic.modules.crimson.TooltipPrice;
-import someoneok.kic.modules.crimson.auction.KICAuction;
+import someoneok.kic.modules.crimson.HuntingBoxValue;
+import someoneok.kic.modules.dev.Dev;
 import someoneok.kic.modules.kuudra.*;
 import someoneok.kic.modules.misc.*;
 import someoneok.kic.modules.player.PlayerSize;
@@ -69,20 +67,17 @@ public class KIC {
                 new PartyUtils(),
                 new OverlayManager(),
                 new KuudraProfitCalculator(),
-                new CrimsonContainerHelper(),
                 new ChatCommands(),
-                new KICAuction(),
                 new ChatHandler(),
                 new Waypoints(),
                 new Kuudra(),
-                new GodRoll(),
                 new Notifications(),
                 new KuudraPfGuiInfo(),
-                new CacheManager(),
-                new TooltipPrice(),
-                new AuctionHelper(),
                 new ArmorHud(),
-                new TrackEmptySlots()
+                new TrackEmptySlots(),
+                new HuntingBoxValue(),
+                new Dev(),
+                new Hologram()
         );
     }
 
@@ -110,7 +105,6 @@ public class KIC {
         registerModule(new ButtonManager()); // Needs to be here cus GUI stuff
 
         ButtonManager.updateCheckboxAlignment();
-        CacheManager.setAuctionUpdate(System.currentTimeMillis());
         KuudraSplits.resetKuudraSplitsOverlay();
 
         userData = OverlayDataManager.getUserData();
@@ -160,13 +154,13 @@ public class KIC {
                 ""));
 
         OverlayManager.addOverlay(new InteractiveOverlay(
-                () -> KICConfig.crimsonContainerHelper,
-                "ContainerHelper",
-                "Container Helper",
+                () -> KICConfig.crimsonHuntingBoxValue,
+                "HuntingBoxValue",
+                "Hunting Box Value",
                 allIslands,
                 () -> true,
                 OverlayType.INGUI,
-                OverlayExamples.CONTAINER_HELPER));
+                OverlayExamples.HUNTING_BOX_VALUE));
 
         OverlayManager.addOverlay(new MovableOverlay(
                 () -> KICConfig.partyFinderGuiStats,
@@ -194,15 +188,6 @@ public class KIC {
                 forgottenSkullCondition,
                 OverlayType.INGUI,
                 OverlayExamples.EXAMPLE_PLAYER_3));
-
-        OverlayManager.addOverlay(new InteractiveOverlay(
-                () -> KICConfig.crimsonAuctionHelper,
-                "AuctionHelper",
-                "Auction Helper",
-                allIslands,
-                () -> true,
-                OverlayType.INGUI,
-                OverlayExamples.AUCTION_HELPER));
 
         OverlayManager.addOverlay(new MovableOverlay(
                 () -> KICConfig.kuudraSplits,

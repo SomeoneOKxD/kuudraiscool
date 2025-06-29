@@ -12,59 +12,12 @@ import net.minecraft.util.Vec3;
 import someoneok.kic.KIC;
 import someoneok.kic.utils.dev.KICLogger;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import static someoneok.kic.KIC.mc;
 
 public class GeneralUtils {
-    private static final Map<String, String> ATTRIBUTE_SHORTENINGS = new HashMap<>();
     public static final String[] colors = {"Black", "Dark Blue", "Dark Green", "Dark Aqua", "Dark Red", "Dark Purple",
             "Gold", "Gray", "Dark Gray", "Blue", "Green", "Aqua", "Red", "Light Purple",
             "Yellow", "White"};
-
-    static {
-        ATTRIBUTE_SHORTENINGS.put("mana_pool", "MP");
-        ATTRIBUTE_SHORTENINGS.put("mana_regeneration", "MR");
-        ATTRIBUTE_SHORTENINGS.put("veteran", "VET");
-        ATTRIBUTE_SHORTENINGS.put("dominance", "DOM");
-        ATTRIBUTE_SHORTENINGS.put("mending", "VIT");
-        ATTRIBUTE_SHORTENINGS.put("vitality", "VIT");
-        ATTRIBUTE_SHORTENINGS.put("magic_find", "MF");
-        ATTRIBUTE_SHORTENINGS.put("speed", "SP");
-        ATTRIBUTE_SHORTENINGS.put("breeze", "BR");
-        ATTRIBUTE_SHORTENINGS.put("arachno", "ARA");
-        ATTRIBUTE_SHORTENINGS.put("arachno_resistance", "AR");
-        ATTRIBUTE_SHORTENINGS.put("attack_speed", "AS");
-        ATTRIBUTE_SHORTENINGS.put("combo", "COM");
-        ATTRIBUTE_SHORTENINGS.put("elite", "ELI");
-        ATTRIBUTE_SHORTENINGS.put("ignition", "IGN");
-        ATTRIBUTE_SHORTENINGS.put("life_recovery", "LRY");
-        ATTRIBUTE_SHORTENINGS.put("midas_touch", "MT");
-        ATTRIBUTE_SHORTENINGS.put("undead", "UND");
-        ATTRIBUTE_SHORTENINGS.put("undead_resistance", "UR");
-        ATTRIBUTE_SHORTENINGS.put("mana_steal", "MS");
-        ATTRIBUTE_SHORTENINGS.put("ender", "END");
-        ATTRIBUTE_SHORTENINGS.put("ender_resistance", "ER");
-        ATTRIBUTE_SHORTENINGS.put("blazing", "BLA");
-        ATTRIBUTE_SHORTENINGS.put("blazing_resistance", "BLR");
-        ATTRIBUTE_SHORTENINGS.put("warrior", "WAR");
-        ATTRIBUTE_SHORTENINGS.put("deadeye", "DEA");
-        ATTRIBUTE_SHORTENINGS.put("experience", "EXP");
-        ATTRIBUTE_SHORTENINGS.put("lifeline", "LL");
-        ATTRIBUTE_SHORTENINGS.put("life_regeneration", "LR");
-        ATTRIBUTE_SHORTENINGS.put("fortitude", "FOR");
-        ATTRIBUTE_SHORTENINGS.put("blazing_fortune", "BF");
-        ATTRIBUTE_SHORTENINGS.put("fishing_experience", "FE");
-        ATTRIBUTE_SHORTENINGS.put("double_hook", "DH");
-        ATTRIBUTE_SHORTENINGS.put("fisherman", "FM");
-        ATTRIBUTE_SHORTENINGS.put("fishing_speed", "FS");
-        ATTRIBUTE_SHORTENINGS.put("hunter", "HUN");
-        ATTRIBUTE_SHORTENINGS.put("trophy_hunter", "TH");
-        ATTRIBUTE_SHORTENINGS.put("infection", "INF");
-    }
 
     public static IChatComponent createHoverComponent(boolean showHover, String message, String hoverText) {
         ChatComponentText mainComponent = new ChatComponentText(message);
@@ -168,17 +121,6 @@ public class GeneralUtils {
                 }
             });
         }
-    }
-
-    public static String shortenAttribute(String attribute) {
-        String lower = attribute.toLowerCase();
-        if (ATTRIBUTE_SHORTENINGS.containsKey(lower)) {
-            return ATTRIBUTE_SHORTENINGS.get(lower);
-        }
-
-        return Arrays.stream(attribute.replace("_", " ").toUpperCase().split(" "))
-                .map(word -> String.valueOf(word.charAt(0)))
-                .collect(Collectors.joining());
     }
 
     public static boolean vecEquals(Vec3 a, Vec3 b) {

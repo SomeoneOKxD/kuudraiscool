@@ -2,24 +2,23 @@ package someoneok.kic.modules.misc;
 
 import cc.polyfrost.oneconfig.utils.JsonUtils;
 import cc.polyfrost.oneconfig.utils.Multithreading;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
-import someoneok.kic.models.kicauction.*;
-import someoneok.kic.models.request.AuctionDataRequest;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.NetworkUtils;
 import someoneok.kic.utils.PartyUtils;
 import someoneok.kic.utils.dev.KICLogger;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static someoneok.kic.utils.GeneralUtils.sendCommand;
 import static someoneok.kic.utils.StringUtils.*;
 
@@ -28,18 +27,7 @@ public class ChatCommands {
 
     private static final Pattern PARTY_REGEX = Pattern.compile("Party > (?:\\[[^]]+] )?([\\w\\s<3]+): (.+)");
     private static final Pattern DM_REGEX = Pattern.compile("From (?:\\[[^]]+] )?([\\w\\s<3]+): (.+)");
-
-    private static final Pattern COMMAND_REGEX = Pattern.compile("\\.(runs|stats|rtca|ap|cata|kick|kic)\\b(?:\\s+(\\w+))?");
-    private static final Pattern AP_COMMAND_REGEX = Pattern.compile(
-            "^\\.ap\\s+" +
-                    "(?:" +
-                    "(\\w+)(?:\\s+(\\d+))?" +
-                    "|" +
-                    "(\\w+)(?:\\s+(\\d+))?\\s+(\\w+)(?:\\s+(\\d+))?\\s+(crimson|aurora|terror|hollow|fervor|molten)" +
-                    ")$",
-            Pattern.CASE_INSENSITIVE
-    );
-    private static final Pattern VALID_ARMOR_REGEX = Pattern.compile(".*(crimson|aurora|terror|hollow|fervor|molten).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern COMMAND_REGEX = Pattern.compile("\\.(runs|stats|rtca|cata|kick|kic)\\b(?:\\s+(\\w+))?");
 
     private static final long TOTAL_XP = 569809640;
     private static final long SEL_CLASS_XP = 360000;
@@ -51,7 +39,6 @@ public class ChatCommands {
         VALID_COMMANDS.add("stats");
         VALID_COMMANDS.add("cata");
         VALID_COMMANDS.add("kick");
-        VALID_COMMANDS.add("ap");
         VALID_COMMANDS.add("rtca");
         VALID_COMMANDS.add("kic");
     }
@@ -104,10 +91,6 @@ public class ChatCommands {
                 if (!KICConfig.partyCommandKick || !PartyUtils.amILeader()) return;
                 sendCommand("/party kick " + (targetPlayer != null ? targetPlayer : "51fe055890e7463383a8feac3a7d3708"));
                 break;
-            case "ap":
-                if (isCommandDisabled(command, messageType)) return;
-                getApData(cmd, chatMessage);
-                break;
             case "kic":
                 sendKicDiscord(cmd);
                 break;
@@ -136,9 +119,6 @@ public class ChatCommands {
             case "rtca":
                 return (!"Party".equals(messageType) || !KICConfig.partyCommandRtca) &&
                         (!"DM".equals(messageType) || !KICConfig.dmCommandRtca);
-            case "ap":
-                return (!"Party".equals(messageType) || !KICConfig.partyCommandAp) &&
-                        (!"DM".equals(messageType) || !KICConfig.dmCommandAp);
             default:
                 return true;
         }
@@ -175,62 +155,6 @@ public class ChatCommands {
                 int manaPool = playerInfo.get("manaPool").getAsInt();
 
                 String output = generateCommandOutput(command, user, totalComps, infernalComps, dominance, lifeline, manaPool, magicalPower, cataLevel, dungeonXp);
-                if (output != null) {
-                    sendCommand(cmd + output);
-                }
-            } catch (Exception ignored) {}
-        });
-    }
-
-    private void getApData(String cmd, String message) {
-        if (!ApiUtils.isVerified()) return;
-        Matcher apMatcher = AP_COMMAND_REGEX.matcher(message);
-        if (!apMatcher.matches()) return;
-
-        AuctionDataRequest request = new AuctionDataRequest();
-        String attr1 = apMatcher.group(1) != null ? apMatcher.group(1) : apMatcher.group(3);
-        String attr1LevelStr = apMatcher.group(2) != null ? apMatcher.group(2) : apMatcher.group(4);
-        String attr2 = apMatcher.group(5);
-        String attr2LevelStr = apMatcher.group(6);
-        String itemType = apMatcher.group(7);
-
-        if (attr1 != null) request.setAttribute1(attr1);
-        if (isNumeric(attr1LevelStr)) {
-            int level1 = Integer.parseInt(attr1LevelStr);
-            if (isInvalidLevel(level1)) return;
-            if (level1 > 0) request.setAttributeLvl1(level1);
-        }
-
-        if (attr2 != null) {
-            request.setAttribute2(attr2);
-            if (isNumeric(attr2LevelStr)) {
-                int level2 = Integer.parseInt(attr2LevelStr);
-                if (isInvalidLevel(level2)) return;
-                if (level2 > 0) request.setAttributeLvl2(level2);
-            }
-        }
-
-        Multithreading.runAsync(() -> {
-            String requestBody = KIC.GSON.toJson(request);
-            KICLogger.info(requestBody);
-            try {
-                JsonObject apInfo = JsonUtils.parseString(NetworkUtils.sendPostRequest(
-                        "https://api.sm0kez.com/crimson/attribute/prices?limit=1&extra=false", true, requestBody)).getAsJsonObject();
-                if (apInfo == null || !apInfo.isJsonObject()) return;
-
-                String attribute1 = (apInfo.has("attribute1") && !apInfo.get("attribute1").isJsonNull()) ? apInfo.get("attribute1").getAsString() : null;
-                int attributeLvl1 = (apInfo.has("attributeLvl1") && !apInfo.get("attributeLvl1").isJsonNull()) ? apInfo.get("attributeLvl1").getAsInt() : 0;
-                String attribute2 = (apInfo.has("attribute2") && !apInfo.get("attribute2").isJsonNull()) ? apInfo.get("attribute2").getAsString() : null;
-                int attributeLvl2 = (apInfo.has("attributeLvl2") && !apInfo.get("attributeLvl2").isJsonNull()) ? apInfo.get("attributeLvl2").getAsInt() : 0;
-                long timestamp = (apInfo.has("timestamp") && !apInfo.get("timestamp").isJsonNull()) ? apInfo.get("timestamp").getAsLong() : 0;
-
-                JsonObject armor = (apInfo.has("armor") && !apInfo.get("armor").isJsonNull()) ? apInfo.get("armor").getAsJsonObject() : null;
-                JsonObject equipment = (apInfo.has("equipment") && !apInfo.get("equipment").isJsonNull()) ? apInfo.get("equipment").getAsJsonObject() : null;
-                JsonArray shards = (apInfo.has("shards") && !apInfo.get("shards").isJsonNull()) ? apInfo.get("shards").getAsJsonArray() : null;
-
-                AuctionData auctionData = new AuctionData(attribute1, attributeLvl1, attribute2, attributeLvl2, timestamp, armor, equipment, shards, null);
-
-                String output = generateApOutput(auctionData, itemType);
                 if (output != null) {
                     sendCommand(cmd + output);
                 }
@@ -306,93 +230,5 @@ public class ChatCommands {
             runs.put(highestXPClass, runs.get(highestXPClass) + 1);
         }
         return runs;
-    }
-
-    private boolean isInvalidLevel(int level) {
-        return level < 1 || level > 10;
-    }
-
-    private String generateApOutput(AuctionData auctionData, String type) {
-        if (auctionData == null) return null;
-        StringBuilder output = new StringBuilder();
-
-        output.append(" ").append(auctionData.getAttribute1());
-        if (auctionData.getAttributeLvl1() > 0) output.append(" ").append(auctionData.getAttributeLvl1());
-
-        Map<EquipmentCategory, Long> moltenEquipment = new HashMap<>();
-        moltenEquipment.put(EquipmentCategory.NECKLACES, getEquipmentPrice(auctionData, EquipmentCategory.NECKLACES, EquipmentType.MOLTEN_NECKLACE));
-        moltenEquipment.put(EquipmentCategory.CLOAKS, getEquipmentPrice(auctionData, EquipmentCategory.CLOAKS, EquipmentType.MOLTEN_CLOAK));
-        moltenEquipment.put(EquipmentCategory.BELTS, getEquipmentPrice(auctionData, EquipmentCategory.BELTS, EquipmentType.MOLTEN_BELT));
-        moltenEquipment.put(EquipmentCategory.BRACELETS, getEquipmentPrice(auctionData, EquipmentCategory.BRACELETS, EquipmentType.MOLTEN_BRACELET));
-
-        if (isNullOrEmpty(type)) {
-            output.append(" > ");
-            appendArmorPrices(output, auctionData, VALID_ARMOR_REGEX);
-            output.append(" - ");
-            appendEquipmentPrices(output, moltenEquipment);
-        } else {
-            if (auctionData.getAttribute2() != null) output.append(" & ").append(auctionData.getAttribute2());
-            if (auctionData.getAttributeLvl2() > 0) output.append(" ").append(auctionData.getAttributeLvl2());
-
-            output.append(" (").append(type).append(") > ");
-
-            if ("molten".equalsIgnoreCase(type)) {
-                appendEquipmentPrices(output, moltenEquipment);
-            } else {
-                Pattern armorRegex = Pattern.compile(".*(" + type + ").*", Pattern.CASE_INSENSITIVE);
-                appendArmorPrices(output, auctionData, armorRegex);
-            }
-        }
-
-        return output.toString();
-    }
-
-    private long getEquipmentPrice(AuctionData auctionData, EquipmentCategory category, EquipmentType type) {
-        return auctionData.getEquipment(category, type).stream()
-                .findFirst()
-                .map(KICAuctionItem::getPrice)
-                .orElse(0L);
-    }
-
-    private void appendArmorPrices(StringBuilder output, AuctionData auctionData, Pattern pattern) {
-        Map<ArmorCategory, String> armorNames = new HashMap<>();
-        armorNames.put(ArmorCategory.HELMETS, "Helm");
-        armorNames.put(ArmorCategory.CHESTPLATES, "Cp");
-        armorNames.put(ArmorCategory.LEGGINGS, "Legs");
-        armorNames.put(ArmorCategory.BOOTS, "Boots");
-
-        boolean first = true;
-        for (Map.Entry<ArmorCategory, String> entry : armorNames.entrySet()) {
-            long price = processArmorCategory(auctionData.getArmor(entry.getKey()), pattern);
-            if (!first) output.append(" - ");
-            output.append(entry.getValue()).append(": ").append(parseToShorthandNumber(price));
-            first = false;
-        }
-    }
-
-    private void appendEquipmentPrices(StringBuilder output, Map<EquipmentCategory, Long> equipment) {
-        Map<EquipmentCategory, String> equipmentNames = new HashMap<>();
-        equipmentNames.put(EquipmentCategory.NECKLACES, "Neck");
-        equipmentNames.put(EquipmentCategory.CLOAKS, "Cloak");
-        equipmentNames.put(EquipmentCategory.BELTS, "Belt");
-        equipmentNames.put(EquipmentCategory.BRACELETS, "Brace");
-
-        boolean first = true;
-        for (Map.Entry<EquipmentCategory, String> entry : equipmentNames.entrySet()) {
-            if (!first) output.append(" - ");
-            output.append(entry.getValue()).append(": ").append(parseToShorthandNumber(equipment.get(entry.getKey())));
-            first = false;
-        }
-    }
-
-    private long processArmorCategory(Map<String, List<KICAuctionItem>> armorData, Pattern pattern) {
-        if (armorData == null || armorData.isEmpty()) return 0L;
-
-        return armorData.entrySet().stream()
-                .filter(entry -> pattern.matcher(entry.getKey().toLowerCase()).matches())
-                .flatMap(entry -> entry.getValue().stream())
-                .map(KICAuctionItem::getPrice)
-                .min(Long::compare)
-                .orElse(0L);
     }
 }

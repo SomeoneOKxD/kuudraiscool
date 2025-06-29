@@ -72,6 +72,7 @@ public class KICConfig extends Config {
         hideIf("autoPearls", () -> !isAdmin());
         hideIf("autoRefillPearls", () -> !isAdmin());
         hideIf("autoRefillPearlsTicks", () -> !isAdmin());
+        hideIf("copyNBT", () -> !isDev() && !isTester());
 
         // Premium
         hideIf("partyFinderGuiStats", () -> !hasPremium());
@@ -88,8 +89,6 @@ public class KICConfig extends Config {
         oldAPWaypointSizeScaleFlat = APWaypointSizeScaleFlat;
 
         addDependency("kuudraProfitTracker", "kuudraProfitCalculator");
-        hideIf("showGodRollHolo", () -> !kuudraProfitCalculator);
-        hideIf("showGodRollHoloBothSides", () -> !kuudraProfitCalculator || !showGodRollHolo);
         addDependency("kuudraAutoKick", "partyFinder");
 
         hideIf("showSkyPearls", () -> !pearlCalculator);
@@ -271,6 +270,7 @@ public class KICConfig extends Config {
     // GENERAL
     private transient static final String PRESETS = "Presets";
     private transient static final String TESTER = "Tester";
+    private transient static final String DEV = "Dev";
 
     // KUUDRA
     private transient static final String KUUDRA_PARTY_FINDER = "Kuudra Party Finder";
@@ -286,10 +286,7 @@ public class KICConfig extends Config {
 
     // CRIMSON
     private transient static final String CRIMSON_GENERAL = "General";
-    private transient static final String CRIMSON_AH_HELPER = "Auction Helper";
     private transient static final String CRIMSON_CONTAINER = "Container";
-    private transient static final String CRIMSON_TOOLTIP = "Tooltip";
-    private transient static final String CRIMSON_AH = "KIC Auction";
 
     // PLAYER
     private transient static final String PLAYER_SIZING = "Player Sizing";
@@ -368,6 +365,13 @@ public class KICConfig extends Config {
             subcategory = TESTER
     )
     public static boolean testerModeLogInChat = false;
+
+    @KeyBind(
+            name = "Copy NBT to clipboard",
+            size = 2,
+            subcategory = DEV
+    )
+    public static OneKeyBind copyNBT = new OneKeyBind(UKeyboard.KEY_NONE);
 
     // KUUDRA
 
@@ -762,20 +766,20 @@ public class KICConfig extends Config {
     public static boolean kuudraProfitCalculator = true;
 
     @Switch(
-            name = "Show God Roll Hologram",
+            name = "Show Valuable Hologram",
             category = KUUDRA,
             subcategory = KUUDRA_PROFIT_CALC
     )
-    public static boolean showGodRollHolo = true;
+    public static boolean showValuableHolo = true;
 
     @Switch(
-            name = "Show God Roll Hologram From Both Sides",
+            name = "Show Valuable Hologram From Both Sides",
             category = KUUDRA,
             subcategory = KUUDRA_PROFIT_CALC,
             size = 2,
-            description = "Only turn this off if the god roll hologram is displayed twice otherwise leave it on."
+            description = "Only turn this off if the Valuable hologram is displayed twice otherwise leave it on."
     )
-    public static boolean showGodRollHoloBothSides = true;
+    public static boolean showValuableHoloBothSides = true;
 
     @Page(
             name = "Profit Calculator Options",
@@ -1118,133 +1122,11 @@ public class KICConfig extends Config {
     // CRIMSON
 
     @Switch(
-            name = "Use shortened attribute names",
-            category = CRIMSON,
-            subcategory = CRIMSON_GENERAL
-    )
-    public static boolean useShortenedAttribute = false;
-
-    @Switch(
-            name = "Auction Helper",
-            category = CRIMSON,
-            subcategory = CRIMSON_AH_HELPER
-    )
-    public static boolean crimsonAuctionHelper = true;
-
-    @Number(
-            name = "Undercut Amount",
-            min = 0, max = Integer.MAX_VALUE,
-            category = CRIMSON,
-            subcategory = CRIMSON_AH_HELPER
-    )
-    public static int ahHelperUnderCut = 1;
-
-    @Info(
-            text = "Clicking on '[KIC] Container Helper [Value/Helper]' toggles the overlay mode between Value and Helper.",
-            type = InfoType.INFO,
-            category = CRIMSON,
-            subcategory = CRIMSON_CONTAINER,
-            size = 2
-    )
-    public static boolean containerHelperInfo;
-
-    @Switch(
-            name = "Container Helper",
+            name = "Hunting Box Value",
             category = CRIMSON,
             subcategory = CRIMSON_CONTAINER
     )
-    public static boolean crimsonContainerHelper = true;
-
-    @Switch(
-            name = "Block Non-Highlighted Slot Clicks",
-            category = CRIMSON,
-            subcategory = CRIMSON_CONTAINER
-    )
-    public static boolean crimsonContainerBlockClicks = true;
-
-    @Switch(
-            name = "Show Prices In Tooltip",
-            category = CRIMSON,
-            subcategory = CRIMSON_TOOLTIP
-    )
-    public static boolean crimsonTooltipPrices = true;
-
-    @Switch(
-            name = "Show Prices For Each Attribute",
-            description = "Displays the price next to each attribute in the tooltip.",
-            category = CRIMSON,
-            subcategory = CRIMSON_TOOLTIP
-    )
-    public static boolean crimsonTooltipPerAttribute = true;
-
-    @Switch(
-            name = "Show Salvage Value In Tooltip",
-            category = CRIMSON,
-            subcategory = CRIMSON_TOOLTIP
-    )
-    public static boolean crimsonTooltipSalvage = true;
-
-    @Dropdown(
-            name = "KIC Auction Color",
-            category = CRIMSON,
-            options = {
-                    "Black", "Dark Blue", "Dark Green", "Dark Aqua", "Dark Red", "Dark Purple",
-                    "Gold", "Gray", "Dark Gray", "Blue", "Green", "Aqua", "Red", "Light Purple",
-                    "Yellow"
-            },
-            subcategory = CRIMSON_AH
-    )
-    public static int KICAuctionColor = 12;
-
-    @Dropdown(
-            name = "KIC Auction Style",
-            category = CRIMSON,
-            options = {
-                    "Default", "Prism", "PackHQ"
-            },
-            subcategory = CRIMSON_AH
-    )
-    public static int KICAuctionStyle = 1;
-
-    @Switch(
-            name = "Auto re-open GUI after buying an item",
-            category = CRIMSON,
-            subcategory = CRIMSON_AH
-    )
-    public static boolean openKAGUIAgain = true;
-
-    @Switch(
-            name = "Use a default attribute level",
-            category = CRIMSON,
-            subcategory = CRIMSON_AH
-    )
-    public static boolean kaUseDefaultAttributeLvl = false;
-
-    @Slider(
-            name = "Default Attribute Level",
-            category = CRIMSON,
-            min = 1, max = 10,
-            subcategory = CRIMSON_AH
-    )
-    public static int kaDefaultAttributeLvl = 5;
-
-    @Slider(
-            name = "(Price/lvl X) - Armor/Equipment/Fishing",
-            category = CRIMSON,
-            min = 1, max = 10,
-            subcategory = CRIMSON_AH,
-            description = "Sets the comparison level (X) used to display item's attribute price per level.\nExample: If set to 5 and an item costs 200m at level 10, it will show as (6.25M/lvl 5)."
-    )
-    public static int kaPricePerXLvl = 5;
-
-    @Slider(
-            name = "(Price/lvl X) - Shards",
-            category = CRIMSON,
-            min = 1, max = 10,
-            subcategory = CRIMSON_AH,
-            description = "Sets the comparison level (X) used to display shard's attribute price per level.\nExample: If set to 5 and a shard costs 200m at level 10, it will show as (6.25M/lvl 5)."
-    )
-    public static int kaPricePerXLvlShards = 4;
+    public static boolean crimsonHuntingBoxValue = true;
 
     // PLAYER
 
@@ -1316,14 +1198,6 @@ public class KICConfig extends Config {
     public static boolean partyCommandStats = true;
 
     @Switch(
-            name = ".ap",
-            category = CHAT,
-            subcategory = PARTY_COMMANDS,
-            description = "Attribute Price\n\nParty > [MVP+] Xaned: .ap mf 5\nParty > [MVP+] Xaned: Magic Find 5 > Helmet: 5.40M - Cp: 5.22M - Legs: 5.00M - Boots: 4.85M - Neck: 6.00M - Cloak: 20.00M - Belt: 20.00M - Brace: 19.00M"
-    )
-    public static boolean partyCommandAp = true;
-
-    @Switch(
             name = ".kick",
             category = CHAT,
             subcategory = PARTY_COMMANDS,
@@ -1370,14 +1244,6 @@ public class KICConfig extends Config {
             description = "Kuudra Stats\n\nFrom [MVP+] Xaned: .stats rainbode\nTo [MVP+] Xaned: Lifeline: 70 | Mana pool: 70 | Magical power: 1682"
     )
     public static boolean dmCommandStats = true;
-
-    @Switch(
-            name = ".ap",
-            category = CHAT,
-            subcategory = DM_COMMANDS,
-            description = "Attribute Price\n\nFrom [MVP+] Xaned: .ap mf 5\nTo [MVP+] Xaned: Magic Find 5 > Helmet: 5.40M - Cp: 5.22M - Legs: 5.00M - Boots: 4.85M - Neck: 6.00M - Cloak: 20.00M - Belt: 20.00M - Brace: 19.00M"
-    )
-    public static boolean dmCommandAp = true;
 
     @Switch(
             name = ".cata",

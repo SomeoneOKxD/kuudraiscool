@@ -27,6 +27,13 @@ public class KuudraProfitCalculatorOptions {
     public static boolean ignoreTeeth = false;
 
     @Switch(
+            name = "Force Salvage Value",
+            description = "Always use salvage value for Crimson, Aurora, Terror, Hollow and Fervor pieces.",
+            subcategory = PROFIT
+    )
+    public static boolean forceSalvageValue = false;
+
+    @Switch(
             name = "Reroll notifier",
             subcategory = PROFIT
     )
@@ -56,70 +63,35 @@ public class KuudraProfitCalculatorOptions {
 
     @Dropdown(
             name = "Bazaar Items Price Type",
-            description = "Calculate profit based on the Sell Order price or the Instant Sell price.",
-            options = {"Instant Sell Price", "Sell Order Price"},
+            description = "Calculate profit based on the Sell Offer price or the Instant Sell price.",
+            options = {"Instant Sell Price", "Sell Offer Price"},
             subcategory = PRICE
     )
     public static int bazaarPriceType = 0;
 
     @Dropdown(
-            name = "Attribute Items Price Type",
-            description = "Calculate attribute items based on the Lowest Bin price or the Average Price.",
-            options = {"Lowest Bin", "Average Price"},
-            subcategory = PRICE
-    )
-    public static int attributePriceType = 1;
-
-    @Dropdown(
-            name = "God Roll Items Price Type",
-            description = "Calculate god roll items based on the Lowest Bin price or the Average Price.",
-            options = {"Lowest Bin", "Average Price"},
-            subcategory = PRICE
-    )
-    public static int godRollPriceType = 1;
-
-    @Dropdown(
-            name = "Miscellaneous Items Price Type",
+            name = "Auction Items Price Type",
             description = "Calculate auction items based on the Lowest Bin price or the Average Price.",
             options = {"Lowest Bin", "Average Price"},
             subcategory = PRICE
     )
-    public static int miscellaneousPriceType = 1;
+    public static int auctionPriceType = 1;
 
     @Dropdown(
             name = "Key Price Type",
-            description = "Calculate keys based on the Sell Order price or the Instant Sell price.",
-            options = {"Instant Sell Price", "Sell Order Price"},
+            description = "Calculate keys based on the Sell Offer price or the Instant Sell price.",
+            options = {"Instant Sell Price", "Sell Offer Price"},
             subcategory = PRICE
     )
     public static int keyPriceType = 1;
 
     @Dropdown(
             name = "Kismet Price Type",
-            description = "Calculate keys based on the Sell Order price or the Instant Sell price.",
-            options = {"Instant Sell Price", "Sell Order Price"},
+            description = "Calculate kismet's used for rerolling based on the Sell Offer price or the Instant Sell price.",
+            options = {"Instant Sell Price", "Sell Offer Price"},
             subcategory = PRICE
     )
     public static int kismetPriceType = 0;
-
-    @Switch(
-            name = "Use T5 attribute prices when an item has T6+ attributes",
-            subcategory = MISC
-    )
-    public static boolean forceT5Attribute = true;
-
-    @Switch(
-            name = "Only on Lowest Bin",
-            description = "Only use T5 attribute prices when an item has T6+ attributes when on Lowest Bin type.",
-            subcategory = MISC
-    )
-    public static boolean forceT5AttributeOnlyLB = true;
-
-    @Switch(
-            name = "Ignore Hollow Wands (Value = 0)",
-            subcategory = MISC
-    )
-    public static boolean ignoreHollowWands = true;
 
     @Switch(
             name = "Ignore Aurora Staffs (Value = 0)",
@@ -127,31 +99,16 @@ public class KuudraProfitCalculatorOptions {
     )
     public static boolean ignoreAuroraStaff = true;
 
+    @Switch(
+            name = "Ignore Hollow Wands (Value = 0)",
+            subcategory = MISC
+    )
+    public static boolean ignoreHollowWand = true;
+
     @Page(
-            name = "Reroll Failsafes",
+            name = "Shard Reroll Failsafes",
             location = PageLocation.BOTTOM,
             subcategory = MISC
     )
     public KuudraRerollFailsafeOptions kuudraRerollFailsafeOptions = new KuudraRerollFailsafeOptions();
-
-    @Page(
-            name = "Armor Salvage Value Attributes",
-            location = PageLocation.BOTTOM,
-            subcategory = MISC
-    )
-    public KuudraSalvageAttributeOptions kuudraSalvageAttributeOptions = new KuudraSalvageAttributeOptions();
-
-    @Page(
-            name = "Ignored Equipment Attributes",
-            location = PageLocation.BOTTOM,
-            subcategory = MISC
-    )
-    public KuudraIgnoredEquipmentAttributeOptions kuudraIgnoredEquipmentAttributeOptions = new KuudraIgnoredEquipmentAttributeOptions();
-
-    @Page(
-            name = "Ignored Shard Attributes",
-            location = PageLocation.BOTTOM,
-            subcategory = MISC
-    )
-    public KuudraIgnoredShardAttributeOptions kuudraIgnoredShardAttributeOptions = new KuudraIgnoredShardAttributeOptions();
 }

@@ -8,7 +8,6 @@ import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.Color;
 import someoneok.kic.utils.ApiUtils;
-import someoneok.kic.utils.CacheManager;
 import someoneok.kic.utils.Updater;
 import someoneok.kic.utils.dev.KICLogger;
 
@@ -121,10 +120,8 @@ public class KICWSHandler {
             String type = updateData.get("type").getAsString();
             if (!Objects.equals("AUCTION", type)) return;
 
-            long lastUpdated = updateData.get("lastUpdated").getAsLong();
-            CacheManager.setAuctionUpdate(lastUpdated);
-
             if (KICConfig.notifyAhUpdate) {
+                long lastUpdated = updateData.get("lastUpdated").getAsLong();
                 long currentTime = Instant.now().toEpochMilli();
                 long timeDiff = (currentTime - lastUpdated) / 1000;
 

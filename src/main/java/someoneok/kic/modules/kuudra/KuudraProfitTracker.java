@@ -110,7 +110,7 @@ public class KuudraProfitTracker {
         int teeth = chest.getTeeth();
         if (teeth > 0) data.addTeeth(teeth);
 
-        if (chest.hasGodRoll()) data.addGodRoll(chest.getGodRoll());
+        if (chest.hasValuable()) data.addValuable(chest.getValuable());
 
         KuudraKey key = chest.getKeyNeeded();
         if (key == null) {
@@ -274,12 +274,12 @@ public class KuudraProfitTracker {
                     .append(color).append(parseToShorthandNumber(session.getHourlyRate())).append("/hr");
         }
 
-        if (KuudraProfitTrackerOptions.showGodRolls) {
-            String color = Color.getColorCode(KuudraProfitTrackerOptions.godRollColor);
-            text.append("\n").append(color).append("§lGod Rolls: §r")
-                    .append(color).append(session.getTotalGodRolls());
-            if (KuudraProfitTrackerOptions.showGodRollValue) {
-                text.append(String.format(" §7(§a+%s§7)", parseToShorthandNumber(session.getGodRollValue())));
+        if (KuudraProfitTrackerOptions.showValuables) {
+            String color = Color.getColorCode(KuudraProfitTrackerOptions.valuableColor);
+            text.append("\n").append(color).append("§lValuables: §r")
+                    .append(color).append(session.getTotalValuables());
+            if (KuudraProfitTrackerOptions.showValuablesValue) {
+                text.append(String.format(" §7(§a+%s§7)", parseToShorthandNumber(session.getValuablesValue())));
             }
         }
 

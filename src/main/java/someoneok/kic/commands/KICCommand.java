@@ -358,27 +358,6 @@ public class KICCommand extends CommandBase {
 
         sender.addChatMessage(createHoverAndClickComponentSuggest(
                 true,
-                "§8* §a/ap <attribute> [level] [attribute] [level]",
-                "§7Checks the auction house for current attribute prices\n\n§7Example: /ap ll mp\n§7Aliases: /attributeprice, /kicap",
-                "/ap "
-        ));
-
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
-                true,
-                "§8* §a/au <item> <attribute> <start level> <end level>",
-                "§7Shows you the cheapest possible path to upgrade an attribute.\n\n§7Example: /ap ll mp\n§7Aliases: /attributeupgrade, /kicau",
-                "/au "
-        ));
-
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
-                true,
-                "§8* §a/ka <attribute> [level] [attribute] [level]",
-                "§7Opens a custom auction house GUI with current attribute prices\n\n§7Example: /ka ll mp\n§7Aliases: /kicaction, /kicah",
-                "/ka "
-        ));
-
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
-                true,
                 "§8* §a/lf <player> <item>",
                 "§7Searches a player for a specific item\n\n§7Example 1: /lf " + sender.getName() + " Hyperion\n§7Example 2: /lf " + sender.getName() + " lore: Ability: Wither Impact\n§7Aliases: /lookingfor, /lookingforitem, /lfi",
                 "/lf "
