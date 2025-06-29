@@ -6,13 +6,6 @@ public class AuctionItem {
     private final String uuid;
     private final int stars;
 
-    public AuctionItem(String itemId, String name, String uuid) {
-        this.itemId = itemId;
-        this.name = name;
-        this.uuid = uuid;
-        this.stars = 0;
-    }
-
     public AuctionItem(String itemId, String name, String uuid, int stars) {
         this.itemId = itemId;
         this.name = name;

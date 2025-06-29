@@ -80,14 +80,11 @@ public class KICWS {
             @Override
             public void onFailure(WebSocket webSocket, Throwable t, Response response) {
                 KICLogger.error("[KIC-WS] WebSocket failure.");
+                KICLogger.error("[KIC-WS] Error cause: " + t.getClass().getSimpleName());
+                KICLogger.error("[KIC-WS] Error message: " + t.getMessage());
 
-                if (t != null) {
-                    KICLogger.error("[KIC-WS] Error cause: " + t.getClass().getSimpleName());
-                    KICLogger.error("[KIC-WS] Error message: " + t.getMessage());
-
-                    for (StackTraceElement element : t.getStackTrace()) {
-                        KICLogger.error("    at " + element.toString());
-                    }
+                for (StackTraceElement element : t.getStackTrace()) {
+                    KICLogger.error("    at " + element.toString());
                 }
 
                 if (response != null) {

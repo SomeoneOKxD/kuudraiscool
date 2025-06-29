@@ -253,6 +253,7 @@ public enum KuudraChest {
                                 bazaarItemValue.setPrice(buyPriceBazaar, sellPriceBazaar);
                                 bazaarItemValue.setFetching(false);
                                 bazaarItemValue.setCached(true);
+                                bazaarItemValue.setTimestamp(System.currentTimeMillis());
                                 if ("ESSENCE_CRIMSON".equals(itemId)) {
                                     KuudraProfitTracker.updateEssencePrice(bazaarItemValue.getSingleValue());
                                 } else if ("KISMET_FEATHER".equals(itemId)) {
@@ -276,6 +277,7 @@ public enum KuudraChest {
                                 auctionItemValue.setPrice(priceAuction, avgAuction);
                                 auctionItemValue.setFetching(false);
                                 auctionItemValue.setCached(true);
+                                auctionItemValue.setTimestamp(System.currentTimeMillis());
                                 if (valuables.contains(auctionItemValue.getItemId())) {
                                     valuableItem = auctionItemValue;
                                     Hologram.show(valuableItem);

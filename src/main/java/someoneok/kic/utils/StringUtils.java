@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class StringUtils {
-    private final static Pattern SHORT_HAND_PATTERN = Pattern.compile("(\\d+(?:\\.\\d+)?)([kmbt])?");
     private static final Pattern UUID_V4_PATTERN = Pattern.compile(
             "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", Pattern.CASE_INSENSITIVE);
     private final static Pattern COLOR_CODE_PATTERN = Pattern.compile("(§.)");

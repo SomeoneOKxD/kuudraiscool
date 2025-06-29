@@ -41,12 +41,6 @@ public class KIC {
     public static final String KICDataPrefix = "§7[§a§lKIC-DATA§r§7]§r";
     public static final Gson GSON = new GsonBuilder().create();
     public static final Random RNG = new Random();
-    public static final List<String> ATTRIBUTES = Arrays.asList("arachno", "attack_speed", "blazing", "combo", "elite",
-            "ender", "ignition", "life_recovery", "mana_steal", "midas_touch", "undead", "warrior", "deadeye",
-            "arachno_resistance", "blazing_resistance", "breeze", "dominance", "ender_resistance", "experience",
-            "fortitude", "life_regeneration", "lifeline", "magic_find", "mana_pool", "mana_regeneration", "vitality",
-            "speed", "undead_resistance", "veteran", "blazing_fortune", "fishing_experience", "infection", "double_hook",
-            "fisherman", "fishing_speed", "hunter", "trophy_hunter", "mending");
 
     public static X509TrustManager CUSTOM_TRUST_MANAGER;
     public static SSLContext CUSTOM_SSL_CONTEXT;

@@ -285,7 +285,6 @@ public class KICConfig extends Config {
     private transient static final String KUUDRA_NOTIFICATIONS = "Kuudra Notifications";
 
     // CRIMSON
-    private transient static final String CRIMSON_GENERAL = "General";
     private transient static final String CRIMSON_CONTAINER = "Container";
 
     // PLAYER
