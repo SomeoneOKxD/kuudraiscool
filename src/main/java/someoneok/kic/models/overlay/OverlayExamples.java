@@ -7,7 +7,7 @@ public class OverlayExamples {
             "§eTotal: §a+2.41M\n\n" +
             "§c-2.92M §7| §6Infernal Kuudra Key\n" +
             "§a+3.15M §7| §dCrimson Essence §ex1920\n" +
-            "§a+1.60M §7| §6Hollow Leggings §7[§bVeteran 4§7] §7[§bLife Regeneration 5§7]\n" +
+            "§a+1.60M §7| §6Hollow Leggings\n" +
             "§a+573.03K §7| §7Mana Vampire 5\n" +
             "§a+16.16K §7| §5Kuudra Teeth §ex3\n";
 

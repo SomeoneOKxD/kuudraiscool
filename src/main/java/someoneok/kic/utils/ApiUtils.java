@@ -86,7 +86,6 @@ public class ApiUtils {
 
         if (isPrivilegedUser()) {
             TesterStuff.testerMode = true;
-            KICConfig.apiToUse = 1;
         }
 
         disableConfigOptions();
