@@ -13,9 +13,13 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class KICModTweaker implements ITweaker {
 
+    private File gameDir;
+
     @Override
     @SuppressWarnings("unchecked")
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
+        this.gameDir = (gameDir != null) ? gameDir : new File(".");
+
         List<String> tweakClasses = (List<String>) Launch.blackboard.get("TweakClasses");
         tweakClasses.add(MixinTweaker.class.getName());
         tweakClasses.add(ModLoadingTweaker.class.getName());
@@ -23,18 +27,10 @@ public class KICModTweaker implements ITweaker {
         tweakClasses.add(HypixelModAPITweaker.class.getName());
     }
 
-    @Override
-    public void injectIntoClassLoader(LaunchClassLoader classLoader) {
-
+    @Override public void injectIntoClassLoader(LaunchClassLoader classLoader) {
+        AddonMixinsBootstrap.run(new File(gameDir, "config/kuudraiscool/addons").toPath());
     }
 
-    @Override
-    public String getLaunchTarget() {
-        return null;
-    }
-
-    @Override
-    public String[] getLaunchArguments() {
-        return new String[0];
-    }
+    @Override public String getLaunchTarget() { return null; }
+    @Override public String[] getLaunchArguments() { return new String[0]; }
 }

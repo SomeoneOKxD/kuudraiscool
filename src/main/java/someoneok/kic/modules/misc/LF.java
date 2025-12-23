@@ -5,6 +5,7 @@ import cc.polyfrost.oneconfig.utils.Multithreading;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.event.ClickEvent;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import someoneok.kic.KIC;
@@ -21,7 +22,8 @@ import java.util.*;
 
 import static someoneok.kic.KIC.KICPrefix;
 import static someoneok.kic.KIC.mc;
-import static someoneok.kic.utils.GeneralUtils.*;
+import static someoneok.kic.utils.ApiUtils.apiHost;
+import static someoneok.kic.utils.ChatUtils.*;
 import static someoneok.kic.utils.StringUtils.generateDashString;
 
 public class LF {
@@ -41,7 +43,7 @@ public class LF {
             String requestBody = KIC.GSON.toJson(lfRequest);
             JsonObject response;
             try {
-                response = JsonUtils.parseString(NetworkUtils.sendPostRequest("https://api.sm0kez.com/hypixel/lf", true, requestBody)).getAsJsonObject();
+                response = JsonUtils.parseString(NetworkUtils.sendPostRequest(apiHost() + "/hypixel/lf", true, requestBody)).getAsJsonObject();
             } catch (APIException e) {
                 sendMessageToPlayer(String.format("%s §c%s", KICPrefix, e.getMessage()));
                 return;
@@ -111,7 +113,7 @@ public class LF {
                     if (cmd == null) {
                         message.appendSibling(createHoverComponent(true, text, item.getLore()));
                     } else {
-                        message.appendSibling(createHoverAndClickComponent(true, text, item.getLore(), cmd));
+                        message.appendSibling(createHoverAndClickComponent(true, text, item.getLore(), ClickEvent.Action.RUN_COMMAND, cmd));
                     }
                 } else {
                     message.appendSibling(createHoverComponent(true, text, item.getLore()));
@@ -133,6 +135,7 @@ public class LF {
             case "Wardrobe": return "/wardrobe " + page;
             case "Accessory Bag": return "/accessorybag";
             case "Personal Vault": return "/bank";
+            case "Museum": return "/warp museum";
             default: return null;
         }
     }

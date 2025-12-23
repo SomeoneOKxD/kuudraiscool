@@ -10,7 +10,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Mouse;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
+import someoneok.kic.events.GuiContainerEvent;
 import someoneok.kic.models.NEUCompatibility;
+import someoneok.kic.utils.data.DataHandler;
 
 import java.awt.*;
 import java.util.Collection;
@@ -20,12 +22,23 @@ import java.util.stream.Stream;
 
 public class OverlayManager {
     private static final Map<String, MovableOverlay> overlays = new HashMap<>();
+    private static final Map<String, String> overlayToAddon = new HashMap<>();
     private static MovableOverlay draggingOverlay = null;
     private static InteractiveOverlay clickedOverlay = null;
     private static MovableOverlay lastHoveredOverlay = null;
 
+    public static void addOverlay(String addonId, MovableOverlay overlay) {
+        overlays.put(overlay.name, overlay);
+        overlayToAddon.put(overlay.name, addonId);
+    }
+
     public static void addOverlay(MovableOverlay overlay) {
         overlays.put(overlay.name, overlay);
+    }
+
+    public static void removeOverlay(String name) {
+        overlays.remove(name);
+        overlayToAddon.remove(name);
     }
 
     public static MovableOverlay getOverlay(String name) {
@@ -34,6 +47,10 @@ public class OverlayManager {
 
     public static Collection<MovableOverlay> getOverlays() {
         return overlays.values();
+    }
+
+    public static String getOwnerAddonId(String overlayName) {
+        return overlayToAddon.get(overlayName);
     }
 
     private static Stream<MovableOverlay> getFilteredOverlays(OverlayType type) {
@@ -64,13 +81,6 @@ public class OverlayManager {
         if (EditHudScreen.isEditingMode() || isExcludedGui(e.gui) || NEUCompatibility.isStorageMenuActive()) return;
         getFilteredOverlays(OverlayType.INGUI).forEach(MovableOverlay::render);
     }
-
-//    TODO: Fix NEU integration
-//    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
-//    public void onGuiScreenDrawPre(GuiScreenEvent.DrawScreenEvent.Pre e) {
-//        if (isExcludedGui(e.gui) || (!e.isCanceled() || !NEUCompatibility.isStorageMenuActive())) return;
-//        getFilteredOverlays(OverlayType.INGUI).forEach(MovableOverlay::render);
-//    }
 
     @SubscribeEvent
     public void onRenderOverlay(RenderGameOverlayEvent.Text event) {
@@ -129,7 +139,7 @@ public class OverlayManager {
             draggingOverlay.stopDragging();
             draggingOverlay.setHovered(false);
             draggingOverlay = null;
-            OverlayDataHandler.saveOverlays();
+            DataHandler.saveOverlays();
         }
         if (clickedOverlay != null) {
             clickedOverlay.onMouseRelease();
@@ -186,12 +196,29 @@ public class OverlayManager {
         if (hoveredOverlay != null) {
             if (KICConfig.hudMoveKeybind.isActive()) {
                 hoveredOverlay.changeScale(scroll > 0 ? 0.1 : -0.1);
-                OverlayDataHandler.saveOverlays();
+                DataHandler.saveOverlays();
                 event.setCanceled(true);
             } else if (hoveredOverlay instanceof InteractiveOverlay) {
                 ((InteractiveOverlay) hoveredOverlay).onScroll(scroll, mousePos[0], mousePos[1]);
                 event.setCanceled(true);
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void onGuiClose(GuiContainerEvent.CloseWindowEvent event) {
+        if (draggingOverlay != null) {
+            draggingOverlay.setEditingMode(false);
+            draggingOverlay.setHovered(false);
+            draggingOverlay.stopDragging();
+            draggingOverlay = null;
+            DataHandler.saveOverlays();
+        }
+
+        if (clickedOverlay != null) {
+            clickedOverlay.setEditingMode(false);
+            clickedOverlay.setHovered(false);
+            clickedOverlay = null;
         }
     }
 

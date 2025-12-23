@@ -2,12 +2,14 @@ package someoneok.kic.models.request;
 
 import someoneok.kic.config.pages.KuudraProfitCalculatorOptions;
 import someoneok.kic.config.pages.KuudraProfitTrackerOptions;
-import someoneok.kic.models.overlay.ProfitTrackerData;
-import someoneok.kic.utils.overlay.OverlayDataManager;
-
-import static someoneok.kic.utils.GeneralUtils.colors;
+import someoneok.kic.models.data.ProfitTrackerData;
+import someoneok.kic.utils.data.DataManager;
 
 public class ShareTrackerRequest {
+    public final String[] COLORS = {"Black", "Dark Blue", "Dark Green", "Dark Aqua", "Dark Red", "Dark Purple",
+            "Gold", "Gray", "Dark Gray", "Blue", "Green", "Aqua", "Red", "Light Purple",
+            "Yellow", "White"};
+
     // ---- Data ----
     private final long profit;
     private final int runs;
@@ -18,10 +20,14 @@ public class ShareTrackerRequest {
     private final int fieryChests;
     private final int infernalChests;
     private final int rerolls;
+    private final int shardRerolls;
     private final long time;
     private final int valuables;
     private final long valuablesValue;
     private final long essence;
+    private final int tap;
+    private final int twap;
+    private final long tapCost;
 
     // ---- Settings ----
     private final Boolean lifetimeView;
@@ -52,18 +58,22 @@ public class ShareTrackerRequest {
     private final Boolean showEssence;
     private final String essenceColor;
     private final Boolean showEssenceValue;
+    private final Boolean showTap;
+    private final String tapColor;
+    private final Boolean showTapCosts;
     private final Boolean bazaarInsta;
     private final Boolean keyInsta;
     private final Boolean kismetInsta;
+    private final Boolean wofLb;
 
     private final String faction;
 
     public ShareTrackerRequest(boolean lifetime) {
-        ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
+        ProfitTrackerData data = DataManager.getProfitTrackerData();
         ProfitTrackerData.ProfitTrackerSession session = lifetime ? data.getLifetime() : data.getCurrent();
 
         this.lifetimeView = lifetime;
-        this.profit = session.getProfit();
+        this.profit = session.getProfit(data);
         this.runs = session.getRuns();
         this.freeChests = session.getFreeChests();
         this.basicChests = session.getBasicChests();
@@ -72,43 +82,51 @@ public class ShareTrackerRequest {
         this.fieryChests = session.getFieryChests();
         this.infernalChests = session.getInfernalChests();
         this.rerolls = session.getRerolls();
+        this.shardRerolls = session.getShardRerolls();
         this.time = session.getTime();
         this.valuables = session.getTotalValuables();
         this.valuablesValue = session.getValuablesValue();
         this.essence = session.getEssence();
+        this.tap = session.getTap();
+        this.twap = session.getTwap();
+        this.tapCost = session.getTapCost(data);
 
-        this.sessionColor = colors[KuudraProfitTrackerOptions.sessionColor];
-        this.kicColor = colors[KuudraProfitTrackerOptions.kicColor];
-        this.profitTrackerColor = colors[KuudraProfitTrackerOptions.profitTrackerColor];
+        this.sessionColor = COLORS[KuudraProfitTrackerOptions.sessionColor];
+        this.kicColor = COLORS[KuudraProfitTrackerOptions.kicColor];
+        this.profitTrackerColor = COLORS[KuudraProfitTrackerOptions.profitTrackerColor];
         this.showProfit = KuudraProfitTrackerOptions.showProfit;
-        this.profitColor = colors[KuudraProfitTrackerOptions.profitColor];
+        this.profitColor = COLORS[KuudraProfitTrackerOptions.profitColor];
         this.showRuns = KuudraProfitTrackerOptions.showRuns;
-        this.runsColor = colors[KuudraProfitTrackerOptions.runsColor];
+        this.runsColor = COLORS[KuudraProfitTrackerOptions.runsColor];
         this.showChests = KuudraProfitTrackerOptions.showChests;
-        this.chestsColor = colors[KuudraProfitTrackerOptions.chestsColor];
+        this.chestsColor = COLORS[KuudraProfitTrackerOptions.chestsColor];
         this.showKeyCosts = KuudraProfitTrackerOptions.showKeyCosts;
         this.showAverageProfitPerChest = KuudraProfitTrackerOptions.showAverageProfitPerChest;
-        this.averagePerChestColor = colors[KuudraProfitTrackerOptions.averagePerChestColor];
+        this.averagePerChestColor = COLORS[KuudraProfitTrackerOptions.averagePerChestColor];
         this.showRerolls = KuudraProfitTrackerOptions.showRerolls;
-        this.rerollsColor = colors[KuudraProfitTrackerOptions.rerollsColor];
+        this.rerollsColor = COLORS[KuudraProfitTrackerOptions.rerollsColor];
         this.showRerollCosts = KuudraProfitTrackerOptions.showRerollCosts;
         this.showTime = KuudraProfitTrackerOptions.showTime;
-        this.timeColor = colors[KuudraProfitTrackerOptions.timeColor];
+        this.timeColor = COLORS[KuudraProfitTrackerOptions.timeColor];
         this.showAverageTimePerRun = KuudraProfitTrackerOptions.showAverageTimePerRun;
-        this.averageTimePerRunColor = colors[KuudraProfitTrackerOptions.averageTimePerRunColor];
+        this.averageTimePerRunColor = COLORS[KuudraProfitTrackerOptions.averageTimePerRunColor];
         this.showRate = KuudraProfitTrackerOptions.showRate;
-        this.rateColor = colors[KuudraProfitTrackerOptions.rateColor];
+        this.rateColor = COLORS[KuudraProfitTrackerOptions.rateColor];
         this.showValuables = KuudraProfitTrackerOptions.showValuables;
-        this.valuablesColor = colors[KuudraProfitTrackerOptions.valuableColor];
+        this.valuablesColor = COLORS[KuudraProfitTrackerOptions.valuableColor];
         this.showValuablesValue = KuudraProfitTrackerOptions.showValuablesValue;
         this.showEssence = KuudraProfitTrackerOptions.showEssence;
-        this.essenceColor = colors[KuudraProfitTrackerOptions.essenceColor];
+        this.essenceColor = COLORS[KuudraProfitTrackerOptions.essenceColor];
         this.showEssenceValue = KuudraProfitTrackerOptions.showEssenceValue;
+        this.showTap = KuudraProfitTrackerOptions.showTap;
+        this.tapColor = COLORS[KuudraProfitTrackerOptions.tapColor];
+        this.showTapCosts = KuudraProfitTrackerOptions.showTapCosts;
 
         this.bazaarInsta = KuudraProfitCalculatorOptions.bazaarPriceType == 0;
         this.keyInsta = KuudraProfitCalculatorOptions.keyPriceType == 0;
         this.kismetInsta = KuudraProfitCalculatorOptions.kismetPriceType == 0;
+        this.wofLb = KuudraProfitCalculatorOptions.auctionPriceType == 0;
 
-        this.faction = OverlayDataManager.getUserData().getFaction().getName();
+        this.faction = DataManager.getUserData().getFaction().getName();
     }
 }

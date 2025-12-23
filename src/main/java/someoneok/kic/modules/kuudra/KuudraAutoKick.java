@@ -1,146 +1,184 @@
 package someoneok.kic.modules.kuudra;
 
 import cc.polyfrost.oneconfig.utils.Multithreading;
-import net.minecraftforge.client.event.ClientChatReceivedEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
-import someoneok.kic.config.pages.KuudraAutoKickOptions;
-import someoneok.kic.utils.ApiUtils;
-import someoneok.kic.utils.dev.KICLogger;
+import someoneok.kic.models.kuudra.AutoKickProfile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static someoneok.kic.config.pages.KuudraAutoKickOptions.*;
-import static someoneok.kic.utils.GeneralUtils.sendCommand;
-import static someoneok.kic.utils.PartyUtils.amILeader;
+import static someoneok.kic.utils.ChatUtils.sendCommand;
 import static someoneok.kic.utils.StringUtils.parseToShorthandNumber;
 
 public class KuudraAutoKick {
-    private static final Pattern trimonuPattern = Pattern.compile("^Party > (?:\\[[^]]+]\\s*)?(\\w+).*?: .*?✯ Opened.*");
-    private static final List<String> armorTiers = Arrays.asList("INFERNAL", "FIERY", "BURNING", "HOT", "BASIC", "NONE");
-    private static final List<String> gemTiers = Arrays.asList("PERFECT", "FLAWLESS", "FINE", "FLAWED", "ROUGH", "NONE");
+    private static final List<String> ARMOR_TIERS = Arrays.asList("INFERNAL", "FIERY", "BURNING", "HOT", "BASIC", "NONE");
+    private static final List<String> GEMSTONE_TIERS = Arrays.asList("PERFECT", "FLAWLESS", "FINE", "FLAWED", "ROUGH", "NONE");
+    private static final List<String> TALISMAN_TIERS = Arrays.asList("No Talisman", "Kuudra's Kidney", "Kuudra's Lung", "Kuudra's Heart");
+    private static final List<String> HAB_LEVELS = Arrays.asList("No Habanero Tactics", "Habanero Tactics 4", "Habanero Tactics 5");
 
-    public static void autoKick(
-            String user, String uuid, int lifeline, int mana_pool, int cata_level, int t5_comps, int magical_power, int rag_chim_level,
-            int term_duplex_level, String rag_gemstone, String chestplate, String leggings, String boots,
-            boolean term_p7, boolean term_c6, boolean wither_impact, int legion_level, int strong_fero_mana,
-            long bank_balance, long gold_collection, int golden_dragon_level,
-            boolean inventory_api, boolean banking_api, boolean collections_api
-    ) {
+    public static void autoKick(AutoKickProfile p) {
         if (!KICConfig.kuudraAutoKick) return;
 
-        KICLogger.info("[AutoKick] Evaluating player: " + user);
-
-        String lowerUser = user.toLowerCase();
+        String lowerUser = p.getUser().toLowerCase();
+        String lowerUuid = p.getUuid().toLowerCase();
 
         Set<String> whitelist = parsePlayerList(whitelisted);
-        if (useWhitelist && (whitelist.contains(lowerUser) || whitelist.contains(uuid))) {
-            KICLogger.info("[AutoKick] User is whitelisted.");
-            return;
-        }
+        if (useWhitelist && (whitelist.contains(lowerUser) || whitelist.contains(lowerUuid))) return;
 
         Set<String> blacklist = parsePlayerList(blacklisted);
-        if (useBlacklist && (blacklist.contains(lowerUser) || blacklist.contains(uuid))) {
-            sendCommand(String.format("/pc [KIC] %s was kicked for: blacklisted", user));
-            Multithreading.schedule(() -> sendCommand("/p kick " + user), 500, TimeUnit.MILLISECONDS);
+        if (useBlacklist && (blacklist.contains(lowerUser) || blacklist.contains(lowerUuid))) {
+            sendCommand(String.format("/pc [KIC] %s was kicked for: blacklisted", p.getUser()));
+            Multithreading.schedule(() -> sendCommand("/p kick " + p.getUser()), 500, TimeUnit.MILLISECONDS);
             return;
         }
 
-        int gem_tier = gemTiers.indexOf(rag_gemstone);
+        List<KickCriteria> criteria = new ArrayList<>();
 
-        int chestplate_tier = armorTiers.stream().filter(chestplate.toUpperCase()::contains).map(armorTiers::indexOf).findFirst().orElse(5);
-        int leggings_tier = armorTiers.stream().filter(leggings.toUpperCase()::contains).map(armorTiers::indexOf).findFirst().orElse(5);
-        int boots_tier = armorTiers.stream().filter(boots.toUpperCase()::contains).map(armorTiers::indexOf).findFirst().orElse(5);
+        criteria.add(new KickCriteria(autoKickInventoryApiOff && !p.hasInventoryApi(), "Inventory API off"));
+        criteria.add(new KickCriteria(autoKickBankingApiOff && !p.hasBankingApi(), "Banking API off"));
+        criteria.add(new KickCriteria(autoKickCollectionsApiOff && !p.hasCollectionsApi(), "Collections API off"));
 
-        int armor_tier = Math.max(chestplate_tier, Math.max(leggings_tier, boots_tier));
+        if (p.hasInventoryApi()) {
+            String chestName = String.valueOf(p.getChestplate()).toUpperCase();
+            String legsName  = String.valueOf(p.getLeggings()).toUpperCase();
+            String bootsName = String.valueOf(p.getBoots()).toUpperCase();
 
-        List<String> failedCriteria = new ArrayList<>();
+            int chestplate_tier = ARMOR_TIERS.stream()
+                    .filter(chestName::contains)
+                    .map(ARMOR_TIERS::indexOf)
+                    .findFirst()
+                    .orElse(ARMOR_TIERS.indexOf("NONE"));
 
-        // Handle API being off first
-        if (!inventory_api && autoKickInventoryApiOff) {
-            failedCriteria.add("Inventory API off");
+            int leggings_tier = ARMOR_TIERS.stream()
+                    .filter(legsName::contains)
+                    .map(ARMOR_TIERS::indexOf)
+                    .findFirst()
+                    .orElse(ARMOR_TIERS.indexOf("NONE"));
+
+            int boots_tier = ARMOR_TIERS.stream()
+                    .filter(bootsName::contains)
+                    .map(ARMOR_TIERS::indexOf)
+                    .findFirst()
+                    .orElse(ARMOR_TIERS.indexOf("NONE"));
+
+            int armorTier = Math.max(chestplate_tier, Math.max(leggings_tier, boots_tier));
+
+            String ragGem = p.getRagGemstone();
+            int gemTier = -1;
+            if (ragGem != null) gemTier = GEMSTONE_TIERS.indexOf(ragGem.toUpperCase());
+            if (gemTier == -1) gemTier = GEMSTONE_TIERS.indexOf("NONE");
+
+            int talTier = Math.max(0, Math.min(p.getTalismanTier(), TALISMAN_TIERS.size() - 1));
+            int minTalReq = Math.max(0, Math.min(minTalismanTier, TALISMAN_TIERS.size() - 1));
+
+            criteria.add(new KickCriteria(p.getCataLevel() < minCataLevel,
+                    p.getCataLevel() + "/" + minCataLevel + " cata level"));
+            criteria.add(new KickCriteria(p.getForagingLevel() < minForagingLevel,
+                    p.getForagingLevel() + "/" + minForagingLevel + " foraging level"));
+            criteria.add(new KickCriteria(p.getT5Comps() < minT5Completions,
+                    p.getT5Comps() + "/" + minT5Completions + " T5 runs"));
+            criteria.add(new KickCriteria(p.getMagicalPower() < minMagicalPower,
+                    p.getMagicalPower() + "/" + minMagicalPower + " magical power"));
+            criteria.add(new KickCriteria(p.getRagChimLevel() < minChimeraLevelRagAxe,
+                    p.getRagChimLevel() + "/" + minChimeraLevelRagAxe + " chimera"));
+            criteria.add(new KickCriteria(p.getTermDuplexLevel() < minDuplexLevel,
+                    p.getTermDuplexLevel() + "/" + minDuplexLevel + " duplex"));
+
+            criteria.add(new KickCriteria(
+                    gemTier > minGemstoneTierRagAxe,
+                    "Low tier rag gemstone [Has: " + GEMSTONE_TIERS.get(gemTier)
+                            + ", Req: " + GEMSTONE_TIERS.get(minGemstoneTierRagAxe) + "]"
+            ));
+            criteria.add(new KickCriteria(
+                    armorTier > minTerrorTier,
+                    "Low tier armor [Has: " + ARMOR_TIERS.get(armorTier)
+                            + ", Req: " + ARMOR_TIERS.get(minTerrorTier) + "]"
+            ));
+            criteria.add(new KickCriteria(
+                    talTier < minTalReq,
+                    "Low tier talisman [Has: " + TALISMAN_TIERS.get(talTier)
+                            + ", Req: " + TALISMAN_TIERS.get(minTalReq) + "]"
+            ));
+
+            criteria.add(new KickCriteria(autoKickNoP7Duplex && !p.isTermP7(), "Missing P7 on term"));
+            criteria.add(new KickCriteria(autoKickNoC6Duplex && !p.isTermC6(), "Missing C6 on term"));
+            criteria.add(new KickCriteria(autoKickNoSmold5Duplex && !p.isTermSmold5(), "Missing SMOLD5 on term"));
+            criteria.add(new KickCriteria(autoKickNoWitherImpact && !p.hasWitherImpact(), "Missing Wither Impact"));
+            criteria.add(new KickCriteria(p.getLegionLevel() < minLegionLevel,
+                    p.getLegionLevel() + "/" + minLegionLevel + " legion"));
+            criteria.add(new KickCriteria(p.getStrongFeroMana() < minStrongFeroLevel,
+                    p.getStrongFeroMana() + "/" + minStrongFeroLevel + " strong/fero mana"));
+
+            criteria.add(new KickCriteria(autoKickNoRend && !p.hasRend(), "Missing Rend"));
+
+            if (p.hasRend()) {
+                int hl = p.getHabLevel();
+                int habLevelIndex = (hl == 4) ? 1 : (hl == 5) ? 2 : 0;
+                int minHabReq = Math.max(0, Math.min(minHabTactics, HAB_LEVELS.size() - 1));
+
+                criteria.add(new KickCriteria(autoKickNoRendTerm && !p.hasRendTerm(), "Missing Rend term"));
+                criteria.add(new KickCriteria(autoKickNoP7Bone && !p.isBoneP7(), "Missing P7 on bone"));
+                criteria.add(new KickCriteria(autoKickNoC6Bone && !p.isBoneC6(), "Missing C6 on bone"));
+                criteria.add(new KickCriteria(autoKickNoSmold5Bone && !p.isBoneSmold5(), "Missing SMOLD5 on bone"));
+                criteria.add(new KickCriteria(autoKickNoGK7Blade && !p.isBladeGK7(), "Missing GK7 on blade"));
+                criteria.add(new KickCriteria(autoKickNoPros6Blade && !p.isBladePros6(), "Missing Pros6 on blade"));
+                criteria.add(new KickCriteria(
+                        habLevelIndex < minHabReq,
+                        "Low hab level [Has: " + HAB_LEVELS.get(habLevelIndex)
+                                + ", Req: " + HAB_LEVELS.get(minHabReq) + "]"
+                ));
+                criteria.add(new KickCriteria(autoKickNoBiggerTeeth && !p.hasBiggerTeeth(),
+                        "Missing Greg with bigger teeth"));
+            }
         }
-        if (!banking_api && autoKickBankingApiOff) {
-            failedCriteria.add("Banking API off");
-        }
-        if (!collections_api && autoKickCollectionsApiOff) {
-            failedCriteria.add("Collections API off");
+
+        criteria.add(new KickCriteria(
+                p.getGoldenDragonLevel() < minGregLevel,
+                p.getGoldenDragonLevel() + "/" + minGregLevel + " golden dragon level"
+        ));
+        criteria.add(new KickCriteria(autoKickNoHephaestusRemedies && !p.hasHephaestusRemedies(), "Missing Hephaestus Remedies"));
+
+        if (p.hasBankingApi()) {
+            long requiredBank = minBankBalance * 10L;
+            criteria.add(new KickCriteria(
+                    p.getBankBalance() < requiredBank,
+                    parseToShorthandNumber(p.getBankBalance()) + "/"
+                            + parseToShorthandNumber(requiredBank) + " bank"
+            ));
         }
 
-        if (inventory_api) {
-            failedCriteria.addAll(Stream.of(
-                    new KickCriteria(lifeline < minLifelineLevel, lifeline + "/" + minLifelineLevel + " lifeline/dominance"),
-                    new KickCriteria(mana_pool < minManapoolLevel, mana_pool + "/" + minManapoolLevel + " mana pool"),
-                    new KickCriteria(cata_level < minCataLevel, cata_level + "/" + minCataLevel + " cata level"),
-                    new KickCriteria(t5_comps < minT5Completions, t5_comps + "/" + minT5Completions + " T5 runs"),
-                    new KickCriteria(magical_power < minMagicalPower, magical_power + "/" + minMagicalPower + " magical power"),
-                    new KickCriteria(rag_chim_level < minChimeraLevelRagAxe, rag_chim_level + "/" + minChimeraLevelRagAxe + " chimera"),
-                    new KickCriteria(term_duplex_level < minDuplexLevel, term_duplex_level + "/" + minDuplexLevel + " duplex"),
-                    new KickCriteria(gem_tier > minGemstoneTierRagAxe, "Low tier rag gemstone [Has: " + gemTiers.get(gem_tier) + ", Req: " + gemTiers.get(minGemstoneTierRagAxe) + "]"),
-                    new KickCriteria(armor_tier > minTerrorTier, "Low tier armor [Has: " + armorTiers.get(armor_tier) + ", Req: " + armorTiers.get(minTerrorTier) + "]"),
-                    new KickCriteria(autoKickNoP7Duplex && !term_p7, "Missing P7 on term"),
-                    new KickCriteria(autoKickNoC7Duplex && !term_c6, "Missing C6 on term"),
-                    new KickCriteria(autoKickNoWitherImpact && !wither_impact, "Missing Wither Impact"),
-                    new KickCriteria(legion_level < minLegionLevel, legion_level + "/" + minLegionLevel + " legion"),
-                    new KickCriteria(strong_fero_mana < minStrongFeroLevel, strong_fero_mana + "/" + minStrongFeroLevel + " strong/fero mana")
-            ).filter(c -> c.condition).map(c -> c.reason).limit(6).collect(Collectors.toList()));
+        if (p.hasCollectionsApi()) {
+            long requiredGold = minGoldCollection * 10L;
+            criteria.add(new KickCriteria(
+                    p.getGoldCollection() < requiredGold,
+                    parseToShorthandNumber(p.getGoldCollection()) + "/"
+                            + parseToShorthandNumber(requiredGold) + " gold"
+            ));
         }
 
-        if (banking_api) {
-            failedCriteria.addAll(Stream.of(
-                    new KickCriteria(bank_balance < minBankBalance * 10L, parseToShorthandNumber(bank_balance) + "/" + parseToShorthandNumber(minBankBalance * 10L) + " bank")
-            ).filter(c -> c.condition).map(c -> c.reason).limit(6).collect(Collectors.toList()));
-        }
-
-        if (collections_api) {
-            failedCriteria.addAll(Stream.of(
-                    new KickCriteria(gold_collection < minGoldCollection * 10L, parseToShorthandNumber(gold_collection) + "/" + parseToShorthandNumber(minGoldCollection * 10L) + " gold"),
-                    new KickCriteria(golden_dragon_level < minGregLevel, golden_dragon_level + "/" + minGregLevel + " golden dragon level")
-            ).filter(c -> c.condition).map(c -> c.reason).limit(6).collect(Collectors.toList()));
-        }
+        List<String> failedCriteria = criteria.stream()
+                .filter(c -> c.condition)
+                .map(c -> c.reason)
+                .collect(Collectors.toList());
 
         if (!failedCriteria.isEmpty()) {
             boolean hasMore = failedCriteria.size() > 5;
-            String reasons = String.join(", ", failedCriteria.subList(0, Math.min(5, failedCriteria.size())));
+            String reasons = String.join(", ",
+                    failedCriteria.subList(0, Math.min(5, failedCriteria.size())));
             if (hasMore) reasons += ", ...";
 
-            KICLogger.warn(String.format("[AutoKick] %s - Kicked for: %s", user, reasons));
-
-            sendCommand(String.format("/pc [KIC] %s kicked for: %s", user, reasons));
-            Multithreading.schedule(() -> sendCommand("/p kick " + user), 500, TimeUnit.MILLISECONDS);
-        } else {
-            KICLogger.info(String.format("[AutoKick] %s meets all requirements, no kick necessary.", user));
-        }
-    }
-
-    @SubscribeEvent(receiveCanceled = true)
-    public void onChat(ClientChatReceivedEvent event) {
-        if (!KICConfig.kuudraAutoKick
-                || !KuudraAutoKickOptions.autoKickTrimonu
-                || !amILeader()
-                || !ApiUtils.isVerified()) return;
-        String message = event.message.getUnformattedText();
-        Matcher matcher = trimonuPattern.matcher(message);
-
-        if (matcher.find()) {
-            String player = matcher.group(1);
-            if (player.equalsIgnoreCase(KIC.mc.thePlayer.getName())) return;
-            sendCommand(String.format("/pc [KIC] %s kicked for using Trimonu!", player));
-            Multithreading.schedule(() -> sendCommand("/party kick " + player), 500, TimeUnit.MILLISECONDS);
+            sendCommand(String.format("/pc [KIC] %s kicked for: %s", p.getUser(), reasons));
+            Multithreading.schedule(() -> sendCommand("/p kick " + p.getUser()), 500, TimeUnit.MILLISECONDS);
         }
     }
 
     private static Set<String> parsePlayerList(String input) {
-        String cleanedInput = input.replaceAll("-", "");
+        String cleanedInput = input.replace("-", "");
         return Arrays.stream(cleanedInput.split(";"))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())

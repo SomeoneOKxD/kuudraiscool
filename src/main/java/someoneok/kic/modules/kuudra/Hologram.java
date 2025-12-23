@@ -41,7 +41,6 @@ public class Hologram {
     private static Vec3 pos = null;
 
     static {
-        TEXTURES.put("WHEEL_OF_FATE", "ewogICJ0aW1lc3RhbXAiIDogMTYxNzE0MDQ2MTMyOSwKICAicHJvZmlsZUlkIiA6ICIyMWUzNjdkNzI1Y2Y0ZTNiYjI2OTJjNGEzMDBhNGRlYiIsCiAgInByb2ZpbGVOYW1lIiA6ICJHZXlzZXJNQyIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS81Yzg3ZjU5YjAyODg2ZmVmNTk0ZWFlYmI0NmRjMzM3YWFiYjg0NWIyYzQxYmI0ZDIzOGMxMjYwN2Q4YTA5NTQ0IiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=");
         TEXTURES.put("BURNING_KUUDRA_CORE", "ewogICJ0aW1lc3RhbXAiIDogMTY0NzA0MDIzMTE0NCwKICAicHJvZmlsZUlkIiA6ICIzYzE0YmVkNDFiOGE0MDIzOGM3MDgzMTA1NzEwMTZmYiIsCiAgInByb2ZpbGVOYW1lIiA6ICJOb2Jpa28iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzY4NzQzNDk3ODIwYzA4NjI3ZDJjYzVlODkxYzBmOWZjMzc5M2Y3NWI2ZTQxZTE0MGFjOWIwMDdkM2I1MDVhNSIKICAgIH0KICB9Cn0=");
         TEXTURES.put("TENTACLE_DYE", "ewogICJ0aW1lc3RhbXAiIDogMTc0MTE2MTM3OTg3NywKICAicHJvZmlsZUlkIiA6ICIwNDg0N2ZjNWM5YjY0NTQ1YjI1ZWJkYmJiNzdjNjg2NSIsCiAgInByb2ZpbGVOYW1lIiA6ICJuYXFsdWEiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjk4YmJhODA2ODA5MWJmYjcwZDdmOTc5ODM5MzRiMGRlYTZjZjkxY2M5OWVhOWQxNGFmN2U4MTE4MTVjNGJmNyIsCiAgICAgICJtZXRhZGF0YSIgOiB7CiAgICAgICAgIm1vZGVsIiA6ICJzbGltIgogICAgICB9CiAgICB9CiAgfQp9");
     }
@@ -50,7 +49,7 @@ public class Hologram {
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event) {
         if (!show || label == null || price == null || item == null || pos == null) return;
-        if (!KICConfig.showValuableHolo || !LocationUtils.inKuudra) return;
+        if (!KICConfig.showValuableHolo || !LocationUtils.inKuudra()) return;
 
         Entity viewer = mc.getRenderViewEntity();
         RenderItem renderItem = mc.getRenderItem();
@@ -102,20 +101,16 @@ public class Hologram {
     }
 
     private void renderFacingText(double x, double y, double z, float rotationY, FontRenderer fr, String text) {
+        int width = fr.getStringWidth(text);
+
         GlStateManager.pushMatrix();
         GlStateManager.translate(x, y, z);
         GlStateManager.rotate(rotationY, 0.0F, 1.0F, 0.0F);
-
-        int width = fr.getStringWidth(text);
         fr.drawString(text, -width / 2, 0, 0xFFFFFF);
-
-        if (KICConfig.showValuableHoloBothSides) {
-            GlStateManager.pushMatrix();
-            GlStateManager.rotate(180F, 0.0F, 1.0F, 0.0F);
-            fr.drawString(text, -width / 2, 0, 0xFFFFFF);
-            GlStateManager.popMatrix();
-        }
-
+        GlStateManager.pushMatrix();
+        GlStateManager.rotate(180F, 0.0F, 1.0F, 0.0F);
+        fr.drawString(text, -width / 2, 0, 0xFFFFFF);
+        GlStateManager.popMatrix();
         GlStateManager.popMatrix();
     }
 
@@ -129,10 +124,10 @@ public class Hologram {
     }
 
     public static void show(Value droppedItem) {
-        if (!KICConfig.showValuableHolo || !LocationUtils.inKuudra) return;
+        if (!KICConfig.showValuableHolo || !LocationUtils.inKuudra()) return;
 
         String itemId = droppedItem.getItemId().toUpperCase();
-        if (itemId.equals("WHEEL_OF_FATE") || itemId.equals("BURNING_KUUDRA_CORE") || itemId.equals("TENTACLE_DYE")) {
+        if (itemId.equals("BURNING_KUUDRA_CORE") || itemId.equals("TENTACLE_DYE")) {
             if (!TEXTURES.containsKey(itemId)) return;
             item = skullItem(TEXTURES.get(itemId));
         } else {
@@ -160,7 +155,7 @@ public class Hologram {
         }
 
         show = true;
-        pos = LocationUtils.kuudraTier == 5 ? chestPos2 : chestPos1;
+        pos = LocationUtils.kuudraTier() == 5 ? chestPos2 : chestPos1;
         label = droppedItem.getName();
         price = "§6" + parseToShorthandNumber(droppedItem.getValue());
     }

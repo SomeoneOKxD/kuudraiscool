@@ -7,6 +7,7 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.Island;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.LocationUtils;
+import someoneok.kic.utils.data.DataHandler;
 
 import java.util.Set;
 import java.util.function.Supplier;
@@ -75,7 +76,7 @@ public class OverlayBase {
         this.x = 50;
         this.y = 50;
         this.scale = 1;
-        OverlayDataHandler.saveOverlays();
+        DataHandler.saveOverlays();
     }
 
     private TextDimensions calculateTextDimensions(String text) {
@@ -120,6 +121,14 @@ public class OverlayBase {
         updateScale();
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public int getWidth() {
         return (int) ((this.width + padding * 2) * scale);
     }
@@ -132,8 +141,24 @@ public class OverlayBase {
         return x;
     }
 
+    public void setX(int x) {
+        this.x = x;
+    }
+
     public int getY() {
         return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public double getScale() {
+        return scale;
+    }
+
+    public void setScale(double scale) {
+        this.scale = scale;
     }
 
     public void setRenderCondition(Supplier<Boolean> renderCondition) {

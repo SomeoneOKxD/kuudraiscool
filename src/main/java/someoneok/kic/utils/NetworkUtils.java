@@ -24,7 +24,7 @@ public class NetworkUtils {
         }
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 
-        if (url.contains("api.sm0kez.com")) {
+        if (url.contains("sm0kez.com")) {
             if (KIC.CUSTOM_SSL_CONTEXT != null && connection instanceof HttpsURLConnection) {
                 ((HttpsURLConnection) connection).setSSLSocketFactory(KIC.CUSTOM_SSL_CONTEXT.getSocketFactory());
             }
@@ -32,7 +32,7 @@ public class NetworkUtils {
             connection.setRequestProperty("IGN", getPlayerName());
 
             if (requiresKey) {
-                connection.setRequestProperty("API-Key", KICConfig.apiKey.trim());
+                connection.setRequestProperty("API-Key", KICConfig.apiKey);
             }
         }
 
@@ -63,21 +63,25 @@ public class NetworkUtils {
 
             if (errorMessage.startsWith("<!DOCTYPE html>") || errorMessage.startsWith("<html>") ||
                     (responseCode >= 520 && responseCode <= 526)) {
+                KICLogger.forceError("[API DOWN] URL: " + url + " | Code: " + responseCode + " | Error: API unreachable or blocked by Cloudflare.");
                 throw new APIException("API is unreachable. It may be offline or blocked by Cloudflare.", responseCode);
             }
 
             switch (responseCode) {
                 case 400:
                 case 404:
+                    KICLogger.forceError("[API ERROR] URL: " + url + " | Method: " + method + " | Code: " + responseCode + " | Body: " + requestBody + " | Message: " + errorMessage);
                     throw new APIException(errorMessage, responseCode);
                 case 401:
                 case 403:
+                    KICLogger.forceError("[AUTH ERROR] URL: " + url + " | Method: " + method + " | Code: " + responseCode + " | Body: " + requestBody + " | Message: " + errorMessage);
                     throw new APIException("Access denied. Reason: " + errorMessage, responseCode);
                 case 429:
                     String resetHeader = connection.getHeaderField("X-RateLimit-Reset");
                     String hardResetHeader = connection.getHeaderField("X-HardRateLimit-Reset");
-                    Long resetAt = null;
-                    Long hardResetAt = null;
+                    String remainingHeader = connection.getHeaderField("X-RateLimit-Remaining");
+                    long resetAt = -1L;
+                    long hardResetAt = -1L;
                     if (resetHeader != null) {
                         try {
                             resetAt = Long.parseLong(resetHeader);
@@ -88,11 +92,13 @@ public class NetworkUtils {
                             hardResetAt = Long.parseLong(hardResetHeader);
                         } catch (NumberFormatException ignored) {}
                     }
+                    KICLogger.forceError("[RATE LIMITED] URL: " + url + " | Method: " + method + " | Code: 429 | Reset: " + resetAt + " | Hard Reset: " + hardResetAt + " | Requests Remaining: " + remainingHeader + " | Body: " + requestBody + " | Message: " + errorMessage);
                     throw new APIException("Rate limit exceeded. Please try again later!", responseCode, resetAt, hardResetAt);
                 case 500:
+                    KICLogger.forceError("[SERVER ERROR] URL: " + url + " | Method: " + method + " | Code: 500 | Body: " + requestBody + " | Message: " + errorMessage);
                     throw new APIException("Server encountered an issue. Error: " + errorMessage, responseCode);
                 default:
-                    KICLogger.error("Code: " + responseCode);
+                    KICLogger.forceError("[UNEXPECTED ERROR] URL: " + url + " | Method: " + method + " | Code: " + responseCode + " | Body: " + requestBody + " | Message: " + errorMessage);
                     throw new APIException("Unexpected error encountered.", responseCode);
             }
         }
@@ -102,12 +108,23 @@ public class NetworkUtils {
         if (!verifying && requiresKey && !ApiUtils.isVerified()) {
             throw new APIException("Your api key is not verified.", 0);
         }
-        try (InputStreamReader input = new InputStreamReader(
-                setupConnection(url, requiresKey, method, requestBody),
-                StandardCharsets.UTF_8)) {
-            return IOUtils.toString(input);
+
+        long startNanos = System.nanoTime();
+        try (InputStream is = setupConnection(url, requiresKey, method, requestBody);
+             InputStreamReader input = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+
+            String result = IOUtils.toString(input);
+            long tookMs = java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
+            KICLogger.forceInfo(String.format("[HTTP] %s %s completed in %d ms", method, url, tookMs));
+            return result;
+        } catch (APIException e) {
+            long tookMs = java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
+            KICLogger.forceError(String.format("[HTTP] %s %s failed in %d ms (code=%d, msg=%s)",
+                    method, url, tookMs, e.getStatus(), e.getMessage()));
+            throw e;
         } catch (IOException e) {
-            KICLogger.error(e.getMessage());
+            long tookMs = java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
+            KICLogger.forceError(String.format("[HTTP] %s %s errored in %d ms (I/O exception, msg=%s)", method, url, tookMs, e.getMessage()));
             throw new APIException("Unexpected error encountered.", 0);
         }
     }
@@ -124,6 +141,10 @@ public class NetworkUtils {
         return sendRequest(url, requiresKey, false, "POST", requestBody);
     }
 
+    public static String sendDeleteRequest(String url, boolean requiresKey) throws APIException {
+        return sendRequest(url, requiresKey, false, "DELETE", null);
+    }
+
     public static SSLContext getCustomSSLContext(X509TrustManager trustManager) {
         try {
             Security.addProvider(Security.getProvider("SunEC"));
@@ -137,7 +158,7 @@ public class NetworkUtils {
 
             return sslContext;
         } catch (Exception e) {
-            KICLogger.error("❌ SSLContext initialization failed: " + e.getMessage());
+            KICLogger.forceError("❌ SSLContext initialization failed: " + e.getMessage());
             return null;
         }
     }
@@ -161,10 +182,10 @@ public class NetworkUtils {
             }
             return (X509TrustManager) trustManagers[0];
         } catch (FileNotFoundException e) {
-            KICLogger.error("❌ Truststore file not found: " + e.getMessage());
+            KICLogger.forceError("❌ Truststore file not found: " + e.getMessage());
             return null;
         } catch (Exception e) {
-            KICLogger.error("❌ Trust Manager initialization failed: " + e.getMessage());
+            KICLogger.forceError("❌ Trust Manager initialization failed: " + e.getMessage());
             return null;
         }
     }

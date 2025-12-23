@@ -39,18 +39,18 @@ public class StringUtils {
     public static String parseToShorthandNumber(double labelValue) {
         if (labelValue == 0) return "0";
         int sign = (int) Math.signum(labelValue);
-        double absoluteValue = Math.abs(labelValue);
+        double abs = Math.abs(labelValue);
 
-        if (absoluteValue >= 1.0e+12) {
-            return String.format("%.2fT", sign * (absoluteValue / 1.0e+12));
-        } else if (absoluteValue >= 1.0e+9) {
-            return String.format("%.2fB", sign * (absoluteValue / 1.0e+9));
-        } else if (absoluteValue >= 1.0e+6) {
-            return String.format("%.2fM", sign * (absoluteValue / 1.0e+6));
-        } else if (absoluteValue >= 1.0e+3) {
-            return String.format("%.2fK", sign * (absoluteValue / 1.0e+3));
+        if (abs >= 1.0e12) {
+            return String.format("%.2fT", sign * (abs / 1.0e12));
+        } else if (abs >= 1.0e9) {
+            return String.format("%.2fB", sign * (abs / 1.0e9));
+        } else if (abs >= 1.0e6) {
+            return String.format("%.2fM", sign * (abs / 1.0e6));
+        } else if (abs >= 1.0e3) {
+            return String.format("%.2fK", sign * (abs / 1.0e3));
         } else {
-            return String.valueOf(sign * absoluteValue);
+            return String.valueOf(Math.round(sign * abs));
         }
     }
 
@@ -126,8 +126,25 @@ public class StringUtils {
         return sb.toString();
     }
 
+//    public static String removeFormatting(String text) {
+//        return text.replaceAll("§.", "").trim();
+//    }
+
     public static String removeFormatting(String text) {
-        return text.replaceAll("§.", "");
+        if (text == null || text.isEmpty()) return text;
+
+        int len = text.length();
+        StringBuilder sb = new StringBuilder(len);
+
+        for (int i = 0; i < len; i++) {
+            char c = text.charAt(i);
+            if (c == '§' && i + 1 < len) i++;
+            else sb.append(c);
+        }
+
+        int end = sb.length();
+        while (end > 0 && Character.isWhitespace(sb.charAt(end - 1))) end--;
+        return (end == sb.length()) ? sb.toString() : sb.substring(0, end);
     }
 
     public static String removeUnicode(String input) {
@@ -213,5 +230,11 @@ public class StringUtils {
         } else {
             return "§7";
         }
+    }
+
+    public static String formatSecs(long ms) {
+        if (ms <= 0) return "0.0";
+        double secs = Math.ceil(ms / 100.0) / 10.0;
+        return String.format(java.util.Locale.ROOT, "%.1f", secs);
     }
 }

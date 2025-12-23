@@ -23,9 +23,22 @@ public class GuiLogAppender extends AbstractAppender {
     private static StyledDocument errorDoc;
 
     private static final List<BufferedLog> logBuffer = new ArrayList<>();
-
+    private static final List<BufferedLog> guiQueue = new ArrayList<>();
     private static final int BUFFER_LIMIT = 300;
     private static final int MAX_LINES = 1000;
+
+    private static final Timer guiFlushTimer = new Timer(100, e -> {
+        try {
+            flushGuiQueue();
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    });
+
+    static {
+        guiFlushTimer.setRepeats(true);
+        guiFlushTimer.start();
+    }
 
     protected GuiLogAppender(String name, Layout<? extends Serializable> layout) {
         super(name, null, layout, false);
@@ -54,12 +67,13 @@ public class GuiLogAppender extends AbstractAppender {
         errorDoc = error;
 
         SwingUtilities.invokeLater(() -> {
+            List<BufferedLog> toFlush;
             synchronized (logBuffer) {
-                for (BufferedLog buffered : logBuffer) {
-                    dispatchToDocs(buffered.message, buffered.level);
-                }
+                int start = Math.max(0, logBuffer.size() - MAX_LINES);
+                toFlush = new ArrayList<>(logBuffer.subList(start, logBuffer.size()));
                 logBuffer.clear();
             }
+            flushLogsToDocs(toFlush);
         });
     }
 
@@ -73,33 +87,65 @@ public class GuiLogAppender extends AbstractAppender {
         String message = "[" + event.getLevel() + "] " + event.getMessage().getFormattedMessage() + "\n";
         String level = event.getLevel().name();
 
-        if (allDoc == null || infoDoc == null || warnDoc == null || errorDoc == null) {
-            synchronized (logBuffer) {
-                if (logBuffer.size() >= BUFFER_LIMIT) {
-                    logBuffer.remove(0);
-                }
-                logBuffer.add(new BufferedLog(message, level));
+        synchronized (logBuffer) {
+            if (logBuffer.size() >= BUFFER_LIMIT) {
+                logBuffer.remove(0);
             }
-            return;
+            logBuffer.add(new BufferedLog(message, level));
         }
 
-        SwingUtilities.invokeLater(() -> dispatchToDocs(message, level));
-    }
-
-    private static void dispatchToDocs(String message, String level) {
-        insertIntoDoc(allDoc, message, level);
-
-        switch (level) {
-            case "INFO": insertIntoDoc(infoDoc, message, level); break;
-            case "WARN": insertIntoDoc(warnDoc, message, level); break;
-            case "ERROR": insertIntoDoc(errorDoc, message, level); break;
+        if (allDoc != null) {
+            synchronized (guiQueue) {
+                guiQueue.add(new BufferedLog(message, level));
+            }
         }
     }
 
-    private static void insertIntoDoc(StyledDocument doc, String message, String level) {
+    private static void flushGuiQueue() {
+        if (allDoc == null) return;
+
+        List<BufferedLog> logsToFlush;
+        synchronized (guiQueue) {
+            if (guiQueue.isEmpty()) return;
+            logsToFlush = new ArrayList<>(guiQueue);
+            guiQueue.clear();
+        }
+
+        flushLogsToDocs(logsToFlush);
+    }
+
+    private static void flushLogsToDocs(List<BufferedLog> logs) {
+        if (logs.isEmpty()) return;
+
+        StringBuilder allBuilder = new StringBuilder();
+        StringBuilder infoBuilder = new StringBuilder();
+        StringBuilder warnBuilder = new StringBuilder();
+        StringBuilder errorBuilder = new StringBuilder();
+
+        for (BufferedLog log : logs) {
+            allBuilder.append(log.message);
+            switch (log.level) {
+                case "INFO": infoBuilder.append(log.message); break;
+                case "WARN": warnBuilder.append(log.message); break;
+                case "ERROR": errorBuilder.append(log.message); break;
+            }
+        }
+
+        SwingUtilities.invokeLater(() -> {
+            try {
+                if (allBuilder.length() > 0) insertIntoDoc(allDoc, allBuilder.toString(), "ALL");
+                if (infoBuilder.length() > 0) insertIntoDoc(infoDoc, infoBuilder.toString(), "INFO");
+                if (warnBuilder.length() > 0) insertIntoDoc(warnDoc, warnBuilder.toString(), "WARN");
+                if (errorBuilder.length() > 0) insertIntoDoc(errorDoc, errorBuilder.toString(), "ERROR");
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private static void insertIntoDoc(StyledDocument doc, String message, String level) throws BadLocationException {
         Color color;
-        switch (level)
-        {
+        switch (level) {
             case "INFO": color = new Color(150, 200, 255); break;
             case "WARN": color = new Color(255, 200, 100); break;
             case "ERROR": color = new Color(255, 100, 100); break;
@@ -112,20 +158,17 @@ public class GuiLogAppender extends AbstractAppender {
             StyleConstants.setForeground(style, color);
         }
 
-        try {
-            doc.insertString(doc.getLength(), message, style);
-            trimLines(doc);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        }
+        doc.insertString(doc.getLength(), message, style);
+        trimLines(doc);
     }
 
     private static void trimLines(StyledDocument doc) throws BadLocationException {
         Element root = doc.getDefaultRootElement();
         int lineCount = root.getElementCount();
         if (lineCount > MAX_LINES) {
-            Element first = root.getElement(0);
-            doc.remove(0, first.getEndOffset());
+            int linesToRemove = lineCount - MAX_LINES;
+            int endOffset = root.getElement(linesToRemove - 1).getEndOffset();
+            doc.remove(0, endOffset);
         }
     }
 

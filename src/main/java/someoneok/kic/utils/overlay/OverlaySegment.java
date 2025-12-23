@@ -38,6 +38,19 @@ public class OverlaySegment {
         this.customColor = 0;
     }
 
+    public OverlaySegment(String text, boolean hoverable, Runnable onHover, Runnable onHoverEnd, boolean scrollable, Runnable onScrollUp, Runnable onScrollDown) {
+        this.text = text;
+        this.clickable = false;
+        this.onClick = null;
+        this.hoverable = hoverable;
+        this.onHover = onHover;
+        this.onHoverEnd = onHoverEnd;
+        this.scrollable = scrollable;
+        this.onScrollUp = onScrollUp;
+        this.onScrollDown = onScrollDown;
+        this.customColor = 0;
+    }
+
     public OverlaySegment(String text) {
         this.text = text;
         this.clickable = false;

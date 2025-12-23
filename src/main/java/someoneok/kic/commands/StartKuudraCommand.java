@@ -3,7 +3,7 @@ package someoneok.kic.commands;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 
-import static someoneok.kic.utils.GeneralUtils.sendCommand;
+import static someoneok.kic.utils.ChatUtils.sendCommand;
 
 public class StartKuudraCommand extends CommandBase {
     private final String alias;

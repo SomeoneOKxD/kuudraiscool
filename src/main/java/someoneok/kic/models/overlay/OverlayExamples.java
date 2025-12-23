@@ -1,7 +1,9 @@
 package someoneok.kic.models.overlay;
 
+import static someoneok.kic.KIC.KICPrefix;
+
 public class OverlayExamples {
-    public static final String PROFIT_CALCULATOR = "§7[§a§lKIC§r§7]§r §a§lChest Profit\n\n" +
+    public static final String PROFIT_CALCULATOR = KICPrefix + " §a§lChest Profit\n\n" +
             "§eTotal: §a+2.41M\n\n" +
             "§c-2.92M §7| §6Infernal Kuudra Key\n" +
             "§a+3.15M §7| §dCrimson Essence §ex1920\n" +
@@ -9,7 +11,7 @@ public class OverlayExamples {
             "§a+573.03K §7| §7Mana Vampire 5\n" +
             "§a+16.16K §7| §5Kuudra Teeth §ex3\n";
 
-    public static final String HUNTING_BOX_VALUE = "§7[§a§lKIC§r§7]§r §a§lHunting Box Value\n" +
+    public static final String HUNTING_BOX_VALUE = KICPrefix + " §a§lHunting Box Value\n" +
             "§r§614.23M §7| §r§6Burningsoul §cx18\n" +
             "§r§67.81M §7| §r§6Shinyfish §cx13\n" +
             "§r§64.74M §7| §r§fMist §cx14\n" +
@@ -45,62 +47,54 @@ public class OverlayExamples {
             "§6Rain §a§l6.84s\n" +
             "§6Soph §6§l7.20s";
 
-    public static final String EXAMPLE_PLAYER_1 = "§2§m-----§f[- §7[§5379§7] §2Player 1 §f-]§2§m-----\n" +
-            "§aLifeline: §370 §7(§f+§c175.00%§7)\n" +
-            "§aMana Pool: §268 §7(§f+§b1360 Intel§7)\n" +
-            "§aRuns: §36297 §7(§38173§7)\n" +
-            "§aMagical Power: §21656\n" +
-            "§aCata: §350.45 §7(§f+§9200.00☠§7) §7(§f+§c75.00❁§7)\n" +
-            "\n" +
-            "§aHyperion: §a✔\n" +
-            "§aTerminator: §a✔ §7(§dDuplex 5§7) §7(§aP7: ✔§7) (§aC6: ✔§7)\n" +
-            "§aRagnarock Axe: §a✔ §7(§dChim 5§7) §7(§6❁§7)\n" +
-            "§aRend Info §7[HOVER]\n" +
-            "§aExtra Info §7[HOVER]\n" +
-            "\n" +
-            "§a§6* §6* §dAncient Infernal Terror Helmet\n" +
-            "§a§6* §6* §d§dAncient Infernal Terror Chestplate §6✪✪✪✪✪\n" +
-            "§a§6* §6* §d§dAncient Infernal Terror Leggings §d✪✪✪✪✪\n" +
-            "§a§6* §6* §d§dAncient Infernal Terror Boots §b✪✪✪✪✪\n" +
-            "§a* §7[Lvl 200] §6Golden Dragon §7(§aShelmet: ✔§7) §7(§aRemedies: ✔§7)\n" +
-            "§2§m------------------------------";
+    public static final String BUILD_TIMER = "§6Build Timer: §c4850ms§6!";
 
-    public static final String EXAMPLE_PLAYER_2 = "§2§m-----§f[- §7[§c443§7] §2Player 2 §f-]§2§m-----\n" +
-            "§aDominance: §370 §7(§f+§c105.00%§7)\n" +
-            "§aMana Pool: §370 §7(§f+§b1400 Intel§7)\n" +
-            "§aRuns: §317520 §7(§318780§7)\n" +
-            "§aMagical Power: §31761\n" +
-            "§aCata: §352.53 §7(§f+§9200.00☠§7) §7(§f+§c75.00❁§7)\n" +
+    public static final String CRATE_PICKUP = "§8[§e|||||||||||§f|||||||||§8] §b57%§r";
+
+    public static final String DEBUG = "§fDebug Overlay";
+
+    public static final String EXAMPLE_PLAYER_1 = "§2§m-----§f[- §7[§c452§7] §2Player1 §f-]§2§m-----\n" +
+            "§aRuns: §311690 §7(§312619§7)\n" +
+            "§aMagical Power: §31838\n" +
+            "§aCata: §350.84 §7(§f+§9200.00☠§7) §7(§f+§c75.00❁§7)\n" +
             "\n" +
             "§aHyperion: §a✔\n" +
-            "§aTerminator: §a✔ §7(§dDuplex 5§7) §7(§aP7: ✔§7) (§aC6: ✔§7)\n" +
-            "§aRagnarock Axe: §a✔ §7(§dChim 5§7) §7(§6❁§7)\n" +
-            "§aRend Info §7[HOVER]\n" +
-            "§aExtra Info §7[HOVER]\n" +
+            "§aTerminator: §a✔ §7(§dDuplex 5§7) §7(§aP7: ✔§7) (§aC6: ✔§7) (§4SMOLD5: X§7)\n" +
+            "§aRagnarock Axe: §a✔ §7(§fChim 5§7) §7(§6❁§7)\n" +
+            "§a§d* §d* §dAncient Infernal Terror Helmet\n" +
+            "§a§6* §6* §dAncient Infernal Terror Chestplate §6✪\n" +
+            "§a§6* §6* §dAncient Infernal Terror Leggings §6✪\n" +
+            "§a§6* §6* §dAncient Infernal Terror Boots §6✪\n" +
+            "§a* §7[Lvl 200] §6Golden Dragon §7(§aRemedies: ✔§7)\n" +
+            "§2§m-------------------------";
+
+    public static final String EXAMPLE_PLAYER_2 = "§2§m-----§f[- §7[§4510§7] §2Player2 §f-]§2§m-----\n" +
+            "§aRuns: §330638 §7(§330947§7)\n" +
+            "§aMagical Power: §31865\n" +
+            "§aCata: §352.68 §7(§f+§9200.00☠§7) §7(§f+§c75.00❁§7)\n" +
             "\n" +
-            "§a§6* §6* §dAncient Infernal Terror Helmet\n" +
-            "§a§6* §6* §f§dAncient Infernal Terror Chestplate §b✪✪✪✪✪\n" +
-            "§a§6* §6* §f§dAncient Infernal Terror Leggings §b✪✪✪✪✪\n" +
-            "§a§6* §6* §f§dAncient Infernal Terror Boots §b✪✪✪✪✪\n" +
-            "§a* §7[Lvl 200] §6Golden Dragon §7(§aShelmet: ✔§7) §7(§aRemedies: ✔§7)\n" +
+            "§aHyperion: §a✔\n" +
+            "§aTerminator: §a✔ §7(§dDuplex 5§7) §7(§aP7: ✔§7) (§aC6: ✔§7) (§4SMOLD5: X§7)\n" +
+            "§aRagnarock Axe: §a✔ §7(§fChim 5§7) §7(§6❁§7)\n" +
+            "§a§6* §6* §dAncient Infernal Terror Helmet §d✪✪✪✪✪\n" +
+            "§a§6* §6* §a§dAncient Infernal Terror Chestplate §d✪✪✪✪✪\n" +
+            "§a§6* §6* §a§dAncient Infernal Terror Leggings §d✪✪✪✪✪\n" +
+            "§a§6* §6* §a§dAncient Infernal Terror Boots §d✪✪✪✪✪\n" +
+            "§a* §7[Lvl 200] §6Golden Dragon §7(§aRemedies: ✔§7)\n" +
             "§2§m---------------------------";
 
-    public static final String EXAMPLE_PLAYER_3 = "§2§m-----§f[- §7[§5374§7] §2Player 3 §f-]§2§m-----\n" +
-            "§aLifeline: §e54 §7(§f+§c135.00%§7)\n" +
-            "§aMana Pool: §436 §7(§f+§b720 Intel§7)\n" +
-            "§aRuns: §e607 §7(§21022§7)\n" +
-            "§aMagical Power: §e1539\n" +
-            "§aCata: §241.04 §7(§f+§9164.00☠§7) §7(§f+§c61.50❁§7)\n" +
+    public static final String EXAMPLE_PLAYER_3 = "§2§m-----§f[- §7[§5394§7] §2Player3 §f-]§2§m-----\n" +
+            "§aRuns: §e657 §7(§21092§7)\n" +
+            "§aMagical Power: §21645\n" +
+            "§aCata: §241.08 §7(§f+§9164.00☠§7) §7(§f+§c61.50❁§7)\n" +
             "\n" +
             "§aHyperion: §a✔\n" +
-            "§aTerminator: §a✔ §7(§dDuplex 5§7) §7(§aP7: ✔§7) (§aC6: ✔§7)\n" +
+            "§aTerminator: §a✔ §7(§dDuplex 5§7) §7(§aP7: ✔§7) (§aC6: ✔§7) (§4SMOLD5: X§7)\n" +
             "§aRagnarock Axe: §a✔ §7(§fChim 0§7) §7(§d❁§7)\n" +
-            "§aExtra Info §7[HOVER]\n" +
-            "\n" +
             "§a§7* §7* §dAncient Warden Helmet\n" +
             "§a§6* §6* §dAncient Infernal Terror Chestplate\n" +
             "§a§d* §d* §dAncient Infernal Terror Leggings\n" +
             "§a§d* §d* §dAncient Infernal Terror Boots\n" +
-            "§a* §7[Lvl 200] §6Golden Dragon §7(§4Shelmet: X§7) §7(§aMinos: ✔§7)\n" +
+            "§a* §7[Lvl 200] §6Golden Dragon §7(§aMinos: ✔§7)\n" +
             "§2§m--------------------------";
 }

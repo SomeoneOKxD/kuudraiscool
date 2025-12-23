@@ -1,7 +1,7 @@
 package someoneok.kic.models.request;
 
 import someoneok.kic.models.kuudra.CrimsonFaction;
-import someoneok.kic.models.kuudra.KuudraKey;
+import someoneok.kic.models.kuudra.chest.KuudraKey;
 
 public class KuudraKeyPriceRequest implements Request  {
     private final String type;

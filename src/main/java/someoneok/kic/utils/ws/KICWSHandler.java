@@ -1,20 +1,17 @@
 package someoneok.kic.utils.ws;
 
 import cc.polyfrost.oneconfig.utils.JsonUtils;
-import cc.polyfrost.oneconfig.utils.Multithreading;
-import cc.polyfrost.oneconfig.utils.Notifications;
 import com.google.gson.JsonObject;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.Color;
+import someoneok.kic.modules.crimson.HuntingBoxValue;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.Updater;
 import someoneok.kic.utils.dev.KICLogger;
+import someoneok.kic.utils.kuudra.KuudraValueCache;
 
-import java.time.Instant;
-import java.util.Objects;
-
-import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.ChatUtils.sendMessageToPlayer;
 import static someoneok.kic.utils.StringUtils.isNullOrEmpty;
 import static someoneok.kic.utils.TitleUtils.showSubtitle;
 import static someoneok.kic.utils.TitleUtils.showTitle;
@@ -22,7 +19,7 @@ import static someoneok.kic.utils.TitleUtils.showTitle;
 public class KICWSHandler {
     public static void onWebSocketText(String message) {
         if ("ping".equals(message)) return;
-        KICLogger.info("Received message: " + message);
+        if (KICConfig.logWebsocketMessages) KICLogger.info("Received message: " + message);
         JsonObject data = JsonUtils.parseString(message).getAsJsonObject();
         if (data == null) return;
         switch (data.get("type").getAsString()) {
@@ -118,30 +115,14 @@ public class KICWSHandler {
         try {
             JsonObject updateData = data.getAsJsonObject("data");
             String type = updateData.get("type").getAsString();
-            if (!Objects.equals("AUCTION", type)) return;
 
-            if (KICConfig.notifyAhUpdate) {
-                long lastUpdated = updateData.get("lastUpdated").getAsLong();
-                long currentTime = Instant.now().toEpochMilli();
-                long timeDiff = (currentTime - lastUpdated) / 1000;
-
-                long minutes = timeDiff / 60;
-                long seconds = timeDiff % 60;
-
-                String timeString = String.format("%dm %ds ago", minutes, seconds);
-
-                switch (KICConfig.dataUpdateNotificationMethod) {
-                    case 0:
-                        sendMessageToPlayer(String.format("%s §7| §bAuction data updated! §7(§3%s§7)", KIC.KICDataPrefix, timeString));
-                        break;
-                    case 1:
-                        Multithreading.runAsync(() -> Notifications.INSTANCE.send("[KIC] Auction data updated!", "Auction data was updated " + timeString));
-                        break;
-                    case 2:
-                        sendMessageToPlayer(String.format("%s §7| §bAuction data updated! §7(§3%s§7)", KIC.KICDataPrefix, timeString));
-                        Multithreading.runAsync(() -> Notifications.INSTANCE.send("[KIC] Auction data updated!", "Auction data was updated " + timeString));
-                        break;
-                }
+            long lastUpdated = updateData.get("lastUpdated").getAsLong();
+            if ("AUCTION".equals(type)) {
+                KuudraValueCache.invalidateAuctionCache();
+            } else if ("BAZAAR".equals(type)) {
+                HuntingBoxValue.forceCleanupCaches(lastUpdated);
+                KuudraValueCache.invalidateBazaarCache();
+                KuudraValueCache.invalidateKeyCache();
             }
         } catch (Exception e) {
             KICLogger.error(e.getMessage());

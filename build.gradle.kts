@@ -17,10 +17,12 @@ val version: String by project
 val mixinGroup = "$baseGroup.mixin"
 val modid: String by project
 val transformerFile = file("src/main/resources/accesstransformer.cfg")
+val apiVersion: String by project
 
 blossom {
     replaceToken("@VER@", version)
     replaceToken("@ID@", modid)
+    replaceToken("@API_VER@", apiVersion)
 }
 
 // Toolchains:
@@ -75,7 +77,7 @@ val shadowImpl: Configuration by configurations.creating {
     configurations.implementation.get().extendsFrom(this)
 }
 
-val modApiVersion = "1.0.1.1"
+val modApiVersion = "1.0.1.2"
 
 dependencies {
     minecraft("com.mojang:minecraft:1.8.9")
@@ -156,7 +158,6 @@ tasks.shadowJar {
     archiveClassifier.set("non-obfuscated-with-deps")
     configurations = listOf(shadowImpl)
 
-    fun relocate(name: String) = relocate(name, "$baseGroup.deps.$name")
     relocate("net.hypixel.modapi.tweaker", "$baseGroup.deps.hypixel.modapitweaker.HypixelModAPITweaker")
     relocate("okhttp3", "$baseGroup.deps.okhttp3")
     relocate("okio", "$baseGroup.deps.okio")

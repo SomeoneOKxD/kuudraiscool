@@ -9,6 +9,8 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import someoneok.kic.KIC;
 import someoneok.kic.config.KICConfig;
+import someoneok.kic.config.sharing.ConfigSharing;
+import someoneok.kic.config.sharing.ConfigSharingGUI;
 import someoneok.kic.models.misc.ChatMode;
 import someoneok.kic.modules.kuudra.KuudraProfitTracker;
 import someoneok.kic.modules.kuudra.KuudraUserInfo;
@@ -17,28 +19,39 @@ import someoneok.kic.modules.misc.TrackEmptySlots;
 import someoneok.kic.modules.premium.Misc;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.Updater;
+import someoneok.kic.utils.data.DataHandler;
 import someoneok.kic.utils.overlay.EditHudScreen;
-import someoneok.kic.utils.overlay.OverlayDataHandler;
 
 import java.util.*;
 
 import static someoneok.kic.KIC.KICPrefix;
 import static someoneok.kic.utils.ApiUtils.hasPremium;
-import static someoneok.kic.utils.GeneralUtils.*;
+import static someoneok.kic.utils.ChatUtils.*;
 import static someoneok.kic.utils.StringUtils.formatElapsedTimeMs;
 import static someoneok.kic.utils.StringUtils.isValidUUIDv4RegexBased;
 
 public class KICCommand extends CommandBase {
-    private static final List<String> commands = new ArrayList<>(Arrays.asList(
-            "help", "settings", "apikey", "key",
-            "verifykey", "verifyapikey",
-            "resetprofittracker", "rpt", "resetpt",
-            "kuudra", "t1", "t2", "t3", "t4", "t5",
-            "skpt", "sharekpt", "sharetracker", "edithuds",
-            "pb", "resetpb", "resetkpb", "chat", "premium",
-            "ecbp", "checkupdates"
+    private static final List<String> COMMANDS = new ArrayList<>(Arrays.asList(
+            "help",                                                     // Help menu
+            "settings",                                                 // Config GUI
+            "apikey", "key",                                            // Set kic api key
+            "verify", "verifykey",                                      // Verify kic api key
+            "resetprofittracker", "rpt", "resetpt",                     // Reset profit tracker
+            "skpt", "sharekpt", "sharetracker",                         // Share profit tracker
+            "kuudra",                                                   // Kuudra info
+            "t1", "t2", "t3", "t4", "t5",                               // Start tier 1-5
+            "sharing", "sharinghelp",                                   // Config sharing help command
+            "importconfig", "shareconfig", "myconfigs", "deleteconfig", // Config sharing commands
+            "configsharing",                                            // Config sharing GUI
+            "edithuds",                                                 // Edit all kic huds
+            "pb", "resetpb", "resetkpb",                                // Kuudra pb commands
+            "chat",                                                     // Kic chat commands
+            "premium",                                                  // Kic premium info
+            "ecbp",                                                     // Open empty ender chest or backpack
+            "checkupdates",                                             // Check for updates
+            "discord"                                                   // Discord invite link
     ));
-    private static final List<String> chatModes = Arrays.asList("kc", "kcp", "mc");
+    private static final List<String> CHAT_MODES = Arrays.asList("kc", "kcp", "mc");
 
     @Override
     public String getCommandName() {
@@ -69,6 +82,10 @@ public class KICCommand extends CommandBase {
                 KIC.config.openGui();
                 break;
 
+            case "discord":
+                sender.addChatMessage(createHoverAndClickComponent(true, KIC.KICPrefix + " §aClick here to join the §9Discord§a!", "§7Open Discord invite:\n§9" + KIC.discordUrl, ClickEvent.Action.OPEN_URL, KIC.discordUrl));
+                break;
+
             case "kuudra":
                 Multithreading.runAsync(() -> KuudraUserInfo.showKuudraInfo((args.length == 2 ? args[1].trim() : null), true));
                 break;
@@ -97,8 +114,8 @@ public class KICCommand extends CommandBase {
                 Multithreading.runAsync(() -> ApiUtils.verifyApiKey(true));
                 break;
 
+            case "verify":
             case "verifykey":
-            case "verifyapikey":
                 Multithreading.runAsync(() -> ApiUtils.verifyApiKey(true));
                 break;
 
@@ -138,17 +155,6 @@ public class KICCommand extends CommandBase {
                 Misc.checkParty();
                 break;
 
-            case "lastparty":
-                String player;
-                if (args.length == 2) {
-                    player = args[1].trim();
-                } else {
-                    sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §cUsage: /kic lastparty <player>"));
-                    return;
-                }
-                Misc.getLastParty(player);
-                break;
-
             case "status":
                 String player2;
                 if (args.length == 2) {
@@ -179,7 +185,7 @@ public class KICCommand extends CommandBase {
             case "resetpb":
             case "resetkpb":
                 KIC.userData.setKuudraPersonalBest(0L);
-                OverlayDataHandler.saveOverlaysData();
+                DataHandler.saveData();
                 break;
 
             case "chat":
@@ -241,6 +247,51 @@ public class KICCommand extends CommandBase {
                 TrackEmptySlots.openEmptyEcOrBp();
                 break;
 
+            case "sharing":
+            case "sharinghelp":
+                sendConfigSharingHelp(sender);
+                break;
+
+            case "configsharing":
+                ConfigSharingGUI.open();
+                break;
+
+            case "importconfig":
+                if (args.length != 2) {
+                    sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §cUsage: /kic importconfig <configId>"));
+                    return;
+                }
+                String configId = args[1].trim();
+                if (configId.isEmpty()) {
+                    sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §cUsage: /kic importconfig <configId>"));
+                    return;
+                }
+
+                ConfigSharing.importConfig(configId);
+                break;
+
+            case "shareconfig":
+                ConfigSharing.shareConfig(null);
+                break;
+
+            case "myconfigs":
+                ConfigSharing.myConfigs();
+                break;
+
+            case "deleteconfig":
+                if (args.length != 2) {
+                    sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §cUsage: /kic deleteconfig <configId>"));
+                    return;
+                }
+                String configId2 = args[1].trim();
+                if (configId2.isEmpty()) {
+                    sender.addChatMessage(new ChatComponentText(KIC.KICPrefix + " §cUsage: /kic deleteconfig <configId>"));
+                    return;
+                }
+
+                ConfigSharing.deleteConfig(configId2);
+                break;
+
             case "help":
             default:
                 sendKICHelpMsg(sender);
@@ -251,170 +302,204 @@ public class KICCommand extends CommandBase {
     private void sendKICHelpMsg(ICommandSender sender) {
         sender.addChatMessage(new ChatComponentText(String.format("\n%s §a§lCommands", KIC.KICPrefix)));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic",
                 "§7Opens the settings menu\n\n§7Alias: /kic settings",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic"
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic help",
                 "§7Shows this menu",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic help"
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic apikey <key>",
                 "§7Change/set your api key\n§7§o(Use your KIC api key, not Hypixel)\n\n§7Alias: /kic key",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic apikey "
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
-                "§8* §a/kic verifykey",
-                "§7Verifies the status of your current api key\n\n§7Alias: /kic verifyapikey",
-                "/kic verifykey"
+                "§8* §a/kic verify",
+                "§7Verifies the status of your current api key\n\n§7Alias: /kic verifykey",
+                ClickEvent.Action.SUGGEST_COMMAND,
+                "/kic verify"
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
+                true,
+                "§8* §a/kic discord",
+                "§7Join the KIC discord server.",
+                ClickEvent.Action.SUGGEST_COMMAND,
+                "/kic discord"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic edithuds",
                 "§7Edit all enabled huds.",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic edithuds"
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic chat kc/kcp/mc",
                 "§7Switches the chat mode to KIC Chat/KIC+ Chat/Minecraft (Same as /chat party)",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic chat "
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic kuudra [player]",
                 "§7Check Kuudra info for a player\n\n§7Example: /kic kuudra xaned\n§7Alias: /kic kuudra",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic kuudra "
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic resetprofittracker",
                 "§7Reset Kuudra profit tracker data\n\n§7Aliases: /kic rpt, /kic resetpt",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic resetprofittracker"
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic sharetracker",
                 "§7Share your profit tracker in the KIC discord\n\n§7Aliases: /kic skpt, /kic sharekpt",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic sharetracker"
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic pb",
                 "§7Show your current kuudra T5 personal best",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic pb"
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic resetpb",
                 "§7Resets your kuudra T5 personal best\n\n§7Alias: /kic resetkpb",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic resetpb"
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic ecbp",
                 "§7Opens an ender chest page or backpack with empty slots",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic ecbp"
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
+                true,
+                "§8* §a/kic sharinghelp",
+                "§7Help menu for config sharing.",
+                ClickEvent.Action.SUGGEST_COMMAND,
+                "/kic sharinghelp"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic checkupdates",
                 "§7Checks whether a new version of the mod is available.",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic checkupdates"
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kic premium",
                 "§7Info about the premium features in KIC.",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kic premium"
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
-                true,
-                "§8* §a/kuudra [player]",
-                "§7Check Kuudra info for a player\n\n§7Example: /kuudra xaned\n§7Alias: /kuudra",
-                "/kuudra "
-        ));
-
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/lf <player> <item>",
                 "§7Searches a player for a specific item\n\n§7Example 1: /lf " + sender.getName() + " Hyperion\n§7Example 2: /lf " + sender.getName() + " lore: Ability: Wither Impact\n§7Aliases: /lookingfor, /lookingforitem, /lfi",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/lf "
         ));
 
-        sender.addChatMessage(createHoverAndClickComponentSuggest(
+        sender.addChatMessage(createHoverAndClickComponent(
                 true,
                 "§8* §a/kc <message>",
                 "§7Sends a message in the KIC Chat/IRC/bridge\n\n" +
                         "§7Aliases: /kchat, /kicchat\n\n" +
                         "§6Subcommands:\n" +
                         "§e  - /kc toggle §7→ Toggles KIC Chat ON/OFF",
+                ClickEvent.Action.SUGGEST_COMMAND,
                 "/kc "
         ));
 
-        for (int i = 1; i <= 5; i++) {
-            String tier = "/t" + i;
-            String instance = "§7Join T" + i + " Kuudra Instance\n\n§7Alias: /kic t" + i;
-            sender.addChatMessage(createHoverAndClickComponentSuggest(
-                    true,
-                    "§8* §a" + tier,
-                    instance,
-                    tier
-            ));
-        }
+        sender.addChatMessage(createHoverAndClickComponent(
+                true,
+                "§8* §a/kicdoublepearl help",
+                "§7Help menu for custom double pearls.",
+                ClickEvent.Action.SUGGEST_COMMAND,
+                "/kicdoublepearl help"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponent(
+                true,
+                "§8* §a/kicaddons help",
+                "§7Help menu for kic addons.",
+                ClickEvent.Action.SUGGEST_COMMAND,
+                "/kicaddons help"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponent(
+                true,
+                "§8* §a/t1 - /t2 - /t3 - /t4 - /t5",
+                "§7Join T1, T2, T3, T4 or T5 Kuudra Instance\n\n§7Alias: /kic t1, /kic t2, /kic t3, /kic t4, /kic t5",
+                ClickEvent.Action.SUGGEST_COMMAND,
+                "/t"
+        ));
 
         String lastMsg = "\n§2[Hover] §7shows info, §2[Click] §7suggests command";
         if (hasPremium()) {
             lastMsg += ", §6* §7KIC+ command";
-            sender.addChatMessage(createHoverAndClickComponentSuggest(
+            sender.addChatMessage(createHoverAndClickComponent(
                     true,
                     "§6* §a/kcp <message>",
                     "§7Sends a message in the KIC+ Chat/IRC/bridge\n\n" +
                             "§7Aliases: /kchatplus, /kicchatplus\n\n" +
                             "§6Subcommands:\n" +
                             "§e  - /kcp toggle §7→ Toggles KIC+ Chat ON/OFF",
+                    ClickEvent.Action.SUGGEST_COMMAND,
                     "/kcp "
             ));
 
-            sender.addChatMessage(createHoverAndClickComponentSuggest(
+            sender.addChatMessage(createHoverAndClickComponent(
                     true,
                     "§6* §a/kic checkparty",
                     "§7Checks all members in your party for KIC users",
+                    ClickEvent.Action.SUGGEST_COMMAND,
                     "/kic checkparty"
             ));
 
-            sender.addChatMessage(createHoverAndClickComponentSuggest(
-                    true,
-                    "§6* §a/kic lastparty <player>",
-                    "§7Tells you the last dungeon party the player was in",
-                    "/kic lastparty "
-            ));
-
-            sender.addChatMessage(createHoverAndClickComponentSuggest(
+            sender.addChatMessage(createHoverAndClickComponent(
                     true,
                     "§6* §a/kic status <player>",
                     "§7Tells you if the player is currently online or not",
+                    ClickEvent.Action.SUGGEST_COMMAND,
                     "/kic status "
             ));
         }
@@ -437,6 +522,52 @@ public class KICCommand extends CommandBase {
         sender.addChatMessage(new ChatComponentText(msg));
     }
 
+    private void sendConfigSharingHelp(ICommandSender sender) {
+        sender.addChatMessage(new ChatComponentText(String.format("\n%s §a§lConfig Sharing Commands", KIC.KICPrefix)));
+
+        sender.addChatMessage(createHoverAndClickComponent(
+                true,
+                "§8* §a/kic configsharing",
+                "§7Opens the §aconfig sharing GUI§7.",
+                ClickEvent.Action.SUGGEST_COMMAND,
+                "/kic configsharing"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponent(
+                true,
+                "§8* §a/kic importconfig <id>",
+                "§7Imports a shared config using the provided ID.\n\n§7Example: §f/kic importconfig tobodefade",
+                ClickEvent.Action.SUGGEST_COMMAND,
+                "/kic importconfig "
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponent(
+                true,
+                "§8* §a/kic shareconfig",
+                "§7Shares your current config with others.\n§7Returns a unique ID you can send to friends.",
+                ClickEvent.Action.SUGGEST_COMMAND,
+                "/kic shareconfig"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponent(
+                true,
+                "§8* §a/kic myconfigs",
+                "§7Lists all configs you've shared.",
+                ClickEvent.Action.SUGGEST_COMMAND,
+                "/kic myconfigs"
+        ));
+
+        sender.addChatMessage(createHoverAndClickComponent(
+                true,
+                "§8* §a/kic deleteconfig <id>",
+                "§7Deletes one of your shared configs by ID.\n\n§7Example: §f/kic deleteconfig tobodefade",
+                ClickEvent.Action.SUGGEST_COMMAND,
+                "/kic deleteconfig "
+        ));
+
+        sender.addChatMessage(new ChatComponentText("\n§2[Hover] §7shows info, §2[Click] §7suggests command"));
+    }
+
     @Override
     public int getRequiredPermissionLevel() {
         return 0;
@@ -445,25 +576,23 @@ public class KICCommand extends CommandBase {
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
         if (args.length == 1) {
-            return getListOfStringsMatchingLastWord(args, commands);
+            return getListOfStringsMatchingLastWord(args, COMMANDS);
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("chat")) {
-            return getListOfStringsMatchingLastWord(args, chatModes);
+            return getListOfStringsMatchingLastWord(args, CHAT_MODES);
         }
 
         return Collections.emptyList();
     }
 
     public static void addPremiumCommands() {
-        commands.add("checkparty");
-        commands.add("lastparty");
-        commands.add("status");
+        COMMANDS.add("checkparty");
+        COMMANDS.add("status");
     }
 
     public static void removePremiumCommands() {
-        commands.remove("checkparty");
-        commands.remove("lastparty");
-        commands.remove("status");
+        COMMANDS.remove("checkparty");
+        COMMANDS.remove("status");
     }
 }

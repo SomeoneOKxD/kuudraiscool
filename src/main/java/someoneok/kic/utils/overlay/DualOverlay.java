@@ -125,11 +125,8 @@ public class DualOverlay extends MovableOverlay {
 
     @Override
     public void setHovered(boolean hovered) {
-        if (editing) {
-            movableOverlay.setHovered(hovered);
-        } else {
-            interactiveOverlay.setHovered(hovered);
-        }
+        movableOverlay.setHovered(hovered);
+        interactiveOverlay.setHovered(hovered);
     }
 
     @Override

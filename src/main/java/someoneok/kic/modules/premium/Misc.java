@@ -19,10 +19,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static someoneok.kic.KIC.KICPrefix;
+import static someoneok.kic.utils.ApiUtils.apiHost;
 import static someoneok.kic.utils.ApiUtils.hasPremium;
-import static someoneok.kic.utils.GeneralUtils.createHoverComponent;
-import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
-import static someoneok.kic.utils.StringUtils.*;
+import static someoneok.kic.utils.ChatUtils.createHoverComponent;
+import static someoneok.kic.utils.ChatUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.StringUtils.formatId;
+import static someoneok.kic.utils.StringUtils.isNullOrEmpty;
 
 public class Misc {
     public static void checkParty() {
@@ -43,7 +45,7 @@ public class Misc {
             String requestBody = KIC.GSON.toJson(uuids);
             JsonArray response;
             try {
-                response = JsonUtils.parseString(NetworkUtils.sendPostRequest("https://api.sm0kez.com/premium/kic", true, requestBody)).getAsJsonArray();
+                response = JsonUtils.parseString(NetworkUtils.sendPostRequest(apiHost() + "/premium/kic", true, requestBody)).getAsJsonArray();
             } catch (APIException e) {
                 sendMessageToPlayer(String.format("%s §c%s", KICPrefix, e.getMessage()));
                 return;
@@ -98,88 +100,6 @@ public class Misc {
         }
     }
 
-    public static void getLastParty(String player) {
-        if (!hasPremium()) {
-            sendMessageToPlayer(KIC.KICPrefix + " §cThis is a premium feature.");
-            return;
-        }
-
-        if (isNullOrEmpty(player)) {
-            sendMessageToPlayer(KIC.KICPrefix + " §cInvalid player.");
-            return;
-        }
-
-        Multithreading.runAsync(() -> {
-            JsonArray response;
-            try {
-                response = JsonUtils.parseString(NetworkUtils.sendGetRequest("https://api.sm0kez.com/premium/lastparty/" + player, true)).getAsJsonArray();
-            } catch (APIException e) {
-                sendMessageToPlayer(String.format("%s §c%s", KICPrefix, e.getMessage()));
-                return;
-            }
-
-            try {
-                List<LastPartyData> data = new ArrayList<>();
-                if (response != null && response.isJsonArray()) {
-                    for (JsonElement element : response) {
-                        if (!element.isJsonObject()) continue;
-
-                        JsonObject user = element.getAsJsonObject();
-
-                        JsonObject playerInfo = user.getAsJsonObject("playerInfo");
-                        String username = playerInfo.get("username").getAsString();
-                        String uuid = playerInfo.get("uuid").getAsString();
-
-                        String dungeonClass = user.get("dungeonClass").getAsString();
-                        int classLevel = user.get("classLevel").getAsInt();
-                        String display = user.get("display").getAsString();
-                        long timestamp = user.get("timestamp").getAsLong();
-
-                        data.add(new LastPartyData(new PlayerInfo(username, uuid), dungeonClass, classLevel, display, timestamp));
-                    }
-                }
-                processLastPartyData(data, player);
-            } catch (Exception e) {
-                KICLogger.error("Error parsing auction data: " + e.getMessage());
-            }
-        });
-    }
-
-    private static void processLastPartyData(List<LastPartyData> data, String player) {
-        if (data.isEmpty()) {
-            sendMessageToPlayer(new ChatComponentText(KICPrefix + " §bThis user has no recent parties"));
-        } else {
-            String msg = KICPrefix + " §b§l" + player + "§r§b's last party (" + timeSince(data.get(0).getTimestamp()) + ") §r§7[§8HOVER§7]";
-            String hoverText = data.stream().map(LastPartyData::toString).collect(Collectors.joining("\n")).trim();
-            sendMessageToPlayer(createHoverComponent(true, msg, hoverText));
-        }
-    }
-
-    private static class LastPartyData {
-        private final PlayerInfo playerInfo;
-        private final String dungeonClass;
-        private final int classLevel;
-        private final String display;
-        private final long timestamp;
-
-        public LastPartyData(PlayerInfo playerInfo, String dungeonClass, int classLevel, String display, long timestamp) {
-            this.playerInfo = playerInfo;
-            this.dungeonClass = dungeonClass;
-            this.classLevel = classLevel;
-            this.display = display;
-            this.timestamp = timestamp;
-        }
-
-        public long getTimestamp() {
-            return timestamp;
-        }
-
-        @Override
-        public String toString() {
-            return display;
-        }
-    }
-
     public static void getStatus(String player) {
         if (!hasPremium()) {
             sendMessageToPlayer(KIC.KICPrefix + " §cThis is a premium feature.");
@@ -194,7 +114,7 @@ public class Misc {
         Multithreading.runAsync(() -> {
             JsonObject response;
             try {
-                response = JsonUtils.parseString(NetworkUtils.sendGetRequest("https://api.sm0kez.com/premium/status/" + player, true)).getAsJsonObject();
+                response = JsonUtils.parseString(NetworkUtils.sendGetRequest(apiHost() + "/premium/status/" + player, true)).getAsJsonObject();
             } catch (APIException e) {
                 sendMessageToPlayer(String.format("%s §c%s", KICPrefix, e.getMessage()));
                 return;

@@ -10,6 +10,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Mouse;
 import someoneok.kic.models.misc.PatcherScale;
+import someoneok.kic.utils.data.DataHandler;
 
 import java.io.IOException;
 import java.util.*;
@@ -195,7 +196,7 @@ public class EditHudScreen extends GuiScreen {
         if (draggingOverlay != null) {
             draggingOverlay.stopDragging();
             draggingOverlay = null;
-            OverlayDataHandler.saveOverlays();
+            DataHandler.saveOverlays();
         }
         super.mouseReleased(mouseX, mouseY, state);
     }
@@ -221,7 +222,7 @@ public class EditHudScreen extends GuiScreen {
 
         if (draggingOverlay != null && isOverlayVisible(draggingOverlay)) {
             draggingOverlay.changeScale(scaleDelta);
-            OverlayDataHandler.saveOverlays();
+            DataHandler.saveOverlays();
             return;
         }
 
@@ -229,7 +230,7 @@ public class EditHudScreen extends GuiScreen {
             if (!shouldRender(overlay) || !isOverlayVisible(overlay) || !isMouseOver(mouseX, mouseY, overlay)) continue;
 
             overlay.changeScale(scaleDelta);
-            OverlayDataHandler.saveOverlays();
+            DataHandler.saveOverlays();
             return;
         }
     }
@@ -239,7 +240,7 @@ public class EditHudScreen extends GuiScreen {
         super.onGuiClosed();
         editHudMode = false;
         draggingOverlay = null;
-        OverlayDataHandler.saveOverlays();
+        DataHandler.saveOverlays();
 
         if (previousGuiScale != -1) {
             mc.gameSettings.guiScale = previousGuiScale;

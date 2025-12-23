@@ -63,18 +63,6 @@
 </details>
 
 - <details>
-    <summary>Auto Open Paid Chest</summary>
-    Automatically opens paid chests.<br>  
-    <img src="./assets/features/AutoBuy.gif" alt="Auto open paid chest" width="400"/><br>  
-</details>
-
-- <details>
-    <summary>Auto Reroll Paid Chest</summary>
-    Automatically rerolls paid chests.<br>  
-    <img src="assets/features/autoRerollAutoBuy.gif" alt="Auto reroll paid chest" width="400"/><br>  
-</details>
-
-- <details>
     <summary>Build Progress</summary>
     Shows a beacon beam which changes color from red to green based on the progress.<br>  
     <img src="./assets/features/build.gif" alt="Build Progress" width="400"/><br>  
@@ -106,51 +94,6 @@
 </details>
 
 ### Other Features
-
-- <details>
-    <summary>Attribute Price Checker</summary>
-    <b>Command:</b> <code>/ap &lt;ATTRIBUTE&gt; [LEVEL] [ATTRIBUTE] [LEVEL]</code><br>  
-    Checks the price of specified attributes (similar to KG bot).<br>  
-    <img src="./assets/features/ap.png" alt="Attribute price" width="400"/><br>  
-</details>
-
-- <details>
-    <summary>Attribute Upgrade</summary>
-    <b>Command:</b> <code>/au &lt;ITEM&gt; &lt;ATTRIBUTE&gt; &lt;START LEVEL&gt; &lt;END LEVEL&gt;</code><br>  
-    Shows you the cheapest possible path to upgrade an attribute.<br>  
-    <img src="./assets/features/au.png" alt="Attribute upgrade" width="400"/><br>  
-</details>
-
-- <details>
-    <summary>Attribute Price Auction</summary>
-    <b>Command:</b> <code>/ka &lt;ATTRIBUTE&gt; [LEVEL] [ATTRIBUTE] [LEVEL]</code><br>  
-    Displays a custom auction house of items for specific attributes.<br>
-    <img src="./assets/features/ka.gif" alt="Attribute price auction" width="400"/><br>
-</details>
-
-- <details>
-    <summary>Container Value</summary>
-    Shows all the items in a container and their value, also shows the total value of the container.<br>  
-    <img src="./assets/features/containerValue.png" alt="Container Value" width="400"/><br>  
-</details>
-
-- <details>
-    <summary>Container Helper</summary>
-    Show your all the attributes in a container.<br>  
-    <img src="./assets/features/containerHelper.png" alt="Container Helper" width="400"/><br>  
-</details>
-
-- <details>
-    <summary>Auction Helper</summary>
-    When selling an attribute item it will show you the LB and Avg price of each attribute.<br>  
-    <img src="./assets/features/auctionHelper.png" alt="Container Helper" width="400"/><br>  
-</details>
-
-- <details>
-    <summary>Attribute Value Tooltip</summary>
-    Shows you the value of the attributes in the items tooltip.<br>  
-    <img src="./assets/features/tooltip.png" alt="Tooltip value" width="400"/><br>  
-</details>
 
 - <details>
     <summary>Player Sizing</summary>
@@ -204,9 +147,6 @@
 
 ### General Commands
 
-- `/attributeprice <attribute> [level] [attribute] [level]` (Aliases: `/ap`, `kicap`)
-- `/attributeupgrade <item> <attribute> <start level> <end level>` (Aliases: `/au`, `kicau`)
-- `/kicauction <attribute> [level] [attribute] [level]` (Aliases: `/ka`, `kicah`)
 - `/kuudra [player]`
 - `/t1 - /t2 - /t3 - /t4 - /t5`
 - `/lf <player> <query>`
@@ -218,7 +158,8 @@
 - `/kic`
 - `/kic help`
 - `/kic apikey <key>`
-- `/kic verifykey`
+- `/kic verify`
+- `/kic discord`
 - `/kic edithuds`
 - `/kic chat kc/kcp/mc`
 - `/kic kuudra [player]`
@@ -227,8 +168,11 @@
 - `/kic pb`
 - `/kic resetpb`
 - `/kic ecbp`
+- `/kic sharinghelp`
 - `/kic checkupdates`
 - `/kic premium`
+- `/kicdoublepearl help`
+- `/kicaddons help`
 - `/kic t1 - t2 - t3 - t4 - t5`
 
 **`[ ]` = optional**<br>

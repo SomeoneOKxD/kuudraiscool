@@ -10,9 +10,9 @@ import someoneok.kic.models.misc.ChatMode;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.ws.KICWS;
 
+import static someoneok.kic.utils.ChatUtils.sendChatMessage;
+import static someoneok.kic.utils.ChatUtils.sendMessageToPlayer;
 import static someoneok.kic.utils.EmojiUtils.replaceEmojis;
-import static someoneok.kic.utils.GeneralUtils.sendChatMessage;
-import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
 
 @ChannelHandler.Sharable
 public class ChatHandler extends ChannelOutboundHandlerAdapter {
