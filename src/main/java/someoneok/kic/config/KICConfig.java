@@ -106,7 +106,7 @@ public class KICConfig extends Config {
         hideIf("keyVerifiedWarning", ApiUtils::isVerified);
 
         // Admin, Tester & Beta
-        hideIf("boneTrackerDebug", () -> !isTester() && !isDev() && !isBeta());
+        hideIf("logWebsocketMessages", () -> !isTester() && !isDev() && !isBeta());
         hideIf("apiToUse", () -> !isTester() && !isDev() && !isBeta());
         hideIf("copyNBT", () -> !isTester() && !isDev() && !isBeta());
         hideIf("showDebugInfo", () -> !isTester() && !isDev() && !isBeta());

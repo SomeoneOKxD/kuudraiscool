@@ -47,11 +47,9 @@ public class OverlayExamples {
             "§6Rain §a§l6.84s\n" +
             "§6Soph §6§l7.20s";
 
-    public static final String BUILD_TIMER = "§6Build Timer: §c4850ms§6!";
+    public static final String BUILD_TIMER = "§6Build: §c4850ms§6!";
 
     public static final String CRATE_PICKUP = "§8[§e|||||||||||§f|||||||||§8] §b57%§r";
-
-    public static final String DEBUG = "§fDebug Overlay";
 
     public static final String EXAMPLE_PLAYER_1 = "§2§m-----§f[- §7[§c452§7] §2Player1 §f-]§2§m-----\n" +
             "§aRuns: §311690 §7(§312619§7)\n" +
