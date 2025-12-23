@@ -19,7 +19,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static someoneok.kic.utils.GeneralUtils.sendCommand;
+import static someoneok.kic.utils.ApiUtils.apiHost;
+import static someoneok.kic.utils.ChatUtils.sendCommand;
 import static someoneok.kic.utils.StringUtils.*;
 
 public class ChatCommands {
@@ -132,7 +133,7 @@ public class ChatCommands {
         Multithreading.runAsync(() -> {
             try {
                 JsonObject playerInfo = JsonUtils.parseString(NetworkUtils.sendGetRequest(
-                        "https://api.sm0kez.com/hypixel/info/" + formattedPlayer + "?type=STATS", true)).getAsJsonObject();
+                        apiHost() + "/hypixel/info/" + formattedPlayer + "?type=STATS", true)).getAsJsonObject();
                 if (playerInfo == null || !playerInfo.isJsonObject()) return;
 
                 JsonObject info = playerInfo.getAsJsonObject("playerInfo");
@@ -150,11 +151,8 @@ public class ChatCommands {
 
                 double cataLevel = stats.get("cata_level").getAsDouble();
                 int magicalPower = stats.get("magical_power").getAsInt();
-                int lifeline = playerInfo.get("lifeline").getAsInt();
-                int dominance = playerInfo.get("dominance").getAsInt();
-                int manaPool = playerInfo.get("manaPool").getAsInt();
 
-                String output = generateCommandOutput(command, user, totalComps, infernalComps, dominance, lifeline, manaPool, magicalPower, cataLevel, dungeonXp);
+                String output = generateCommandOutput(command, user, totalComps, infernalComps, magicalPower, cataLevel, dungeonXp);
                 if (output != null) {
                     sendCommand(cmd + output);
                 }
@@ -162,14 +160,13 @@ public class ChatCommands {
         });
     }
 
-    private String generateCommandOutput(String command, String user, int totalComps, int infernalComps, int dominance, int lifeline, int manaPool, int magicalPower, double cataLevel, JsonObject dungeonXp) {
+    private String generateCommandOutput(String command, String user, int totalComps, int infernalComps, int magicalPower, double cataLevel, JsonObject dungeonXp) {
         switch (command) {
             case "runs":
                 return String.format(" %s > %d runs (%d)", user, infernalComps, totalComps);
             case "stats":
-                return String.format(" %s > %s: %d | Mana Pool: %d | Magical Power: %d | Runs: %d | Cata: %.2f",
-                        user, dominance > lifeline ? "Dominance" : "Lifeline",
-                        Math.max(dominance, lifeline), manaPool, magicalPower, totalComps, cataLevel);
+                return String.format(" %s > Magical Power: %d | Runs: %d | Cata: %.2f",
+                        user, magicalPower, totalComps, cataLevel);
             case "cata":
                 return String.format(" %s > Cata: %.2f", user, cataLevel);
             case "rtca":

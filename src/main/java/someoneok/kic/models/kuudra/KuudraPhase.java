@@ -1,14 +1,15 @@
 package someoneok.kic.models.kuudra;
 
 public enum KuudraPhase {
-    SUPPLIES("Supplies", 26500),
-    BUILD("Build", 14500),
-    EATEN("Eaten", 0),
-    STUN("Stun", 0),
-    DPS("DPS", 5600),
-    SKIP("Skip", 4500),
-    KILL("Kuudra", 2000),
-    OVERALL("Overall", 53100);
+    NONE("None", 0), // 0
+    SUPPLIES("Supplies", 26500), // 1
+    BUILD("Build", 14500), // 2
+    EATEN("Eaten", 0), // 3
+    STUN("Stun", 0), // 4
+    DPS("DPS", 5600), // 5
+    SKIP("Skip", 4500), // 6
+    KILL("Kuudra", 2000), // 7
+    END("Overall", 53100); // 8
 
     KuudraPhase(String name, long pace) {
         this.name = name;
@@ -26,6 +27,20 @@ public enum KuudraPhase {
 
     public String getName() {
         return name;
+    }
+
+    public void begin(long now, long ticks) {
+        for (KuudraPhase p : KuudraPhase.values()) {
+            if (p.ordinal() < this.ordinal()) {
+                if (!p.hasEnded()) {
+                    if (!p.hasStarted()) p.start(now, ticks);
+                    p.end(now, ticks);
+                }
+            } else {
+                break;
+            }
+        }
+        if (!this.hasStarted()) this.start(now, ticks);
     }
 
     public void start(long now, long ticks) {
@@ -71,28 +86,15 @@ public enum KuudraPhase {
         return Math.abs(ticks - startTicks);
     }
 
-    public static void reset() {
-        for (KuudraPhase phase : KuudraPhase.values()) {
-            phase.startTimestamp = -1;
-            phase.endTimestamp = -1;
-
-            phase.startTicks = -1;
-            phase.endTicks = -1;
-        }
-    }
-
-    public static void endMissedPhases() {
-        long now = System.currentTimeMillis();
-        for (KuudraPhase phase : values()) {
-            if (!phase.hasEnded()) phase.end(now, 0);
-        }
+    public static void endMissedPhases(long now) {
+        for (KuudraPhase phase : values()) if (!phase.hasEnded()) phase.end(now, 0);
     }
 
     public static long getEstimatedPace(long now) {
         long duration = 0;
 
         for (KuudraPhase phase : values()) {
-            if (phase == KuudraPhase.OVERALL) continue;
+            if (phase == KuudraPhase.END) continue;
 
             if (phase.hasEnded()) {
                 duration += phase.endTimestamp - phase.startTimestamp;
@@ -123,5 +125,22 @@ public enum KuudraPhase {
 
     public static long getP4Lag(long ticks) {
         return SKIP.getLag(ticks) + KILL.getLag(ticks);
+    }
+
+    public static KuudraPhase fromOrdinal(int ordinal) {
+        for (KuudraPhase p : values()) {
+            if (p.ordinal() == ordinal) return p;
+        }
+        return NONE;
+    }
+
+    public static void reset() {
+        for (KuudraPhase phase : KuudraPhase.values()) {
+            phase.startTimestamp = -1;
+            phase.endTimestamp = -1;
+
+            phase.startTicks = -1;
+            phase.endTicks = -1;
+        }
     }
 }

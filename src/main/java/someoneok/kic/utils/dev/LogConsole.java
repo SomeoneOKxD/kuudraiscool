@@ -1,7 +1,5 @@
 package someoneok.kic.utils.dev;
 
-import someoneok.kic.config.KICConfig;
-
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
@@ -15,6 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LogConsole {
+    private static LogConsole INSTANCE;
+
+    public static void init() { if (INSTANCE == null) INSTANCE = new LogConsole(); }
+    public static LogConsole get() { return INSTANCE; }
+    public static void showConsole() { if (INSTANCE != null) INSTANCE.show(); }
+
     private final JFrame frame;
     private final StyledDocument allDoc, infoDoc, warnDoc, errorDoc;
 
@@ -61,7 +65,6 @@ public class LogConsole {
         frame.add(controls, BorderLayout.SOUTH);
         frame.setSize(900, 600);
         frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
     }
 
     private JTextPane createPane() {
@@ -108,11 +111,7 @@ public class LogConsole {
             String fullText = allDoc.getText(0, allDoc.getLength());
             String[] lines = fullText.split("\\r?\\n");
             List<String> logLines = new ArrayList<>();
-            for (String line : lines) {
-                if (!line.trim().isEmpty()) {
-                    logLines.add(line);
-                }
-            }
+            for (String line : lines) if (!line.trim().isEmpty()) logLines.add(line);
             TesterStuff.sendLogs(logLines);
             JOptionPane.showMessageDialog(frame, "Logs sent to discord!");
         } catch (BadLocationException e) {
@@ -121,8 +120,14 @@ public class LogConsole {
         }
     }
 
-    public void show() {
-        if (!KICConfig.testerMode) return;
+    private void show() {
+        if (!TesterStuff.testerMode) return;
+        SwingUtilities.invokeLater(() -> {
+            frame.setVisible(true);
+            frame.toFront();
+            frame.requestFocus();
+        });
+
         frame.setVisible(true);
         frame.toFront();
     }

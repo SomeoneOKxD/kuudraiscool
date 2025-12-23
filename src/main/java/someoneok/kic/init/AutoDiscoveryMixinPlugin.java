@@ -29,11 +29,7 @@ import java.util.zip.ZipInputStream;
  */
 public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
     private static final List<AutoDiscoveryMixinPlugin> mixinPlugins = new ArrayList<>();
-
-    public static List<AutoDiscoveryMixinPlugin> getMixinPlugins() {
-        return mixinPlugins;
-    }
-
+    public static List<AutoDiscoveryMixinPlugin> getMixinPlugins() { return mixinPlugins; }
     private String mixinPackage;
 
     @Override
@@ -71,16 +67,12 @@ public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
     /**
      * Get the package that contains all the mixins. This value is set by mixin itself using {@link #onLoad}.
      */
-    public String getMixinPackage() {
-        return mixinPackage;
-    }
+    public String getMixinPackage() { return mixinPackage; }
 
     /**
      * Get the path inside the class root to the mixin package
      */
-    public String getMixinBaseDir() {
-        return mixinPackage.replace(".", "/");
-    }
+    public String getMixinBaseDir() { return mixinPackage.replace(".", "/"); }
 
     /**
      * A list of all discovered mixins.
@@ -161,28 +153,9 @@ public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
         }
     }
 
-    @Override
-    public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-
-    }
-
-    @Override
-    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-
-    }
-
-    @Override
-    public String getRefMapperConfig() {
-        return null;
-    }
-
-    @Override
-    public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        return true;
-    }
-
-    @Override
-    public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {
-
-    }
+    @Override public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
+    @Override public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
+    @Override public String getRefMapperConfig() { return null; }
+    @Override public boolean shouldApplyMixin(String targetClassName, String mixinClassName) { return true; }
+    @Override public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {}
 }

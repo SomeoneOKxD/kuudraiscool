@@ -8,12 +8,13 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.models.APIException;
 import someoneok.kic.models.ApiRole;
 import someoneok.kic.utils.dev.KICLogger;
+import someoneok.kic.utils.dev.TesterStuff;
 import someoneok.kic.utils.ws.KICWS;
 
 import java.util.EnumSet;
 
 import static someoneok.kic.KIC.KICPrefix;
-import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.ChatUtils.sendMessageToPlayer;
 import static someoneok.kic.utils.NetworkUtils.sendGetRequest;
 import static someoneok.kic.utils.StringUtils.isNullOrEmpty;
 import static someoneok.kic.utils.StringUtils.isValidUUIDv4;
@@ -83,6 +84,11 @@ public class ApiUtils {
             KICCommand.removePremiumCommands();
         }
 
+        if (isPrivilegedUser()) {
+            TesterStuff.testerMode = true;
+            KICConfig.apiToUse = 1;
+        }
+
         disableConfigOptions();
     }
 
@@ -92,15 +98,18 @@ public class ApiUtils {
             KICConfig.kicPlusChat = false;
         }
 
-        if (!isAdmin()) {
-            KICConfig.autoPearls = false;
-            KICConfig.autoRefillPearls = false;
+        if (!isPrivilegedUser()) {
+            TesterStuff.testerMode = false;
+            KICConfig.forceKuudraLocation = false;
+            KICConfig.forceKuudraTier = 0;
+            KICConfig.forceKuudraPhase = 0;
+            KICConfig.apiToUse = 0;
+            KICConfig.logWebsocketMessages = false;
         }
+    }
 
-        if (!isTester() || !isBeta() || !isDev()) {
-            KICConfig.testerMode = false;
-            KICConfig.testerModeLogInChat = false;
-        }
+    public static boolean isPrivilegedUser() {
+        return isTester() || isBeta() || isDev() || isAdmin();
     }
 
     public static void verifyApiKey(boolean manual) {
@@ -118,7 +127,7 @@ public class ApiUtils {
         }
 
         try {
-            JsonObject jsonResponse = JsonUtils.parseString(sendGetRequest("https://api.sm0kez.com/key", true, true)).getAsJsonObject();
+            JsonObject jsonResponse = JsonUtils.parseString(sendGetRequest(apiHost() + "/key", true, true)).getAsJsonObject();
 
             if (jsonResponse == null) {
                 markVerificationFailed("There was an error while verifying your API key!", manual);
@@ -147,8 +156,13 @@ public class ApiUtils {
                 KICWS.connect();
             }
         } catch (APIException e) {
-            markVerificationFailed("There was an error while verifying your API key!", manual);
-            KICLogger.error(e.getMessage());
+            String message = e.getMessage();
+            KICLogger.error(message);
+            if (message.contains("API Key is revoked.")) {
+                markVerificationFailed("Your API key is revoked!", manual);
+            } else {
+                markVerificationFailed("There was an error while verifying your API key!", manual);
+            }
         }
     }
 
@@ -162,5 +176,9 @@ public class ApiUtils {
             apiKeyMessage = "";
         }
         setRoleVariables();
+    }
+
+    public static String apiHost() {
+        return KICConfig.apiToUse == 0 ? "https://api.sm0kez.com" : "https://api-test.sm0kez.com";
     }
 }

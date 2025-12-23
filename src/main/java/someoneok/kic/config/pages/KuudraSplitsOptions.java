@@ -26,19 +26,19 @@ public class KuudraSplitsOptions {
             name = "Show Pace",
             subcategory = TOGGLE
     )
-    public static boolean showPace = true;
+    public static boolean showPace = false;
 
     @Switch(
             name = "Show Estimated Pace",
             subcategory = TOGGLE
     )
-    public static boolean showEstimatedPace = true;
+    public static boolean showEstimatedPace = false;
 
     @Switch(
             name = "Show Lag",
             subcategory = TOGGLE
     )
-    public static boolean showLag = true;
+    public static boolean showLag = false;
 
     @Switch(
             name = "Show Lag In Seconds",
@@ -207,7 +207,7 @@ public class KuudraSplitsOptions {
             size = 2,
             subcategory = UPDATE
     )
-    public static boolean ignored;
+    private transient static boolean ignored;
 
     @Button(
             name = "Refresh The Kuudra Splits Overlay",
@@ -226,7 +226,7 @@ public class KuudraSplitsOptions {
             case DPS:      return getColorCode(dpsColor);
             case SKIP:     return getColorCode(skipColor);
             case KILL:     return getColorCode(killColor);
-            case OVERALL:  return getColorCode(overallColor);
+            case END:  return getColorCode(overallColor);
             default:       return "§f";
         }
     }

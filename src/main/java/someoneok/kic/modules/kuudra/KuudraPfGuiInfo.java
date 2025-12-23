@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static someoneok.kic.modules.kuudra.KuudraUserInfo.makeMessage;
+import static someoneok.kic.utils.ApiUtils.apiHost;
 import static someoneok.kic.utils.ApiUtils.hasPremium;
 import static someoneok.kic.utils.ItemUtils.getItemLore;
 import static someoneok.kic.utils.PlayerUtils.getPlayerName;
@@ -100,9 +101,7 @@ public class KuudraPfGuiInfo {
         renderedExample = false;
         hoveredLore.clear();
         hoveredParty.clear();
-        for (String name : OVERLAY_NAMES) {
-            OverlayManager.getOverlay(name).updateText("");
-        }
+        for (String name : OVERLAY_NAMES) OverlayManager.getOverlay(name).updateText("");
     }
 
     private void processLore() {
@@ -166,7 +165,7 @@ public class KuudraPfGuiInfo {
                 JsonArray playerInfos;
                 try {
                     playerInfos = JsonUtils.parseString(NetworkUtils.sendPostRequest(
-                            "https://api.sm0kez.com/premium/pf?type=KUUDRA", true, requestBody)).getAsJsonArray();
+                            apiHost() + "/premium/pf?type=KUUDRA", true, requestBody)).getAsJsonArray();
                 } catch (APIException e) {
                     setErrored(playersToFetch);
                     KICLogger.info(e.getMessage());
@@ -183,7 +182,7 @@ public class KuudraPfGuiInfo {
                     if (!element.isJsonObject()) continue;
 
                     JsonObject info = element.getAsJsonObject();
-                    ChatComponentText stats = makeMessage(info, true);
+                    ChatComponentText stats = makeMessage(info, true, true);
                     if (stats == null) continue;
 
                     String player = extractPlayer(info).toLowerCase();
@@ -253,8 +252,8 @@ public class KuudraPfGuiInfo {
     }
 
     private static class PlayerDataCache {
+        private final String username;
         private String stats = "";
-        private String username;
         private boolean cached = false;
         private boolean fetching = false;
         private boolean errored = false;
@@ -280,37 +279,17 @@ public class KuudraPfGuiInfo {
             this.timestamp = System.currentTimeMillis();
         }
 
-        public boolean isCached() {
-            return cached && (System.currentTimeMillis() - timestamp) < CACHED_TIME_MS;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public boolean isErrored() {
-            return errored;
-        }
-
-        public boolean isFetching() {
-            return fetching;
-        }
-
-        public boolean canRetry() {
-            return errored && (System.currentTimeMillis() - lastError) > ERROR_RETRY_DELAY_MS;
-        }
+        public boolean isCached() { return cached && (System.currentTimeMillis() - timestamp) < CACHED_TIME_MS; }
+        public String getUsername() { return username; }
+        public boolean isErrored() { return errored; }
+        public boolean isFetching() { return fetching; }
+        public boolean canRetry() { return errored && (System.currentTimeMillis() - lastError) > ERROR_RETRY_DELAY_MS; }
+        public String getStats() { return stats; }
+        public long getTimestamp() { return timestamp; }
 
         public void setFetching() {
             this.fetching = true;
             this.errored = false;
-        }
-
-        public String getStats() {
-            return stats;
-        }
-
-        public long getTimestamp() {
-            return timestamp;
         }
     }
 }

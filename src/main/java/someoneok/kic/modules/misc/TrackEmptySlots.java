@@ -5,21 +5,24 @@ import net.minecraft.inventory.ContainerChest;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import someoneok.kic.config.KICConfig;
+import someoneok.kic.events.GuiContainerEvent;
 import someoneok.kic.utils.ApiUtils;
+import someoneok.kic.utils.data.DataHandler;
+import someoneok.kic.utils.data.DataManager;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import static someoneok.kic.KIC.KICPrefix;
 import static someoneok.kic.KIC.mc;
-import static someoneok.kic.utils.GeneralUtils.sendCommand;
-import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.ChatUtils.sendCommand;
+import static someoneok.kic.utils.ChatUtils.sendMessageToPlayer;
 import static someoneok.kic.utils.LocationUtils.onSkyblock;
+import static someoneok.kic.utils.StringUtils.removeFormatting;
 
 public class TrackEmptySlots {
-    private static final Map<Integer, Integer> enderChestPages = new HashMap<>();
-    private static final Map<Integer, Integer> backpacks = new HashMap<>();
+    private static Map<Integer, Integer> enderChestPages() { return DataManager.getEmptySlotData().getEnderChestPages(); }
+    private static Map<Integer, Integer> backpacks() { return DataManager.getEmptySlotData().getBackpacks(); }
     private int ticks = 0;
 
     @SubscribeEvent
@@ -43,12 +46,25 @@ public class TrackEmptySlots {
         try {
             if (chestName.contains("Slot #")) {
                 int slotIndex = extractIndex(chestName, "#", ")");
-                backpacks.put(slotIndex, totalEmptySlots);
+                backpacks().put(slotIndex, totalEmptySlots);
             } else if (chestName.contains("Ender Chest (") && chestName.contains("/")) {
                 int pageIndex = extractIndex(chestName, "(", "/");
-                enderChestPages.put(pageIndex, totalEmptySlots);
+                enderChestPages().put(pageIndex, totalEmptySlots);
             }
         } catch (Exception ignored) {}
+    }
+
+    @SubscribeEvent
+    public void onGuiClose(GuiContainerEvent.CloseWindowEvent event) {
+        if (!ApiUtils.isVerified() || !KICConfig.trackEmptyECBP || !(event.getContainer() instanceof ContainerChest)) return;
+
+        String chestName = event.getChestName();
+        if (chestName == null) return;
+
+        chestName = removeFormatting(chestName);
+        if (chestName.startsWith("Ender Chest") || chestName.contains("Backpack (Slot #")) {
+            DataHandler.saveData();
+        }
     }
 
     private boolean shouldProcess(TickEvent.ClientTickEvent event) {
@@ -72,12 +88,12 @@ public class TrackEmptySlots {
     public static void openEmptyEcOrBp() {
         if (!KICConfig.trackEmptyECBP || (!KICConfig.trackEnderChestPages && !KICConfig.trackBackpacks)) return;
 
-        if (KICConfig.trackEnderChestPages && enderChestPages.isEmpty()) {
+        if (KICConfig.trackEnderChestPages && enderChestPages().isEmpty()) {
             sendMessageToPlayer(KICPrefix + " §aPlease navigate through your enabled Ender Chest pages so they can be scanned.");
             return;
         }
 
-        if (KICConfig.trackBackpacks && backpacks.isEmpty()) {
+        if (KICConfig.trackBackpacks && backpacks().isEmpty()) {
             sendMessageToPlayer(KICPrefix + " §aPlease navigate through your enabled Backpacks so they can be scanned.");
             return;
         }
@@ -85,7 +101,7 @@ public class TrackEmptySlots {
         if (KICConfig.trackEnderChestPages) {
             for (int ec = 1; ec <= 9; ec++) {
                 if (isECPageEnabled(ec)) {
-                    Integer emptySlots = enderChestPages.get(ec);
+                    Integer emptySlots = enderChestPages().get(ec);
                     if (emptySlots != null && emptySlots > 0) {
                         sendCommand("/enderchest " + ec);
                         return;
@@ -97,7 +113,7 @@ public class TrackEmptySlots {
         if (KICConfig.trackBackpacks) {
             for (int bp = 1; bp <= 18; bp++) {
                 if (isBPPageEnabled(bp)) {
-                    Integer emptySlots = backpacks.get(bp);
+                    Integer emptySlots = backpacks().get(bp);
                     if (emptySlots != null && emptySlots > 0) {
                         sendCommand("/backpack " + bp);
                         return;

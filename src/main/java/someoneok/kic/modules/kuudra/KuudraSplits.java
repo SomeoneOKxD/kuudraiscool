@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import static someoneok.kic.models.Color.getColorCode;
-import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.ChatUtils.sendMessageToPlayer;
 import static someoneok.kic.utils.StringUtils.formatElapsedTimeMs;
 
 public class KuudraSplits {
@@ -27,14 +27,14 @@ public class KuudraSplits {
             KuudraPhase.DPS,
             KuudraPhase.SKIP,
             KuudraPhase.KILL,
-            KuudraPhase.OVERALL
+            KuudraPhase.END
     };
-    private static final KuudraPhase[] reportPhases = Arrays.copyOf(SPLIT_PHASES, SPLIT_PHASES.length - 1);
+    private static final KuudraPhase[] REPORT_PHASES = Arrays.copyOf(SPLIT_PHASES, SPLIT_PHASES.length - 1);
 
     private static String[] kuudraSplitColors;
-    private static String PaceColor;
-    private static String SupplyTimesColor;
-    private static String FreshTimesColor;
+    private static String paceColor;
+    private static String supplyTimesColor;
+    private static String freshTimesColor;
 
     private static String lastKuudraSplitText = "";
     private static String lastSupplyTimesText = "";
@@ -55,7 +55,7 @@ public class KuudraSplits {
         colorMapping.put(KuudraPhase.DPS,      new long[]{5700,  6300});
         colorMapping.put(KuudraPhase.SKIP,     new long[]{4200,  5000});
         colorMapping.put(KuudraPhase.KILL,     new long[]{2200,  2500});
-        colorMapping.put(KuudraPhase.OVERALL,  new long[]{65000, 75000});
+        colorMapping.put(KuudraPhase.END,      new long[]{65000, 75000});
 
         updateSplitColors();
     }
@@ -72,12 +72,13 @@ public class KuudraSplits {
                 getColorCode(KuudraSplitsOptions.overallColor)
         };
 
-        PaceColor = getColorCode(KuudraSplitsOptions.paceColor);
-        SupplyTimesColor = getColorCode(KuudraSplitsOptions.supplyTimesColor);
-        FreshTimesColor = getColorCode(KuudraSplitsOptions.freshTimesColor);
+        paceColor = getColorCode(KuudraSplitsOptions.paceColor);
+        supplyTimesColor = getColorCode(KuudraSplitsOptions.supplyTimesColor);
+        freshTimesColor = getColorCode(KuudraSplitsOptions.freshTimesColor);
     }
 
-    public static void updateKuudraSplits(long now) {
+    public static void updateKuudraSplits() {
+        long now = System.currentTimeMillis();
         sbSplits.setLength(0);
         long ticks = Kuudra.getTotalLagTimeTicks();
 
@@ -107,10 +108,10 @@ public class KuudraSplits {
             sbSplits.append("\n");
         }
 
-        if (KuudraSplitsOptions.showEstimatedPace && LocationUtils.kuudraTier == 5) {
+        if (KuudraSplitsOptions.showEstimatedPace && LocationUtils.kuudraTier() == 5) {
             long estimatedPace = KuudraPhase.getEstimatedPace(now);
-            sbSplits.append("§r").append(PaceColor).append("Pace: ")
-                    .append(getSplitColor(estimatedPace, KuudraPhase.OVERALL))
+            sbSplits.append("§r").append(paceColor).append("Pace: ")
+                    .append(getSplitColor(estimatedPace, KuudraPhase.END))
                     .append(formatElapsedTimeMs(estimatedPace));
         }
 
@@ -123,9 +124,7 @@ public class KuudraSplits {
     }
 
     private static String getSplitColor(Long timeMs, KuudraPhase phase) {
-        if (timeMs == null || timeMs == 0 || phase == null || !colorMapping.containsKey(phase)) {
-            return "§f";
-        }
+        if (timeMs == null || timeMs == 0 || phase == null || !colorMapping.containsKey(phase)) return "§f";
         long[] thresholds = colorMapping.get(phase);
         return timeMs <= thresholds[0] ? "§a" : timeMs <= thresholds[1] ? "§6" : "§c";
     }
@@ -138,7 +137,7 @@ public class KuudraSplits {
                     .append(SPLIT_PHASES[i].getName()).append(": §f0.00s\n");
         }
 
-        sbSplits.append("§r").append(PaceColor).append("Pace: §f0.00s");
+        sbSplits.append("§r").append(paceColor).append("Pace: §f0.00s");
 
         String splits = sbSplits.toString().trim();
         MovableOverlay kuudraSplits = OverlayManager.getOverlay("KuudraSplits");
@@ -149,17 +148,17 @@ public class KuudraSplits {
     public static void updateSupplyTimes(TreeMap<Integer, TimedEvent> supplyTimes) {
         sbSupplyTimes.setLength(0);
         if (supplyTimes.isEmpty()) {
-            sbSupplyTimes.append(SupplyTimesColor)
+            sbSupplyTimes.append(supplyTimesColor)
                     .append("§lSupply Times\n§7No placed supplies yet...");
         } else {
             int size = supplyTimes.size();
 
-            sbSupplyTimes.append(SupplyTimesColor)
+            sbSupplyTimes.append(supplyTimesColor)
                             .append("§lSupply Times [§r")
                             .append(getRecoveredCountColor(size))
                             .append(size)
                             .append("§r§8/§a6")
-                            .append(SupplyTimesColor)
+                            .append(supplyTimesColor)
                             .append("§l]\n");
 
             supplyTimes.forEach((key, event) -> sbSupplyTimes.append(event.player)
@@ -180,14 +179,14 @@ public class KuudraSplits {
         sbFreshTimes.setLength(0);
 
         if (freshTimes.isEmpty()) {
-            sbFreshTimes.append(FreshTimesColor).append("§lFresh Times\n§7No freshers...");
+            sbFreshTimes.append(freshTimesColor).append("§lFresh Times\n§7No freshers...");
         } else {
             int size = freshTimes.size();
-            sbFreshTimes.append(FreshTimesColor)
+            sbFreshTimes.append(freshTimesColor)
                         .append("§lFresh Times [")
                         .append(getFreshCountColor(size))
                         .append(size)
-                        .append(FreshTimesColor)
+                        .append(freshTimesColor)
                         .append("§l]\n");
 
             freshTimes.forEach(event -> sbFreshTimes.append(event.player)
@@ -204,18 +203,12 @@ public class KuudraSplits {
         }
     }
 
-    private static String getRecoveredColor(long time) {
-        if (time >= 23000 && time < 26000) {
-            return "§9§l";
-        } else if (time >= 26000 && time < 28000) {
-            return "§a§l";
-        } else if (time >= 28000 && time < 29500) {
-            return "§2§l";
-        } else if (time >= 29500 && time < 31000) {
-            return "§6§l";
-        } else if (time > 31000) {
-            return "§c§l";
-        }
+    public static String getRecoveredColor(long time) {
+        if (time >= 23000 && time < 26000) return "§9§l";
+        if (time >= 26000 && time < 28000) return "§a§l";
+        if (time >= 28000 && time < 29500) return "§2§l";
+        if (time >= 29500 && time < 31000) return "§6§l";
+        if (time > 31000) return "§c§l";
         return "§f§l";
     }
 
@@ -236,7 +229,7 @@ public class KuudraSplits {
                 .append(getColorCode(KuudraSplitsOptions.splitsColor))
                 .append(" Splits\n");
 
-        for (KuudraPhase phase : reportPhases) {
+        for (KuudraPhase phase : REPORT_PHASES) {
             long time = phase.getTime(now);
             message.append("§r")
                     .append(KuudraSplitsOptions.getColorForPhase(phase))
@@ -255,12 +248,12 @@ public class KuudraSplits {
                 .append(formatElapsedTimeMs(KuudraPhase.getP4(now)))
                 .append(getLagMessage(KuudraPhase.getP4Lag(ticks))).append("\n");
 
-        long overallTime = KuudraPhase.OVERALL.getTime(now);
+        long overallTime = KuudraPhase.END.getTime(now);
         message.append(getColorCode(KuudraSplitsOptions.overallColor))
-                .append(KuudraPhase.OVERALL.getName()).append(": ")
-                .append(getSplitColor(overallTime, KuudraPhase.OVERALL))
+                .append(KuudraPhase.END.getName()).append(": ")
+                .append(getSplitColor(overallTime, KuudraPhase.END))
                 .append(formatElapsedTimeMs(overallTime))
-                .append(getLagMessage(KuudraPhase.OVERALL.getLag(ticks)));
+                .append(getLagMessage(KuudraPhase.END.getLag(ticks)));
 
         if (KuudraSplitsOptions.showMiscInDetailed) {
             message.append("\n\n").append(KIC.KICPrefix)

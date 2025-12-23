@@ -79,6 +79,12 @@ public class KuudraProfitTrackerOptions {
     )
     public static boolean showEssence = true;
 
+    @Switch(
+            name = "Show TAP & TWAP",
+            subcategory = TOGGLE
+    )
+    public static boolean showTap = false;
+
     @Dropdown(
             name = "KIC Color",
             options = {
@@ -222,6 +228,17 @@ public class KuudraProfitTrackerOptions {
     )
     public static int essenceColor = 5;
 
+    @Dropdown(
+            name = "TAP & TWAP Color",
+            options = {
+                    "Black", "Dark Blue", "Dark Green", "Dark Aqua", "Dark Red", "Dark Purple",
+                    "Gold", "Gray", "Dark Gray", "Blue", "Green", "Aqua", "Red", "Light Purple",
+                    "Yellow", "White"
+            },
+            subcategory = COLOR
+    )
+    public static int tapColor = 10;
+
     @Switch(
             name = "Show Valuable Value",
             subcategory = VALUE
@@ -233,6 +250,12 @@ public class KuudraProfitTrackerOptions {
             subcategory = VALUE
     )
     public static boolean showEssenceValue = true;
+
+    @Switch(
+            name = "Show TAP & TWAP Costs",
+            subcategory = VALUE
+    )
+    public static boolean showTapCosts = true;
 
     @Switch(
             name = "Show Key Costs",
@@ -252,7 +275,7 @@ public class KuudraProfitTrackerOptions {
             size = 2,
             subcategory = UPDATE
     )
-    public static boolean ignored;
+    private transient static boolean ignored;
 
     @Button(
             name = "Refresh The Profit Tracker Overlay",

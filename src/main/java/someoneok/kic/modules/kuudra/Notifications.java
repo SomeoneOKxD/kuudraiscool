@@ -24,13 +24,13 @@ public class Notifications {
     private static int ticks = 0;
 
     public Notifications() {
-        rules.add(new NotificationRule(Kuudra.NO_EQUALS, "§aNo Equals", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoEquals));
-        rules.add(new NotificationRule(Kuudra.NO_SHOP, "§6No Shop", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoShop));
-        rules.add(new NotificationRule(Kuudra.NO_X_CANNON, "§6§eNo XC", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoXCannon));
-        rules.add(new NotificationRule(Kuudra.NO_SLASH, "§2No Slash", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoSlash));
-        rules.add(new NotificationRule(Kuudra.NO_SQUARE, "§eNo Square", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoSquare));
-        rules.add(new NotificationRule(Kuudra.NO_TRIANGLE, "§aNo Tri", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoTriangle));
-        rules.add(new NotificationRule(Kuudra.NO_X, "§2No X", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoX));
+        rules.add(new NotificationRule(NoPre.NO_EQUALS, "§aNo Equals", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoEquals));
+        rules.add(new NotificationRule(NoPre.NO_SHOP, "§6No Shop", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoShop));
+        rules.add(new NotificationRule(NoPre.NO_X_CANNON, "§eNo XC", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoXCannon));
+        rules.add(new NotificationRule(NoPre.NO_SLASH, "§2No Slash", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoSlash));
+        rules.add(new NotificationRule(NoPre.NO_SQUARE, "§eNo Square", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoSquare));
+        rules.add(new NotificationRule(NoPre.NO_TRIANGLE, "§aNo Tri", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoTriangle));
+        rules.add(new NotificationRule(NoPre.NO_X, "§2No X", KICConfig.kuudraNotiNoSupplyTime, () -> KICConfig.kuudraNotiNoX));
         rules.add(new NotificationRule("You moved and the Chest slipped out of your hands!", "§4DROPPED", KICConfig.kuudraNotiDroppedTime, () -> KICConfig.kuudraNotiDropped));
         rules.add(new NotificationRule("Sending to server", "CD", KICConfig.kuudraNotiCooldownTime, () -> KICConfig.kuudraNotiCooldown));
         rules.add(new NotificationRule("You are already currently picking up some supplies!", "§aGrabbing", KICConfig.kuudraNotiGrabbingTime, () -> KICConfig.kuudraNotiGrabbing));
@@ -41,7 +41,7 @@ public class Notifications {
     @SubscribeEvent(receiveCanceled = true)
     public void onChat(ClientChatReceivedEvent event) {
         if (!KICConfig.kuudraNotifications
-                || !LocationUtils.inKuudra
+                || !LocationUtils.inKuudra()
                 || !ApiUtils.isVerified()) return;
 
         String msg = removeFormatting(event.message.getUnformattedText());

@@ -27,18 +27,7 @@ public class ModLoadingTweaker implements ITweaker {
         }
     }
 
-    @Override
-    public void injectIntoClassLoader(LaunchClassLoader classLoader) {
-
-    }
-
-    @Override
-    public String getLaunchTarget() {
-        return null;
-    }
-
-    @Override
-    public String[] getLaunchArguments() {
-        return new String[0];
-    }
+    @Override public void injectIntoClassLoader(LaunchClassLoader classLoader) {}
+    @Override public String getLaunchTarget() { return null; }
+    @Override public String[] getLaunchArguments() { return new String[0]; }
 }

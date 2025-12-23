@@ -6,20 +6,26 @@ import someoneok.kic.config.KICConfig;
 import someoneok.kic.config.pages.KuudraProfitTrackerOptions;
 import someoneok.kic.models.APIException;
 import someoneok.kic.models.Color;
-import someoneok.kic.models.kuudra.KuudraChest;
-import someoneok.kic.models.kuudra.KuudraKey;
-import someoneok.kic.models.overlay.ProfitTrackerData;
+import someoneok.kic.models.data.ProfitTrackerData;
+import someoneok.kic.models.kuudra.chest.KuudraChest;
+import someoneok.kic.models.kuudra.chest.KuudraKey;
 import someoneok.kic.models.request.ShareTrackerRequest;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.LocationUtils;
 import someoneok.kic.utils.NetworkUtils;
-import someoneok.kic.utils.overlay.*;
+import someoneok.kic.utils.data.DataHandler;
+import someoneok.kic.utils.data.DataManager;
+import someoneok.kic.utils.overlay.DualOverlay;
+import someoneok.kic.utils.overlay.OverlayManager;
+import someoneok.kic.utils.overlay.OverlaySegment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.ObjLongConsumer;
 
 import static someoneok.kic.KIC.KICPrefix;
-import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.ApiUtils.apiHost;
+import static someoneok.kic.utils.ChatUtils.sendMessageToPlayer;
 import static someoneok.kic.utils.StringUtils.*;
 
 public class KuudraProfitTracker {
@@ -33,29 +39,36 @@ public class KuudraProfitTracker {
     }
 
     public static void onRunEnded(long runTimeMs, boolean failed) {
-        ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
-
+        ProfitTrackerData data = DataManager.getProfitTrackerData();
         data.addRun();
 
-        long runTime = runTimeMs / 1000;
-        if (KICConfig.kuudraProfitTrackerAddRunTimeDelay) {
-            runTime += KICConfig.kuudraProfitTrackerTotalTimeToAdd;
+        boolean usedAverage = runTimeMs <= 0;
+        long runTimeSec;
+
+        if (usedAverage) runTimeSec = data.getLifetime().getAverageRunTime();
+        else runTimeSec = runTimeMs / 1000L;
+
+        if (!usedAverage && KICConfig.kuudraProfitTrackerAddRunTimeDelay) {
+            runTimeSec += KICConfig.kuudraProfitTrackerTotalTimeToAdd;
         }
 
-        data.addTime(runTime);
+        data.addTime(runTimeSec);
 
-        if (failed) {
-            data.addFailedRun();
-        } else {
-            maybeUpdatePersonalBest(runTimeMs);
-        }
+        if (failed) data.addFailedRun();
+        else if (!usedAverage) maybeUpdatePersonalBest(runTimeMs);
 
-        OverlayDataHandler.saveOverlaysData();
+        int totalTap = TapTracker.getTotalUsedTAP();
+        int totalTwap = TapTracker.getTotalUsedTWAP();
+
+        if (totalTap > 0) data.addTap(totalTap);
+        if (totalTwap > 0) data.addTwap(totalTwap);
+
+        DataHandler.saveData();
         updateTracker();
     }
 
     private static void maybeUpdatePersonalBest(long runTimeMs) {
-        if (LocationUtils.kuudraTier != 5) return;
+        if (LocationUtils.kuudraTier() != 5 || runTimeMs < 5000) return;
         Long oldPb = KIC.userData.getKuudraPersonalBest();
         if (oldPb == null) oldPb = 0L;
 
@@ -73,36 +86,24 @@ public class KuudraProfitTracker {
         }
     }
 
-    public static void onRunEnded(boolean failed) {
-        ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
-
-        data.addRun();
-        long averageTime = data.getLifetime().getAverageRunTime();
-
-        if (KICConfig.kuudraProfitTrackerAddRunTimeDelay) {
-            averageTime += KICConfig.kuudraProfitTrackerTotalTimeToAdd;
-        }
-
-        data.addTime(averageTime);
-
-        if (failed) data.addFailedRun();
-
-        OverlayDataHandler.saveOverlaysData();
-        updateTracker();
-    }
-
-    public static void onReroll() {
-        ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
+    public static void onChestReroll() {
+        ProfitTrackerData data = DataManager.getProfitTrackerData();
         data.addReroll();
-        OverlayDataHandler.saveOverlaysData();
+        DataHandler.saveData();
         updateTracker();
     }
 
-    public static void onChestBought(KuudraChest chest, boolean rerolled) {
-        ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
+    public static void onShardReroll() {
+        ProfitTrackerData data = DataManager.getProfitTrackerData();
+        data.addShardReroll();
+        DataHandler.saveData();
+        updateTracker();
+    }
 
-        long totalProfit = chest.getTotalValue(rerolled);
-        data.addProfit(totalProfit);
+    public static void onChestBought(KuudraChest chest) {
+        ProfitTrackerData data = DataManager.getProfitTrackerData();
+
+        data.addProfit(chest.getRawTotalValue());
 
         int essence = chest.getEssence();
         if (essence > 0) data.addEssence(essence);
@@ -117,88 +118,51 @@ public class KuudraProfitTracker {
             data.addFreeChest();
         } else {
             switch (key) {
-                case BASIC:
-                    data.addBasicChest();
-                    break;
-                case HOT:
-                    data.addHotChest();
-                    break;
-                case BURNING:
-                    data.addBurningChest();
-                    break;
-                case FIERY:
-                    data.addFieryChest();
-                    break;
-                case INFERNAL:
-                    data.addInfernalChest();
-                    break;
-                default:
-                    data.addFreeChest();
-                    break;
+                case BASIC: data.addBasicChest(); break;
+                case HOT: data.addHotChest(); break;
+                case BURNING: data.addBurningChest(); break;
+                case FIERY: data.addFieryChest(); break;
+                case INFERNAL: data.addInfernalChest(); break;
+                default: data.addFreeChest(); break;
             }
         }
 
-        OverlayDataHandler.saveOverlaysData();
+        DataHandler.saveData();
         updateTracker();
     }
 
     public static void updateKeyPrice(KuudraKey key) {
         if (key == null) return;
-        ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
+        ProfitTrackerData data = DataManager.getProfitTrackerData();
 
         long price = key.getPrice();
         if (price == 0) return;
         switch (key) {
-            case BASIC:
-                data.setBasicKeyPrice(price);
-                break;
-            case HOT:
-                data.setHotKeyPrice(price);
-                break;
-            case BURNING:
-                data.setBurningKeyPrice(price);
-                break;
-            case FIERY:
-                data.setFieryKeyPrice(price);
-                break;
-            case INFERNAL:
-                data.setInfernalKeyPrice(price);
-                break;
+            case BASIC: data.setBasicKeyPrice(price); break;
+            case HOT: data.setHotKeyPrice(price); break;
+            case BURNING: data.setBurningKeyPrice(price); break;
+            case FIERY: data.setFieryKeyPrice(price); break;
+            case INFERNAL: data.setInfernalKeyPrice(price); break;
         }
 
-        OverlayDataHandler.saveOverlaysData();
+        DataHandler.saveData();
         updateTracker();
     }
 
-    public static void updateKismetPrice(long price) {
-        if (price == 0) return;
-        ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
-
-        data.setKismetPrice(price);
-
-        OverlayDataHandler.saveOverlaysData();
+    private static void updatePrice(long price, ObjLongConsumer<ProfitTrackerData> setter) {
+        if (price <= 0) return;
+        ProfitTrackerData data = DataManager.getProfitTrackerData();
+        setter.accept(data, price);
+        DataHandler.saveData();
         updateTracker();
     }
 
-    public static void updateEssencePrice(long price) {
-        if (price == 0) return;
-        ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
-
-        data.setEssencePrice(price);
-
-        OverlayDataHandler.saveOverlaysData();
-        updateTracker();
-    }
-
-    public static void updateTeethPrice(long price) {
-        if (price == 0) return;
-        ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
-
-        data.setTeethPrice(price);
-
-        OverlayDataHandler.saveOverlaysData();
-        updateTracker();
-    }
+    public static void updateKismetPrice(long price)  { updatePrice(price, ProfitTrackerData::setKismetPrice); }
+    public static void updateWofPrice(long price)     { updatePrice(price, ProfitTrackerData::setWofPrice); }
+    public static void updateEssencePrice(long price) { updatePrice(price, ProfitTrackerData::setEssencePrice); }
+    public static void updateTeethPrice(long price)   { updatePrice(price, ProfitTrackerData::setTeethPrice); }
+    public static void updateTapPrice(long price)     { updatePrice(price, ProfitTrackerData::setTapPrice); }
+    public static void updateTwapPrice(long price)    { updatePrice(price, ProfitTrackerData::setTwapPrice); }
 
     public static void updateTracker() {
         StringBuilder text = new StringBuilder(String.format("§7[%s§lKIC§7] %s§lProfit Tracker",
@@ -217,25 +181,25 @@ public class KuudraProfitTracker {
 
         text.append("\n");
 
-        ProfitTrackerData data = OverlayDataManager.getProfitTrackerData();
+        ProfitTrackerData data = DataManager.getProfitTrackerData();
         ProfitTrackerData.ProfitTrackerSession session = lifetimeView ? data.getLifetime() : data.getCurrent();
 
         if (KuudraProfitTrackerOptions.showProfit) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.profitColor);
             text.append("\n").append(color).append("§lProfit: §r")
-                    .append(color).append(parseToShorthandNumber(session.getProfit()));
+                    .append(color).append(parseToShorthandNumber(session.getProfit(data)));
         }
 
         if (KuudraProfitTrackerOptions.showRuns) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.runsColor);
             text.append("\n").append(color).append("§lRuns: §r")
-                    .append(color).append(session.getRuns()).append(" runs");
+                    .append(color).append(parseToShorthandNumber(session.getRuns())).append(" runs");
         }
 
         if (KuudraProfitTrackerOptions.showChests) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.chestsColor);
             text.append("\n").append(color).append("§lChests: §r")
-                    .append(color).append(session.getChests()).append(" chests");
+                    .append(color).append(parseToShorthandNumber(session.getChests())).append(" chests");
             if (KuudraProfitTrackerOptions.showKeyCosts) {
                 text.append(String.format(" §7(§c-%s§7)", parseToShorthandNumber(session.getChestsCost(data))));
             }
@@ -250,7 +214,9 @@ public class KuudraProfitTracker {
         if (KuudraProfitTrackerOptions.showRerolls) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.rerollsColor);
             text.append("\n").append(color).append("§lRerolls: §r")
-                    .append(color).append(session.getRerolls());
+                    .append(color).append(parseToShorthandNumber(session.getRerolls()))
+                    .append("§7/")
+                    .append(color).append(parseToShorthandNumber(session.getShardRerolls()));
             if (KuudraProfitTrackerOptions.showRerollCosts) {
                 text.append(String.format(" §7(§c-%s§7)", parseToShorthandNumber(session.getRerollCost(data))));
             }
@@ -277,7 +243,7 @@ public class KuudraProfitTracker {
         if (KuudraProfitTrackerOptions.showValuables) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.valuableColor);
             text.append("\n").append(color).append("§lValuables: §r")
-                    .append(color).append(session.getTotalValuables());
+                    .append(color).append(parseToShorthandNumber(session.getTotalValuables()));
             if (KuudraProfitTrackerOptions.showValuablesValue) {
                 text.append(String.format(" §7(§a+%s§7)", parseToShorthandNumber(session.getValuablesValue())));
             }
@@ -289,6 +255,17 @@ public class KuudraProfitTracker {
                     .append(color).append(parseToShorthandNumber(session.getEssence()));
             if (KuudraProfitTrackerOptions.showEssenceValue) {
                 text.append(String.format(" §7(§a+%s§7)", parseToShorthandNumber(session.getTotalEssenceValue(data))));
+            }
+        }
+
+        if (KuudraProfitTrackerOptions.showTap) {
+            String color = Color.getColorCode(KuudraProfitTrackerOptions.tapColor);
+            text.append("\n").append(color).append("§lTAP & TWAP: §r")
+                    .append(color).append(parseToShorthandNumber(session.getTap()))
+                    .append("§7/")
+                    .append(color).append(parseToShorthandNumber(session.getTwap()));
+            if (KuudraProfitTrackerOptions.showTapCosts) {
+                text.append(String.format(" §7(§c-%s§7)", parseToShorthandNumber(session.getTapCost(data))));
             }
         }
 
@@ -328,9 +305,8 @@ public class KuudraProfitTracker {
     }
 
     public static void resetTracker() {
-        OverlayDataManager.getProfitTrackerData().reset();
-
-        OverlayDataHandler.saveOverlaysData();
+        DataManager.getProfitTrackerData().reset();
+        DataHandler.saveData();
         updateTracker();
         sendMessageToPlayer(KIC.KICPrefix + " §aKuudra profit tracker has been reset.");
     }
@@ -339,9 +315,8 @@ public class KuudraProfitTracker {
         if (showConfirm) {
             showConfirm = false;
             if (confirmed) {
-                OverlayDataManager.getProfitTrackerData().newSession();
-
-                OverlayDataHandler.saveOverlaysData();
+                DataManager.getProfitTrackerData().newSession();
+                DataHandler.saveData();
                 updateTracker();
             }
             updateTracker();
@@ -361,7 +336,7 @@ public class KuudraProfitTracker {
             ShareTrackerRequest shareTrackerRequest = new ShareTrackerRequest(lifetimeView);
             String requestBody = KIC.GSON.toJson(shareTrackerRequest);
             try {
-                NetworkUtils.sendPostRequest("https://api.sm0kez.com/crimson/share-tracker", true, requestBody);
+                NetworkUtils.sendPostRequest(apiHost() + "/crimson/share-tracker", true, requestBody);
             } catch (APIException e) {
                 if (e.getStatus() == 429) {
                     sendMessageToPlayer(String.format("%s §cYou can only use this command every 10 minutes!", KICPrefix));

@@ -6,8 +6,8 @@ import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
 import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacket;
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPartyInfoPacket;
-import net.minecraftforge.common.MinecraftForge;
 import someoneok.kic.events.HypixelJoinEvent;
+import someoneok.kic.events.KICEventBus;
 
 public class HypixelEventApi {
     private static final HypixelModAPI modAPI = HypixelModAPI.getInstance();
@@ -22,7 +22,7 @@ public class HypixelEventApi {
     private void handleHelloPacket(ClientboundHelloPacket packet) {
         LocationUtils.onHypixel = true;
         boolean isAlpha = packet.getEnvironment() != Environment.PRODUCTION;
-        MinecraftForge.EVENT_BUS.post(new HypixelJoinEvent(isAlpha));
+        KICEventBus.post(new HypixelJoinEvent(isAlpha));
     }
 
     public static void sendPartyPacket() {

@@ -1,5 +1,6 @@
 package someoneok.kic.modules.crimson;
 
+import cc.polyfrost.oneconfig.utils.IOUtils;
 import cc.polyfrost.oneconfig.utils.JsonUtils;
 import cc.polyfrost.oneconfig.utils.Multithreading;
 import com.google.gson.JsonArray;
@@ -39,8 +40,8 @@ import java.util.stream.Collectors;
 
 import static someoneok.kic.KIC.KICPrefix;
 import static someoneok.kic.KIC.mc;
-import static someoneok.kic.utils.GeneralUtils.clickSlot;
-import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.ApiUtils.apiHost;
+import static someoneok.kic.utils.ChatUtils.sendMessageToPlayer;
 import static someoneok.kic.utils.ItemUtils.getItemLore;
 import static someoneok.kic.utils.LocationUtils.onSkyblock;
 import static someoneok.kic.utils.StringUtils.parseToShorthandNumber;
@@ -53,13 +54,14 @@ public class HuntingBoxValue {
             28, 29, 30, 31, 32, 33, 34,
             37, 38, 39, 40, 41, 42, 43
     )));
-    private static final Pattern OWNED_SHARDS_PATTERN = Pattern.compile("Owned:.*?(\\d+)\\s+Shards?");
+    private static final Pattern OWNED_SHARDS_PATTERN =
+            Pattern.compile("Owned:.*?(\\d{1,3}(?:,\\d{3})*|\\d+)\\s+Shards?");
     private final int SHARDS_PER_PAGE = 18;
     private static final long CACHE_EXPIRY = 600000;
     public static boolean shouldRender = false;
 
+    private static final Map<String, BazaarItemValue> shardCache = new HashMap<>();
     private final Map<BazaarItem, Slot> shards = new HashMap<>();
-    private final Map<String, BazaarItemValue> shardCache = new HashMap<>();
 
     private Slot activeSlot = null;
     private int ticks = 0;
@@ -110,7 +112,7 @@ public class HuntingBoxValue {
             if (count == 0) continue;
 
             String displayName = item.getDisplayName();
-            String itemId = "SHARD_" + removeFormatting(displayName).toUpperCase().replaceAll(" ", "_");
+            String itemId = "SHARD_" + removeFormatting(displayName).toUpperCase().replace(" ", "_");
             BazaarItem bzItem = new BazaarItem(itemId, displayName, count);
 
             newShards.put(bzItem, slot);
@@ -150,8 +152,16 @@ public class HuntingBoxValue {
     private int extractOwnedShards(List<String> lore) {
         for (String line : lore) {
             if (!line.contains("Owned")) continue;
+
             Matcher matcher = OWNED_SHARDS_PATTERN.matcher(line);
-            if (matcher.find()) return Integer.parseInt(matcher.group(1));
+            if (matcher.find()) {
+                String number = matcher.group(1).replace(",", "");
+                try {
+                    return Integer.parseInt(number);
+                } catch (Exception ignored) {
+                    return 0;
+                }
+            }
         }
         return 0;
     }
@@ -190,15 +200,25 @@ public class HuntingBoxValue {
             String text = String.format("\n§r§6%s §7| §r%s §cx%d",
                     parseToShorthandNumber(totalPrice), val.getName(), item.getCount());
 
-            segments.add(new OverlaySegment(text, true,
-                    () -> clickSlot(slot, 1, 0),
-                    true,
-                    () -> activeSlot = slot,
-                    () -> activeSlot = null,
-                    true,
-                    this::scrollUp,
-                    this::scrollDown
-            ));
+            if (ApiUtils.isPrivilegedUser()) {
+                segments.add(new OverlaySegment(text, true,
+                        () -> IOUtils.copyStringToClipboard(val.toString()),
+                        true,
+                        () -> activeSlot = slot,
+                        () -> activeSlot = null,
+                        true,
+                        this::scrollUp,
+                        this::scrollDown
+                ));
+            } else {
+                segments.add(new OverlaySegment(text, true,
+                        () -> activeSlot = slot,
+                        () -> activeSlot = null,
+                        true,
+                        this::scrollUp,
+                        this::scrollDown
+                ));
+            }
         }
 
         double totalValue = shards.keySet().stream()
@@ -348,6 +368,10 @@ public class HuntingBoxValue {
         shardCache.entrySet().removeIf(e -> now - e.getValue().getTimestamp() > CACHE_EXPIRY);
     }
 
+    public static void forceCleanupCaches(long timestamp) {
+        shardCache.entrySet().removeIf(e -> e.getValue().getTimestamp() < timestamp);
+    }
+
     private void updateShardCache(Runnable callback) {
         if (!ApiUtils.isVerified()) return;
 
@@ -371,7 +395,7 @@ public class HuntingBoxValue {
 
         Multithreading.runAsync(() -> {
             try {
-                JsonArray response = JsonUtils.parseString(NetworkUtils.sendPostRequest("https://api.sm0kez.com/crimson/prices", true, requestBody)).getAsJsonArray();
+                JsonArray response = JsonUtils.parseString(NetworkUtils.sendPostRequest(apiHost() + "/crimson/prices", true, requestBody)).getAsJsonArray();
 
                 long time = System.currentTimeMillis();
                 if (response != null) {

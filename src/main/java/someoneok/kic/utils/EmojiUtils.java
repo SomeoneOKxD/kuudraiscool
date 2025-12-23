@@ -37,6 +37,8 @@ public class EmojiUtils {
         EMOJI_LIST.put(":dj:", "ヽ(⌐■_■)ノ♬");
         EMOJI_LIST.put(":sloth:", "(・⊝・)");
         EMOJI_LIST.put(":yey:", "ヽ (◕◡◕) ﾉ");
+        EMOJI_LIST.put(":skull:", "☠");
+        EMOJI_LIST.put(":bum:", "♿");
 
         EMOJI_PATTERN = Pattern.compile(
                 EMOJI_LIST.keySet().stream()

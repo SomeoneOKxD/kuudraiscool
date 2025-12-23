@@ -2,15 +2,12 @@ package someoneok.kic.config.pages;
 
 import cc.polyfrost.oneconfig.config.annotations.Dropdown;
 import cc.polyfrost.oneconfig.config.annotations.Number;
-import cc.polyfrost.oneconfig.config.annotations.Page;
 import cc.polyfrost.oneconfig.config.annotations.Switch;
-import cc.polyfrost.oneconfig.config.data.PageLocation;
 
 public class KuudraProfitCalculatorOptions {
     private transient static final String PROFIT = "Profit";
     private transient static final String PET = "Kuudra Pet Crimson Perk Options";
     private transient static final String PRICE = "Item Price Options";
-    private transient static final String MISC = "Miscellaneous";
 
     @Switch(
             name = "Ignore Essence Value",
@@ -27,17 +24,25 @@ public class KuudraProfitCalculatorOptions {
     public static boolean ignoreTeeth = false;
 
     @Switch(
-            name = "Force Salvage Value",
+            name = "Force Salvage Value (Armor)",
             description = "Always use salvage value for Crimson, Aurora, Terror, Hollow and Fervor pieces.",
             subcategory = PROFIT
     )
-    public static boolean forceSalvageValue = false;
+    public static boolean forceSalvageValueArmor = false;
 
     @Switch(
-            name = "Reroll notifier",
+            name = "Force Salvage Value (Equipment)",
+            description = "Always use salvage value for Molten equipment.",
             subcategory = PROFIT
     )
-    public static boolean rerollNotifier = true;
+    public static boolean forceSalvageValueEquipment = false;
+
+    @Switch(
+            name = "Force Salvage Value (Staffs & Wands)",
+            description = "Always use salvage value for Aurora Staffs and Hollow Wands.",
+            subcategory = PROFIT
+    )
+    public static boolean forceSalvageValueStaffWand = true;
 
     @Switch(
             name = "Include Extra Crimson Essence",
@@ -92,23 +97,4 @@ public class KuudraProfitCalculatorOptions {
             subcategory = PRICE
     )
     public static int kismetPriceType = 0;
-
-    @Switch(
-            name = "Ignore Aurora Staffs (Value = 0)",
-            subcategory = MISC
-    )
-    public static boolean ignoreAuroraStaff = true;
-
-    @Switch(
-            name = "Ignore Hollow Wands (Value = 0)",
-            subcategory = MISC
-    )
-    public static boolean ignoreHollowWand = true;
-
-    @Page(
-            name = "Shard Reroll Failsafes",
-            location = PageLocation.BOTTOM,
-            subcategory = MISC
-    )
-    public KuudraRerollFailsafeOptions kuudraRerollFailsafeOptions = new KuudraRerollFailsafeOptions();
 }

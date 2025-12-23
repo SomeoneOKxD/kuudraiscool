@@ -3,36 +3,38 @@ package someoneok.kic.utils;
 import cc.polyfrost.oneconfig.utils.Multithreading;
 import net.hypixel.data.type.GameType;
 import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacket;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import someoneok.kic.KIC;
-import someoneok.kic.commands.FuckOtherMods;
+import someoneok.kic.config.KICConfig;
 import someoneok.kic.events.HypixelJoinEvent;
+import someoneok.kic.events.KICEventBus;
+import someoneok.kic.events.LocationUpdateEvent;
 import someoneok.kic.models.Island;
 import someoneok.kic.models.kuudra.CrimsonFaction;
+import someoneok.kic.utils.data.DataHandler;
 import someoneok.kic.utils.dev.KICLogger;
-import someoneok.kic.utils.overlay.OverlayDataHandler;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static someoneok.kic.KIC.mc;
-import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.ChatUtils.sendMessageToPlayer;
 import static someoneok.kic.utils.StringUtils.removeFormatting;
 import static someoneok.kic.utils.StringUtils.removeUnicode;
 
 public class LocationUtils {
-    private static final Pattern AREA_PATTERN = Pattern.compile(" ⏣ (.+)");
+    private static final Pattern AREA_PATTERN = Pattern.compile("\\s*⏣\\s+(.+)");
     private static final Pattern TAB_FACTION_PATTERN = Pattern.compile("(Mage|Barbarian) Reputation");
 
     public static Island currentIsland;
@@ -40,9 +42,16 @@ public class LocationUtils {
     public static boolean onSkyblock = false;
     public static boolean onHypixel = false;
     public static String subArea;
+    public static String lastSubArea;
     public static boolean inDungeons = false;
-    public static boolean inKuudra = false;
-    public static int kuudraTier = 0;
+
+    private static boolean inKuudra = false;
+    private static int kuudraTier = 0;
+
+    private static final AxisAlignedBB croesusArea = new AxisAlignedBB(
+            -16, 118, 30,
+            -39, 145, 48
+    );
 
     public static void handleLocationPacket(ClientboundLocationPacket packet) {
         serverName = packet.getServerName();
@@ -71,6 +80,9 @@ public class LocationUtils {
         if (currentIsland == null) {
             setLocationState(Island.LIMBO);
         }
+        subArea = "";
+        lastSubArea = "";
+        KICEventBus.post(new LocationUpdateEvent.Island(currentIsland, serverName));
         KICLogger.info("Current island: " + currentIsland);
     }
 
@@ -79,9 +91,17 @@ public class LocationUtils {
         onSkyblock = false;
     }
 
+    public static boolean inKuudra() {
+        return (KICConfig.forceKuudraLocation || inKuudra);
+    }
+
+    public static int kuudraTier() {
+        if (KICConfig.forceKuudraTier != 0) return KICConfig.forceKuudraTier;
+        return kuudraTier;
+    }
+
     @SubscribeEvent
     public void onHypixelJoin(HypixelJoinEvent event) {
-        FuckOtherMods.fuckThem();
         if (!ApiUtils.getApiKeyMessage().isEmpty()) {
             Multithreading.schedule(() -> {
                 sendMessageToPlayer(ApiUtils.getApiKeyMessage());
@@ -118,48 +138,63 @@ public class LocationUtils {
             kuudraTier = 0;
         }
 
-        subArea = subAreaTemp.replaceAll(" \\(.+\\)", "");
+        subArea = inCroesusArea() ? "Croesus" : subAreaTemp.replaceAll("\\s*\\([^)]*\\)", "");
 
         if (currentIsland == Island.CRIMSON_ISLE) {
             List<String> tabList = getTabListLines();
-            if (tabList.isEmpty()) return;
-
-            int factionIdx = findMatchingIndex(tabList);
-
-            if (factionIdx != -1) {
-                CrimsonFaction faction = CrimsonFaction.fromString(extractFaction(tabList.get(factionIdx)));
-
-                if (KIC.userData.getFaction() != faction) {
-                    KIC.userData.setFaction(faction);
-                    OverlayDataHandler.saveOverlaysData();
+            if (!tabList.isEmpty()) {
+                int factionIdx = findMatchingIndex(tabList);
+                if (factionIdx != -1) {
+                    CrimsonFaction faction = CrimsonFaction.fromString(extractFaction(tabList.get(factionIdx)));
+                    if (faction != null && KIC.userData.getFaction() != faction) {
+                        KIC.userData.setFaction(faction);
+                        DataHandler.saveData();
+                    }
                 }
             }
         }
+
+        if (!Objects.equals(lastSubArea, subArea)) {
+            lastSubArea = subArea;
+            KICEventBus.post(new LocationUpdateEvent.SubArea(currentIsland, serverName, subArea));
+        }
     }
 
-    private List<String> getScoreboardLines() {
-        List<String> lines = new ArrayList<>();
-        if (mc.theWorld == null) return lines;
+    private static boolean inCroesusArea() {
+        if (currentIsland != Island.DUNGEON_HUB) return false;
+        EntityPlayerSP player = mc.thePlayer;
+        if (player == null) return false;
+        return croesusArea.isVecInside(player.getPositionVector());
+    }
 
-        Scoreboard scoreboard = mc.theWorld.getScoreboard();
-        if (scoreboard == null) return lines;
+    public static List<String> getScoreboardLines() {
+        if (mc.theWorld == null) return Collections.emptyList();
 
-        ScoreObjective objective = scoreboard.getObjectiveInDisplaySlot(1);
-        if (objective == null) return lines;
+        final Scoreboard sb = mc.theWorld.getScoreboard();
+        if (sb == null) return Collections.emptyList();
 
-        List<Score> scores = scoreboard.getSortedScores(objective).stream()
-                .filter(score -> score != null && score.getPlayerName() != null && !score.getPlayerName().startsWith("#"))
-                .collect(Collectors.toList());
+        final ScoreObjective obj = sb.getObjectiveInDisplaySlot(1);
+        if (obj == null) return Collections.emptyList();
 
-        if (scores.size() > 15) {
-            scores = scores.subList(scores.size() - 15, scores.size());
+        final ArrayDeque<Score> window = new ArrayDeque<>(15);
+        for (Score s : sb.getSortedScores(obj)) {
+            if (s == null) continue;
+            final String name = s.getPlayerName();
+            if (name == null || name.startsWith("#")) continue;
+
+            if (window.size() == 15) window.pollFirst();
+            window.addLast(s);
         }
 
-        scores.forEach(score -> {
-            ScorePlayerTeam team = scoreboard.getPlayersTeam(score.getPlayerName());
-            String line = ScorePlayerTeam.formatPlayerName(team, score.getPlayerName());
+        if (window.isEmpty()) return Collections.emptyList();
+
+        final ArrayList<String> lines = new ArrayList<>(window.size());
+        for (Score s : window) {
+            final String name = s.getPlayerName();
+            final ScorePlayerTeam team = sb.getPlayersTeam(name);
+            String line = ScorePlayerTeam.formatPlayerName(team, name);
             lines.add(removeFormatting(line));
-        });
+        }
 
         return lines;
     }
@@ -167,9 +202,7 @@ public class LocationUtils {
     private String getMatchFromLines(List<String> lines) {
         for (String line : lines) {
             Matcher matcher = AREA_PATTERN.matcher(line);
-            if (matcher.find()) {
-                return matcher.group(1);
-            }
+            if (matcher.find()) return matcher.group(1);
         }
         return "";
     }
@@ -200,6 +233,7 @@ public class LocationUtils {
         onSkyblock = false;
         onHypixel = false;
         subArea = "";
+        lastSubArea = "";
         inDungeons = false;
         inKuudra = false;
         kuudraTier = 0;

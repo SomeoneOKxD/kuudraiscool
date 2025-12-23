@@ -10,6 +10,7 @@ import org.lwjgl.input.Mouse;
 import someoneok.kic.config.KICConfig;
 import someoneok.kic.modules.crimson.HuntingBoxValue;
 import someoneok.kic.modules.kuudra.KuudraPfGuiInfo;
+import someoneok.kic.modules.kuudra.Vesuvius;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.LocationUtils;
 
@@ -34,6 +35,7 @@ public class ButtonManager {
         register("huntingBoxValue", new GuiCheckBox(0, 0, 0, "Hunting Box Value", true), () -> HuntingBoxValue.shouldRender);
         register("partyFinderGuiStats", new GuiCheckBox(1, 0, 0, "Show PF Stats", true), () -> KuudraPfGuiInfo.shouldRender);
         register("partyFinderGuiStatsExample", new GuiCheckBox(2, 0, 0, "Show PF Stats Example", false), () -> KuudraPfGuiInfo.shouldRender);
+        register("vesuviusHighlightUnopened", new GuiCheckBox(3, 0, 0, "Highlight unopened chests", true), () -> KICConfig.highlightUnopenedChests && Vesuvius.shouldRender);
     }
 
     @SubscribeEvent
@@ -61,7 +63,7 @@ public class ButtonManager {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(receiveCanceled = true)
     public void onGuiClick(GuiScreenEvent.MouseInputEvent.Pre event) {
         if (!Mouse.getEventButtonState()
                 || !LocationUtils.onSkyblock

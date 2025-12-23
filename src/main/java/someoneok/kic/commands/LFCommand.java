@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.ChatUtils.sendMessageToPlayer;
 
 public class LFCommand extends CommandBase {
     Pattern pattern = Pattern.compile("(\\S+)\\s+(?:(?i)lore:\\s*)?(.*)");

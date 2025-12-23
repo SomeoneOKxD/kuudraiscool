@@ -78,10 +78,8 @@ public class PartyUtils {
     private void updatePartyData() {
         updated = false;
         Multithreading.schedule(() -> {
-            if (!updated) {
-                HypixelEventApi.sendPartyPacket();
-            }
-        }, 1000, TimeUnit.MILLISECONDS);
+            if (!updated) HypixelEventApi.sendPartyPacket();
+        }, 750, TimeUnit.MILLISECONDS);
     }
 
     private void clearPartyData() {

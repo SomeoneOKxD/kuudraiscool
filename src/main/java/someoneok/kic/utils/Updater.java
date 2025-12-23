@@ -12,8 +12,8 @@ import someoneok.kic.utils.dev.KICLogger;
 import java.util.concurrent.TimeUnit;
 
 import static someoneok.kic.KIC.KICPrefix;
-import static someoneok.kic.utils.GeneralUtils.createClickComponent;
-import static someoneok.kic.utils.GeneralUtils.sendMessageToPlayer;
+import static someoneok.kic.utils.ChatUtils.createClickComponent;
+import static someoneok.kic.utils.ChatUtils.sendMessageToPlayer;
 
 public class Updater {
     private static final long CACHE_TIMEOUT = 5 * 60 * 1000L;

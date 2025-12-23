@@ -9,7 +9,10 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.inventory.Slot;
-import net.minecraft.util.*;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Vec3;
 import org.lwjgl.opengl.GL11;
 import someoneok.kic.utils.dev.KICLogger;
 
@@ -91,7 +94,7 @@ public class RenderUtils {
         resetCaps();
     }
 
-    public static void drawBox(final AxisAlignedBB axis, final Color color, boolean filled, float partialTicks) {
+    public static void drawBox(final AxisAlignedBB axis, final Color color, boolean filled, boolean esp, float partialTicks) {
         Entity viewer = mc.getRenderViewEntity();
 
         double viewerX = viewer.lastTickPosX + (viewer.posX - viewer.lastTickPosX) * partialTicks;
@@ -102,8 +105,12 @@ public class RenderUtils {
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         enableGlCap(GL_BLEND);
-        disableGlCap(GL_TEXTURE_2D, GL_DEPTH_TEST);
-        glDepthMask(false);
+        disableGlCap(GL_TEXTURE_2D);
+
+        if (esp) {
+            disableGlCap(GL_DEPTH_TEST);
+            glDepthMask(false);
+        }
 
         glColor(color.getRed(), color.getGreen(), color.getBlue(), 35);
         if (filled) {
@@ -116,7 +123,7 @@ public class RenderUtils {
         drawSelectionBoundingBox(renderBB);
 
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-        glDepthMask(true);
+        if (esp) glDepthMask(true);
         resetCaps();
     }
 
@@ -154,7 +161,7 @@ public class RenderUtils {
     }
 
     public static void drawEntityBox(final Entity entity, final Color color, final int width, float partialTicks) {
-        if (width == 0) return;
+        if (entity == null || width == 0) return;
         final RenderManager renderManager = mc.getRenderManager();
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -336,105 +343,15 @@ public class RenderUtils {
             glDisable(cap);
     }
 
-    public static void drawFacingCircle(final Vec3 pos, final float scale, final int segments, final Color color, final float partialTicks) {
-        Entity viewer = mc.getRenderViewEntity();
-        RenderManager renderManager = mc.getRenderManager();
-
-        double x = pos.xCoord - (viewer.lastTickPosX + (viewer.posX - viewer.lastTickPosX) * partialTicks);
-        double y = pos.yCoord - (viewer.lastTickPosY + (viewer.posY - viewer.lastTickPosY) * partialTicks);
-        double z = pos.zCoord - (viewer.lastTickPosZ + (viewer.posZ - viewer.lastTickPosZ) * partialTicks);
-
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(x, y, z);
-
-        GlStateManager.rotate(-renderManager.playerViewY, 0F, 1F, 0F);
-        GlStateManager.rotate(renderManager.playerViewX, 1F, 0F, 0F);
-
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        enableGlCap(GL_BLEND);
-        disableGlCap(GL_TEXTURE_2D, GL_DEPTH_TEST);
-        glDepthMask(false);
-        GlStateManager.disableCull();
-
-        glColor(color);
-
-        Tessellator tess = Tessellator.getInstance();
-        WorldRenderer buffer = tess.getWorldRenderer();
-
-        buffer.begin(GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION);
-
-        buffer.pos(0, 0, 0).endVertex();
-
-        for (int i = 0; i <= segments; i++) {
-            double angle = 2 * Math.PI * i / segments;
-            double dx = Math.cos(angle) * scale;
-            double dy = Math.sin(angle) * scale;
-            buffer.pos(dx, dy, 0).endVertex();
-        }
-
-        tess.draw();
-
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-        glDepthMask(true);
-        resetCaps();
-        GlStateManager.enableCull();
-        GlStateManager.popMatrix();
-    }
-
-    public static void drawFacingHeart(final Vec3 pos, final float scale, final int segments, final Color color, final float partialTicks) {
-        Entity viewer = mc.getRenderViewEntity();
-        RenderManager renderManager = mc.getRenderManager();
-
-        double x = pos.xCoord - (viewer.lastTickPosX + (viewer.posX - viewer.lastTickPosX) * partialTicks);
-        double y = pos.yCoord - (viewer.lastTickPosY + (viewer.posY - viewer.lastTickPosY) * partialTicks);
-        double z = pos.zCoord - (viewer.lastTickPosZ + (viewer.posZ - viewer.lastTickPosZ) * partialTicks);
-
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(x, y, z);
-        GlStateManager.rotate(-renderManager.playerViewY, 0F, 1F, 0F);
-        GlStateManager.rotate(renderManager.playerViewX, 1F, 0F, 0F);
-
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        enableGlCap(GL_BLEND);
-        disableGlCap(GL_TEXTURE_2D, GL_DEPTH_TEST);
-        glDepthMask(false);
-        GlStateManager.disableCull();
-
-        glColor(color);
-
-        Tessellator tess = Tessellator.getInstance();
-        WorldRenderer buffer = tess.getWorldRenderer();
-
-        buffer.begin(GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION);
-        buffer.pos(0, 0, 0).endVertex(); // Center for fan
-
-        for (int i = 0; i <= segments; i++) {
-            double t = Math.PI * 2 * i / segments;
-            double xh = 16 * Math.pow(Math.sin(t), 3);
-            double yh = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-
-            buffer.pos((xh * scale) * 0.1, (yh * scale) * 0.1, 0).endVertex(); // Scale down
-        }
-
-        tess.draw();
-
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-        glDepthMask(true);
-        resetCaps();
-        GlStateManager.enableCull();
-        GlStateManager.popMatrix();
-    }
-
-    public static void drawBeaconBeam(BlockPos blockPos, Color color, int height, boolean glow, float partialTicks) {
-        Vec3 centeredVec = new Vec3(
-                blockPos.getX() + 0.5,
-                blockPos.getY(),
-                blockPos.getZ() + 0.5
-        );
-        drawBeaconBeam(centeredVec, color, height, glow, partialTicks);
-    }
-
     public static void drawBeaconBeam(Vec3 vec3, Color color, int height, boolean glow, float partialTicks) {
+        float r = color.getRed() / 255f;
+        float g = color.getGreen() / 255f;
+        float b = color.getBlue() / 255f;
+        float a = color.getAlpha() / 255f;
+        drawBeaconBeam(vec3, r, g, b, a, height, glow, partialTicks);
+    }
+
+    public static void drawBeaconBeam(Vec3 vec3, float red, float green, float blue, float alpha, int height, boolean glow, float partialTicks) {
         final RenderManager renderManager = mc.getRenderManager();
         final Tessellator tessellator = Tessellator.getInstance();
         final WorldRenderer worldRenderer = tessellator.getWorldRenderer();
@@ -462,11 +379,6 @@ public class RenderUtils {
         double time = mc.theWorld.getTotalWorldTime() + partialTicks;
         double d1 = MathHelper.func_181162_h(-time * 0.2 - Math.floor(-time * 0.1));
 
-        float r = color.getRed() / 255f;
-        float g = color.getGreen() / 255f;
-        float b = color.getBlue() / 255f;
-        float a = color.getAlpha() / 255f;
-
         double d2 = time * 0.025 * -1.5;
         double d4 = Math.cos(d2 + 2.356194490192345) * 0.2;
         double d5 = Math.sin(d2 + 2.356194490192345) * 0.2;
@@ -482,25 +394,25 @@ public class RenderUtils {
 
         worldRenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
 
-        worldRenderer.pos(x + d4, y + topOffset, z + d5).tex(1.0, d15).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d4, y + bottomOffset, z + d5).tex(1.0, d14).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d6, y + bottomOffset, z + d7).tex(0.0, d14).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d6, y + topOffset, z + d7).tex(0.0, d15).color(r, g, b, a).endVertex();
+        worldRenderer.pos(x + d4, y + topOffset, z + d5).tex(1.0, d15).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d4, y + bottomOffset, z + d5).tex(1.0, d14).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d6, y + bottomOffset, z + d7).tex(0.0, d14).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d6, y + topOffset, z + d7).tex(0.0, d15).color(red, green, blue, alpha).endVertex();
 
-        worldRenderer.pos(x + d10, y + topOffset, z + d11).tex(1.0, d15).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d10, y + bottomOffset, z + d11).tex(1.0, d14).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d8, y + bottomOffset, z + d9).tex(0.0, d14).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d8, y + topOffset, z + d9).tex(0.0, d15).color(r, g, b, a).endVertex();
+        worldRenderer.pos(x + d10, y + topOffset, z + d11).tex(1.0, d15).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d10, y + bottomOffset, z + d11).tex(1.0, d14).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d8, y + bottomOffset, z + d9).tex(0.0, d14).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d8, y + topOffset, z + d9).tex(0.0, d15).color(red, green, blue, alpha).endVertex();
 
-        worldRenderer.pos(x + d6, y + topOffset, z + d7).tex(1.0, d15).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d6, y + bottomOffset, z + d7).tex(1.0, d14).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d10, y + bottomOffset, z + d11).tex(0.0, d14).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d10, y + topOffset, z + d11).tex(0.0, d15).color(r, g, b, a).endVertex();
+        worldRenderer.pos(x + d6, y + topOffset, z + d7).tex(1.0, d15).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d6, y + bottomOffset, z + d7).tex(1.0, d14).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d10, y + bottomOffset, z + d11).tex(0.0, d14).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d10, y + topOffset, z + d11).tex(0.0, d15).color(red, green, blue, alpha).endVertex();
 
-        worldRenderer.pos(x + d8, y + topOffset, z + d9).tex(1.0, d15).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d8, y + bottomOffset, z + d9).tex(1.0, d14).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d4, y + bottomOffset, z + d5).tex(0.0, d14).color(r, g, b, a).endVertex();
-        worldRenderer.pos(x + d4, y + topOffset, z + d5).tex(0.0, d15).color(r, g, b, a).endVertex();
+        worldRenderer.pos(x + d8, y + topOffset, z + d9).tex(1.0, d15).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d8, y + bottomOffset, z + d9).tex(1.0, d14).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d4, y + bottomOffset, z + d5).tex(0.0, d14).color(red, green, blue, alpha).endVertex();
+        worldRenderer.pos(x + d4, y + topOffset, z + d5).tex(0.0, d15).color(red, green, blue, alpha).endVertex();
 
         tessellator.draw();
 
@@ -515,25 +427,25 @@ public class RenderUtils {
             float glowAlpha = 0.25f;
             double glowRadius = 0.2;
 
-            worldRenderer.pos(x - glowRadius, y + topOffset, z - glowRadius).tex(1.0, d13).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x - glowRadius, y + bottomOffset, z - glowRadius).tex(1.0, d12).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x + glowRadius, y + bottomOffset, z - glowRadius).tex(0.0, d12).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x + glowRadius, y + topOffset, z - glowRadius).tex(0.0, d13).color(r, g, b, glowAlpha).endVertex();
+            worldRenderer.pos(x - glowRadius, y + topOffset, z - glowRadius).tex(1.0, d13).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x - glowRadius, y + bottomOffset, z - glowRadius).tex(1.0, d12).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x + glowRadius, y + bottomOffset, z - glowRadius).tex(0.0, d12).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x + glowRadius, y + topOffset, z - glowRadius).tex(0.0, d13).color(red, green, blue, glowAlpha).endVertex();
 
-            worldRenderer.pos(x + glowRadius, y + topOffset, z + glowRadius).tex(1.0, d13).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x + glowRadius, y + bottomOffset, z + glowRadius).tex(1.0, d12).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x - glowRadius, y + bottomOffset, z + glowRadius).tex(0.0, d12).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x - glowRadius, y + topOffset, z + glowRadius).tex(0.0, d13).color(r, g, b, glowAlpha).endVertex();
+            worldRenderer.pos(x + glowRadius, y + topOffset, z + glowRadius).tex(1.0, d13).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x + glowRadius, y + bottomOffset, z + glowRadius).tex(1.0, d12).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x - glowRadius, y + bottomOffset, z + glowRadius).tex(0.0, d12).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x - glowRadius, y + topOffset, z + glowRadius).tex(0.0, d13).color(red, green, blue, glowAlpha).endVertex();
 
-            worldRenderer.pos(x + glowRadius, y + topOffset, z - glowRadius).tex(1.0, d13).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x + glowRadius, y + bottomOffset, z - glowRadius).tex(1.0, d12).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x + glowRadius, y + bottomOffset, z + glowRadius).tex(0.0, d12).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x + glowRadius, y + topOffset, z + glowRadius).tex(0.0, d13).color(r, g, b, glowAlpha).endVertex();
+            worldRenderer.pos(x + glowRadius, y + topOffset, z - glowRadius).tex(1.0, d13).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x + glowRadius, y + bottomOffset, z - glowRadius).tex(1.0, d12).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x + glowRadius, y + bottomOffset, z + glowRadius).tex(0.0, d12).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x + glowRadius, y + topOffset, z + glowRadius).tex(0.0, d13).color(red, green, blue, glowAlpha).endVertex();
 
-            worldRenderer.pos(x - glowRadius, y + topOffset, z + glowRadius).tex(1.0, d13).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x - glowRadius, y + bottomOffset, z + glowRadius).tex(1.0, d12).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x - glowRadius, y + bottomOffset, z - glowRadius).tex(0.0, d12).color(r, g, b, glowAlpha).endVertex();
-            worldRenderer.pos(x - glowRadius, y + topOffset, z - glowRadius).tex(0.0, d13).color(r, g, b, glowAlpha).endVertex();
+            worldRenderer.pos(x - glowRadius, y + topOffset, z + glowRadius).tex(1.0, d13).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x - glowRadius, y + bottomOffset, z + glowRadius).tex(1.0, d12).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x - glowRadius, y + bottomOffset, z - glowRadius).tex(0.0, d12).color(red, green, blue, glowAlpha).endVertex();
+            worldRenderer.pos(x - glowRadius, y + topOffset, z - glowRadius).tex(0.0, d13).color(red, green, blue, glowAlpha).endVertex();
 
             tessellator.draw();
         }
