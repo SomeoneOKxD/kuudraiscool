@@ -1155,13 +1155,6 @@ public class KICConfig extends Config {
     )
     public static boolean kuudraProfitCalculator = true;
 
-    @Switch(
-            name = "Show Valuable Hologram",
-            category = KUUDRA_END,
-            subcategory = KUUDRA_PROFIT_CALC
-    )
-    public static boolean showValuableHolo = true;
-
     @Page(
             name = "Profit Calculator Options",
             category = KUUDRA_END,

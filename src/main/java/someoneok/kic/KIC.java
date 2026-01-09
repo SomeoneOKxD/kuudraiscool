@@ -94,7 +94,6 @@ public class KIC {
                 new ArmorHud(),
                 new TrackEmptySlots(),
                 new HuntingBoxValue(),
-                new Hologram(),
                 new PlayerUtils(),
                 new ManaDrain(),
                 new AutoRequeue(),

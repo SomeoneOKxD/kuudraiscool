@@ -13,15 +13,18 @@ plugins {
 
 val baseGroup: String by project
 val mcVersion: String by project
-val version: String by project
+val modVersion: String by project
 val mixinGroup = "$baseGroup.mixin"
-val modid: String by project
+val modId: String by project
 val transformerFile = file("src/main/resources/accesstransformer.cfg")
 val apiVersion: String by project
 
+project.group = baseGroup
+project.version = modVersion
+
 blossom {
-    replaceToken("@VER@", version)
-    replaceToken("@ID@", modid)
+    replaceToken("@VER@", modVersion)
+    replaceToken("@ID@", modId)
     replaceToken("@API_VER@", apiVersion)
 }
 
@@ -47,14 +50,14 @@ loom {
     }
     forge {
         pack200Provider.set(dev.architectury.pack200.java.Pack200Adapter())
-        mixinConfig("mixins.$modid.json")
+        mixinConfig("mixins.$modId.json")
 	    if (transformerFile.exists()) {
 			println("Installing access transformer")
 		    accessTransformer(transformerFile)
 	    }
     }
     mixin {
-        defaultRefmapName.set("mixins.$modid.refmap.json")
+        defaultRefmapName.set("mixins.$modId.refmap.json")
     }
 }
 
@@ -115,13 +118,13 @@ tasks.withType(JavaCompile::class) {
 }
 
 tasks.withType(org.gradle.jvm.tasks.Jar::class) {
-    archiveBaseName.set(modid)
+    archiveBaseName.set(modId)
     manifest.attributes.run {
         this["FMLCorePluginContainsFMLMod"] = "true"
         this["ForceLoadAsMod"] = "true"
-        this["MixinConfigs"] = "mixins.$modid.json"
+        this["MixinConfigs"] = "mixins.$modId.json"
 	    if (transformerFile.exists())
-			this["FMLAT"] = "${modid}_at.cfg"
+			this["FMLAT"] = "${modId}_at.cfg"
         this["ModSide"] = "CLIENT"
         this["TweakOrder"] = "0"
         this["ForceLoadAsMod"] = true
@@ -130,16 +133,16 @@ tasks.withType(org.gradle.jvm.tasks.Jar::class) {
 }
 
 tasks.processResources {
-    inputs.property("version", version)
+    inputs.property("version", modVersion)
     inputs.property("mcversion", mcVersion)
-    inputs.property("modid", modid)
+    inputs.property("modid", modId)
     inputs.property("basePackage", baseGroup)
 
-    filesMatching(listOf("mcmod.info", "mixins.$modid.json")) {
+    filesMatching(listOf("mcmod.info", "mixins.$modId.json")) {
         expand(inputs.properties)
     }
 
-    rename("accesstransformer.cfg", "META-INF/${modid}_at.cfg")
+    rename("accesstransformer.cfg", "META-INF/${modId}_at.cfg")
 }
 
 val remapJar by tasks.named<net.fabricmc.loom.task.RemapJarTask>("remapJar") {

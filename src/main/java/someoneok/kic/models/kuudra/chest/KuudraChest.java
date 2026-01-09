@@ -9,7 +9,6 @@ import someoneok.kic.config.pages.KuudraProfitCalculatorOptions;
 import someoneok.kic.models.APIException;
 import someoneok.kic.models.crimson.*;
 import someoneok.kic.models.request.Request;
-import someoneok.kic.modules.kuudra.Hologram;
 import someoneok.kic.utils.ApiUtils;
 import someoneok.kic.utils.ItemUtils;
 import someoneok.kic.utils.NetworkUtils;
@@ -36,16 +35,15 @@ public class KuudraChest {
     private final KuudraChestType type;
     private KuudraKey keyNeeded;
     private int essence;
-    private boolean hasValuable;
-    private String valuableItemId;
     private boolean rerolled;
     private boolean shardRerolled;
     private boolean bought;
     private final AtomicBoolean addedToTracker;
-
+    
     private final Map<String, BazaarItem> bazaarItems;
     private final Map<String, AuctionItem> auctionItems;
     private final Set<String> shards;
+    private final Set<String> valuables;
 
     private final AtomicBoolean fetchInFlight;
     private final AtomicReference<Runnable> latestCallback;
@@ -58,7 +56,6 @@ public class KuudraChest {
         this.type = type;
         this.keyNeeded = null;
         this.essence = 0;
-        this.hasValuable = false;
         this.rerolled = false;
         this.shardRerolled = false;
         this.bought = false;
@@ -66,6 +63,7 @@ public class KuudraChest {
         this.bazaarItems = new HashMap<>();
         this.auctionItems = new HashMap<>();
         this.shards = new HashSet<>();
+        this.valuables = new HashSet<>();
         this.fetchInFlight = new AtomicBoolean(false);
         this.latestCallback = new AtomicReference<>(null);
         this.profitCalculated = false;
@@ -74,10 +72,10 @@ public class KuudraChest {
 
     public void reset() {
         this.essence = 0;
-        this.hasValuable = false;
         this.bazaarItems.clear();
         this.auctionItems.clear();
         this.shards.clear();
+        this.valuables.clear();
         this.profitCalculated = false;
         this.totalValue = 0;
         this.rerolled = false;
@@ -97,7 +95,6 @@ public class KuudraChest {
     public boolean isProfitCalculated() { return profitCalculated; }
     public boolean hasItems() { return !bazaarItems.isEmpty() || !auctionItems.isEmpty(); }
     public String getChestName() { return type.getDisplayText(); }
-    public boolean hasValuable() { return hasValuable; }
     public void setRerolled(boolean rerolled) { this.rerolled = rerolled; }
     public boolean isRerolled() { return rerolled; }
     public void setShardRerolled(boolean shardRerolled) { this.shardRerolled = shardRerolled; }
@@ -126,34 +123,37 @@ public class KuudraChest {
     }
 
     // Format: type;itemId;lbPrice/buyPrice;avgPrice/sellPrice
-    public String getValuable() {
-        if (!hasValuable || valuableItemId == null) return null;
+    public Set<String> getValuables() {
+        Set<String> result = new HashSet<>();
+        if (valuables.isEmpty()) return result;
 
-        if (bazaarItems.containsKey(valuableItemId)) {
-            BazaarItemValue value = KuudraValueCache.getBazaar(valuableItemId);
-            if (value == null) return null;
+        for (String valuable : valuables) {
+            if (bazaarItems.containsKey(valuable)) {
+                BazaarItemValue value = KuudraValueCache.getBazaar(valuable);
+                if (value == null) return null;
 
-            return String.format(
-                    "BAZAAR;%s;%d;%d",
-                    value.getItemId(),
-                    value.getPrice(true),
-                    value.getPrice(false)
-            );
+                result.add(String.format(
+                        "BAZAAR;%s;%d;%d",
+                        value.getItemId(),
+                        value.getPrice(true),
+                        value.getPrice(false)
+                ));
+            }
+
+            if (auctionItems.containsKey(valuable)) {
+                AuctionItemValue value = KuudraValueCache.getAuction(valuable);
+                if (value == null) return null;
+
+                result.add(String.format(
+                        "AUCTION;%s;%d;%d",
+                        value.getItemId(),
+                        value.getPrice(true),
+                        value.getPrice(false)
+                ));
+            }
         }
 
-        if (auctionItems.containsKey(valuableItemId)) {
-            AuctionItemValue value = KuudraValueCache.getAuction(valuableItemId);
-            if (value == null) return null;
-
-            return String.format(
-                    "AUCTION;%s;%d;%d",
-                    value.getItemId(),
-                    value.getPrice(true),
-                    value.getPrice(false)
-            );
-        }
-
-        return null;
+        return result;
     }
 
     public void addItem(ItemStack item) {
@@ -161,9 +161,8 @@ public class KuudraChest {
         if (kind == ItemKind.NONE) return;
 
         String itemId = ItemUtils.getItemId(item);
-        if (itemId != null && KuudraChestUtils.VALUABLES.contains(itemId) && !hasValuable) {
-            hasValuable = true;
-            valuableItemId = itemId;
+        if (itemId != null && KuudraChestUtils.VALUABLES.contains(itemId)) {
+            valuables.add(itemId);
         }
         int count = item.stackSize;
         String itemName = item.getDisplayName() == null ? "" : item.getDisplayName();
@@ -174,9 +173,8 @@ public class KuudraChest {
                 String encId = enc[0];
                 String encName = enc[1];
                 if (isNullOrEmpty(encId) || isNullOrEmpty(encName)) return;
-                if (KuudraChestUtils.VALUABLES.contains(encId) && !hasValuable) {
-                    hasValuable = true;
-                    valuableItemId = encId;
+                if (KuudraChestUtils.VALUABLES.contains(encId)) {
+                    valuables.add(encId);
                 }
                 BazaarItem encItem = bazaarItems.get(encId);
                 if (encItem == null) bazaarItems.put(encId, new BazaarItem(encId, encName, count));
@@ -270,15 +268,6 @@ public class KuudraChest {
     private void runAndClearLatestCallback() {
         Runnable r = latestCallback.getAndSet(null);
         if (r != null) {
-            if (hasValuable) {
-                if (bazaarItems.containsKey(valuableItemId)) {
-                    BazaarItemValue value = KuudraValueCache.getBazaar(valuableItemId);
-                    if (value != null) Hologram.show(value);
-                } else if (auctionItems.containsKey(valuableItemId)) {
-                    AuctionItemValue value = KuudraValueCache.getAuction(valuableItemId);
-                    if (value != null) Hologram.show(value);
-                }
-            }
             try { r.run(); } catch (Throwable t) {
                 KICLogger.info("Callback error: " + t.getMessage());
             }

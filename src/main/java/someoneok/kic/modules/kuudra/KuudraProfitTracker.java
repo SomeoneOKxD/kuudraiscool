@@ -110,8 +110,7 @@ public class KuudraProfitTracker {
 
         int teeth = chest.getTeeth();
         if (teeth > 0) data.addTeeth(teeth);
-
-        if (chest.hasValuable()) data.addValuable(chest.getValuable());
+        data.addValuables(chest.getValuables());
 
         KuudraKey key = chest.getKeyNeeded();
         if (key == null) {
@@ -208,7 +207,7 @@ public class KuudraProfitTracker {
         if (KuudraProfitTrackerOptions.showAverageProfitPerChest) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.averagePerChestColor);
             text.append("\n").append(color).append("§lAverage: §r")
-                    .append(color).append(parseToShorthandNumber(session.getAverage())).append("/chest");
+                    .append(color).append(parseToShorthandNumber(session.getAverage(data))).append("/chest");
         }
 
         if (KuudraProfitTrackerOptions.showRerolls) {
@@ -237,7 +236,7 @@ public class KuudraProfitTracker {
         if (KuudraProfitTrackerOptions.showRate) {
             String color = Color.getColorCode(KuudraProfitTrackerOptions.rateColor);
             text.append("\n").append(color).append("§lRate: §r")
-                    .append(color).append(parseToShorthandNumber(session.getHourlyRate())).append("/hr");
+                    .append(color).append(parseToShorthandNumber(session.getHourlyRate(data))).append("/hr");
         }
 
         if (KuudraProfitTrackerOptions.showValuables) {
