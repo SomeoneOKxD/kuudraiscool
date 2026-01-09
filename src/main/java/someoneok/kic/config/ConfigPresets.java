@@ -61,7 +61,6 @@ public class ConfigPresets {
         KICConfig.moveableCratePickup = false;
         KICConfig.customSupplyDropMsg = false;
         KICConfig.kuudraProfitCalculator = true;
-        KICConfig.showValuableHolo = true;
         KICConfig.autoRequeue = false;
         KICConfig.kuudraProfitTracker = true;
         KICConfig.showKuudraProfitTrackerNearCroesus = true;

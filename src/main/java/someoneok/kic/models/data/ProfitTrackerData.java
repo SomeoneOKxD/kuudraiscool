@@ -6,6 +6,7 @@ import someoneok.kic.config.pages.KuudraProfitCalculatorOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class ProfitTrackerData {
     private final ProfitTrackerSession lifetime;
@@ -149,10 +150,10 @@ public class ProfitTrackerData {
         lifetime.teeth += teeth;
     }
 
-    public void addValuable(String valuable) {
-        if (valuable == null || valuable.isEmpty()) return;
-        current.valuables.add(valuable);
-        lifetime.valuables.add(valuable);
+    public void addValuables(Set<String> valuables) {
+        if (valuables == null || valuables.isEmpty()) return;
+        current.valuables.addAll(valuables);
+        lifetime.valuables.addAll(valuables);
     }
 
     public void addTap(int tap) {
@@ -265,9 +266,9 @@ public class ProfitTrackerData {
         public long getTotalEssenceValue(ProfitTrackerData data) { return essence * data.getEssencePrice(); }
         public long getTotalTeethValue(ProfitTrackerData data) { return teeth * data.getTeethPrice(); }
         public long getTapCost(ProfitTrackerData data) { return (tap * data.getTapPrice()) + (twap * data.getTwapPrice()); }
-        public long getAverage() { return this.getChests() == 0 ? 0 : profit / this.getChests(); }
+        public long getAverage(ProfitTrackerData data) { return this.getChests() == 0 ? 0 : getProfit(data) / this.getChests(); }
         public long getAverageRunTime() { return time == 0 || runs == 0 ? 0 : time / runs; }
-        public long getHourlyRate() { return time == 0 ? 0 : (profit * 3600) / time; }
+        public long getHourlyRate(ProfitTrackerData data) { return time == 0 ? 0 : (getProfit(data) * 3600) / time; }
 
         public long getValuablesValue() {
             return valuables.stream()
